@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { authApi } from "../api/auth";
 
 export type LoginFormValues = {
   email: string;
@@ -14,7 +16,28 @@ const initialValues: LoginFormValues = {
 };
 
 const useLoginForm = () => {
+  const queryClient = useQueryClient();
   const [values, setValues] = useState<LoginFormValues>(initialValues);
+  const [error, setError] = useState<string | null>(null);
+
+  const loginMutation = useMutation({
+    mutationFn: async (data: Omit<LoginFormValues, "rememberMe">) => {
+      return await authApi.login(data);
+    },
+    onSuccess: (data) => {
+      // Zmuszamy globalny stan do ponownego pobrania `me` - zaraz zaktualizuje to całe UI
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      console.log("Pomyślnie zalogowano!", data);
+    },
+    onError: (err: any) => {
+      console.error("Błąd logowania:", err);
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.title ||
+          "Nieprawidłowy email lub hasło.",
+      );
+    },
+  });
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -34,8 +57,12 @@ const useLoginForm = () => {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Placeholder for future API auth call.
-    console.log("Login submit payload:", values);
+    setError(null);
+
+    loginMutation.mutate({
+      email: values.email,
+      password: values.password,
+    });
   };
 
   const loginWithGoogle = () => {
@@ -50,6 +77,9 @@ const useLoginForm = () => {
 
   return {
     values,
+    error,
+    isLoading: loginMutation.isPending,
+    isSuccess: loginMutation.isSuccess,
     handleInputChange,
     handleRememberMeChange,
     handleSubmit,

@@ -1,10 +1,24 @@
-import { Button, Stack, TextField, Typography } from "@mui/material";
+import {
+  Alert,
+  Button,
+  CircularProgress,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import AuthPageShell from "../components/auth/AuthPageShell";
 import useRegisterForm from "../hooks/useRegisterForm";
 
 const RegisterPage = () => {
-  const { values, handleInputChange, handleSubmit } = useRegisterForm();
+  const {
+    values,
+    error,
+    isLoading,
+    isSuccess,
+    handleInputChange,
+    handleSubmit,
+  } = useRegisterForm();
 
   return (
     <AuthPageShell
@@ -32,6 +46,13 @@ const RegisterPage = () => {
       }
     >
       <Stack component="form" spacing={2.2} onSubmit={handleSubmit}>
+        {error && <Alert severity="error">{error}</Alert>}
+        {isSuccess && (
+          <Alert severity="success">
+            Konto zostało utworzone powodzeniem. Możesz się zalogować.
+          </Alert>
+        )}
+
         <TextField
           name="firstName"
           label="Imie"
@@ -85,6 +106,12 @@ const RegisterPage = () => {
           type="submit"
           variant="contained"
           size="large"
+          disabled={isLoading}
+          startIcon={
+            isLoading ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : undefined
+          }
           sx={{
             mt: 1,
             py: 1.2,
@@ -96,7 +123,7 @@ const RegisterPage = () => {
             },
           }}
         >
-          Zarejestruj sie
+          {isLoading ? "Rejestracja..." : "Zarejestruj sie"}
         </Button>
       </Stack>
     </AuthPageShell>

@@ -1,7 +1,9 @@
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
+  CircularProgress,
   Divider,
   FormControlLabel,
   Stack,
@@ -15,6 +17,9 @@ import useLoginForm from "../hooks/useLoginForm";
 const LoginPage = () => {
   const {
     values,
+    error,
+    isLoading,
+    isSuccess,
     handleInputChange,
     handleRememberMeChange,
     handleSubmit,
@@ -48,6 +53,9 @@ const LoginPage = () => {
       }
     >
       <Stack component="form" spacing={2.2} onSubmit={handleSubmit}>
+        {error && <Alert severity="error">{error}</Alert>}
+        {isSuccess && <Alert severity="success">Pomyślnie zalogowano!</Alert>}
+
         <TextField
           name="email"
           label="Adres e-mail"
@@ -107,6 +115,12 @@ const LoginPage = () => {
           type="submit"
           variant="contained"
           size="large"
+          disabled={isLoading}
+          startIcon={
+            isLoading ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : undefined
+          }
           sx={{
             mt: 1,
             py: 1.2,
@@ -118,7 +132,7 @@ const LoginPage = () => {
             },
           }}
         >
-          Zaloguj sie
+          {isLoading ? "Logowanie..." : "Zaloguj sie"}
         </Button>
 
         <Divider sx={{ color: "#71839a", fontSize: 13, mt: 1 }}>lub</Divider>
