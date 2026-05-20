@@ -1,113 +1,187 @@
-import {
-  AppBar,
-  Box,
-  Button,
-  Container,
-  Stack,
-  Toolbar,
-  Typography,
-} from "@mui/material";
-import { Link as RouterLink, NavLink, Outlet } from "react-router-dom";
+import { AppBar, Box, Button, Container, Stack, Toolbar, Typography } from "@mui/material";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuthUser } from "../../hooks/useAuthUser";
+import { authApi } from "../../api/auth";
+import { authUserQueryKey } from "../../hooks/useAuthUser";
+import { Link as RouterLink, NavLink, Outlet, useNavigate } from "react-router-dom";
 
 const navLinks = [
-  { to: "/", label: "Glowna" },
-  { to: "/lekarze", label: "Lekarze" },
-  { to: "/poradnie", label: "Poradnie" },
-  { to: "/o-nas", label: "O nas" },
-  { to: "/kontakt", label: "Kontakt" },
+    { to: "/", label: "Glowna" },
+    { to: "/lekarze", label: "Lekarze" },
+    { to: "/poradnie", label: "Poradnie" },
+    { to: "/o-nas", label: "O nas" },
+    { to: "/kontakt", label: "Kontakt" },
 ];
 
 const MainLayout = () => {
-  return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f5f7fb" }}>
-      <AppBar position="sticky" elevation={0} sx={{ bgcolor: "#0b74c9" }}>
-        <Container maxWidth="xl">
-          <Toolbar disableGutters sx={{ minHeight: 72 }}>
-            <Typography
-              component={RouterLink}
-              to="/"
-              variant="h6"
-              sx={{
-                color: "white",
-                textDecoration: "none",
-                fontWeight: 700,
-                mr: 4,
-                letterSpacing: 0.4,
-              }}
-            >
-              MedReserve
-            </Typography>
+    const { data: user, isLoading } = useAuthUser();
+    const queryClient = useQueryClient();
+    const navigate = useNavigate();
 
-            <Stack direction="row" spacing={1} sx={{ flexGrow: 1 }}>
-              {navLinks.map((item) => (
-                <Button
-                  key={item.to}
-                  component={NavLink}
-                  to={item.to}
-                  sx={{
-                    color: "white",
-                    px: 1.5,
-                    fontSize: 14,
-                    fontWeight: 500,
-                    textTransform: "none",
-                    borderBottom: "2px solid transparent",
-                    borderRadius: 0,
-                    "&.active": {
-                      borderBottomColor: "white",
-                    },
-                  }}
-                >
-                  {item.label}
-                </Button>
-              ))}
-            </Stack>
+    const logoutMutation = useMutation({
+        mutationFn: () => authApi.logout(),
+        onSuccess: async () => {
+            queryClient.setQueryData(authUserQueryKey, null);
+            await queryClient.invalidateQueries({ queryKey: authUserQueryKey });
+            navigate("/login", { replace: true });
+        },
+    });
 
-            <Stack direction="row" spacing={1.2}>
-              <Button
-                component={RouterLink}
-                to="/login"
-                variant="outlined"
-                sx={{
-                  color: "white",
-                  borderColor: "rgba(255, 255, 255, 0.75)",
-                  textTransform: "none",
-                  fontWeight: 600,
-                  px: 2,
-                  "&:hover": {
-                    borderColor: "white",
-                    bgcolor: "rgba(255, 255, 255, 0.12)",
-                  },
-                }}
-              >
-                Zaloguj sie
-              </Button>
-              <Button
-                component={RouterLink}
-                to="/register"
-                variant="contained"
-                sx={{
-                  textTransform: "none",
-                  fontWeight: 700,
-                  px: 2,
-                  bgcolor: "white",
-                  color: "#0b74c9",
-                  "&:hover": {
-                    bgcolor: "#eef6ff",
-                  },
-                }}
-              >
-                Zarejestruj sie
-              </Button>
-            </Stack>
-          </Toolbar>
-        </Container>
-      </AppBar>
+    return (
+        <Box sx={{ minHeight: "100vh", bgcolor: "#f5f7fb" }}>
+            <AppBar position="sticky" elevation={0} sx={{ bgcolor: "#0b74c9" }}>
+                <Container maxWidth="xl">
+                    <Toolbar disableGutters sx={{ minHeight: 72 }}>
+                        <Typography
+                            component={RouterLink}
+                            to="/"
+                            variant="h6"
+                            sx={{
+                                color: "white",
+                                textDecoration: "none",
+                                fontWeight: 700,
+                                mr: 4,
+                                letterSpacing: 0.4,
+                            }}
+                        >
+                            MedReserve
+                        </Typography>
 
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Outlet />
-      </Container>
-    </Box>
-  );
+                        <Stack direction="row" spacing={1} sx={{ flexGrow: 1 }}>
+                            {navLinks.map((item) => (
+                                <Button
+                                    key={item.to}
+                                    component={NavLink}
+                                    to={item.to}
+                                    sx={{
+                                        color: "white",
+                                        px: 1.5,
+                                        fontSize: 14,
+                                        fontWeight: 500,
+                                        textTransform: "none",
+                                        borderBottom: "2px solid transparent",
+                                        borderRadius: 0,
+                                        "&.active": {
+                                            borderBottomColor: "white",
+                                        },
+                                    }}
+                                >
+                                    {item.label}
+                                </Button>
+                            ))}
+
+                            {!isLoading && user?.doctorProfileId ? (
+                                <>
+                                    <Button
+                                        component={NavLink}
+                                        to="/moje-przychodnie"
+                                        sx={{
+                                            color: "white",
+                                            px: 1.5,
+                                            fontSize: 14,
+                                            fontWeight: 500,
+                                            textTransform: "none",
+                                            borderBottom: "2px solid transparent",
+                                            borderRadius: 0,
+                                            "&.active": {
+                                                borderBottomColor: "white",
+                                            },
+                                        }}
+                                    >
+                                        Moje przychodnie
+                                    </Button>
+                                    <Button
+                                        component={NavLink}
+                                        to="/powiadomienia"
+                                        sx={{
+                                            color: "white",
+                                            px: 1.5,
+                                            fontSize: 14,
+                                            fontWeight: 500,
+                                            textTransform: "none",
+                                            borderBottom: "2px solid transparent",
+                                            borderRadius: 0,
+                                            "&.active": {
+                                                borderBottomColor: "white",
+                                            },
+                                        }}
+                                    >
+                                        Powiadomienia
+                                    </Button>
+                                </>
+                            ) : null}
+                        </Stack>
+
+                        {!isLoading && !user ? (
+                            <Stack direction="row" spacing={1.2}>
+                                <Button
+                                    component={RouterLink}
+                                    to="/login"
+                                    variant="outlined"
+                                    sx={{
+                                        color: "white",
+                                        borderColor: "rgba(255, 255, 255, 0.75)",
+                                        textTransform: "none",
+                                        fontWeight: 600,
+                                        px: 2,
+                                        "&:hover": {
+                                            borderColor: "white",
+                                            bgcolor: "rgba(255, 255, 255, 0.12)",
+                                        },
+                                    }}
+                                >
+                                    Zaloguj sie
+                                </Button>
+                                <Button
+                                    component={RouterLink}
+                                    to="/register"
+                                    variant="contained"
+                                    sx={{
+                                        textTransform: "none",
+                                        fontWeight: 700,
+                                        px: 2,
+                                        bgcolor: "white",
+                                        color: "#0b74c9",
+                                        "&:hover": {
+                                            bgcolor: "#eef6ff",
+                                        },
+                                    }}
+                                >
+                                    Zarejestruj sie
+                                </Button>
+                            </Stack>
+                        ) : null}
+
+                        {!isLoading && user ? (
+                            <Stack direction="row" spacing={1.2}>
+                                <Button
+                                    variant="contained"
+                                    onClick={() => logoutMutation.mutate()}
+                                    disabled={logoutMutation.isPending}
+                                    sx={{
+                                        textTransform: "none",
+                                        fontWeight: 700,
+                                        px: 2,
+                                        bgcolor: "white",
+                                        color: "#0b74c9",
+                                        "&:hover": {
+                                            bgcolor: "#eef6ff",
+                                        },
+                                    }}
+                                >
+                                    {logoutMutation.isPending ? "Wylogowywanie..." : "Wyloguj"}
+                                </Button>
+                            </Stack>
+                        ) : null}
+                    </Toolbar>
+                </Container>
+            </AppBar>
+
+            <Container maxWidth="xl" sx={{ py: 4 }}>
+                <Outlet />
+            </Container>
+        </Box>
+    );
 };
 
 export default MainLayout;

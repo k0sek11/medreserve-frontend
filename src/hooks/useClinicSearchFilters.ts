@@ -1,35 +1,32 @@
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
-export type DoctorSearchFilters = {
+export type ClinicSearchFilters = {
+    name: string;
+    location: string;
     specializationId: string;
-    cityId: string;
-    date: string;
-    priceMax: string;
     sort: string;
     page: string;
 };
 
-const DEFAULT_SORT = "priceAsc";
+const DEFAULT_SORT = "nameAsc";
 const DEFAULT_PAGE = "1";
 
-const useDoctorSearchFilters = () => {
+const useClinicSearchFilters = () => {
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const filters = useMemo<DoctorSearchFilters>(
+    const filters = useMemo<ClinicSearchFilters>(
         () => ({
-            specializationId:
-                searchParams.get("specializationId") ?? searchParams.get("specialization") ?? "",
-            cityId: searchParams.get("cityId") ?? searchParams.get("city") ?? "",
-            date: searchParams.get("date") ?? "",
-            priceMax: searchParams.get("priceMax") ?? "",
+            name: searchParams.get("name") ?? "",
+            location: searchParams.get("location") ?? "",
+            specializationId: searchParams.get("specializationId") ?? "",
             sort: searchParams.get("sort") ?? DEFAULT_SORT,
             page: searchParams.get("page") ?? DEFAULT_PAGE,
         }),
         [searchParams],
     );
 
-    const updateFilter = (key: keyof DoctorSearchFilters, value: string) => {
+    const updateFilter = (key: keyof ClinicSearchFilters, value: string) => {
         setSearchParams((prevParams) => {
             const nextParams = new URLSearchParams(prevParams);
 
@@ -55,11 +52,7 @@ const useDoctorSearchFilters = () => {
         setSearchParams({ sort: DEFAULT_SORT, page: DEFAULT_PAGE });
     };
 
-    return {
-        filters,
-        updateFilter,
-        clearFilters,
-    };
+    return { filters, updateFilter, clearFilters };
 };
 
-export default useDoctorSearchFilters;
+export default useClinicSearchFilters;
