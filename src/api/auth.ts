@@ -39,4 +39,10 @@ export const authApi = {
         const response = await api.get("/api/Auth/me");
         return response.data;
     },
+    loginWithGoogleApi : async (googleToken: string) => {
+      const response = await api.post('/api/Auth/google-login', {
+        token: googleToken
+      });
+      return response.data; 
+    }  
 };
