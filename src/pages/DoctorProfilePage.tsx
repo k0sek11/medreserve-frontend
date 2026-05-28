@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import {
     Alert,
@@ -7,6 +7,7 @@ import {
     Card,
     CardContent,
     Chip,
+    Checkbox,
     FormControl,
     Dialog,
     DialogActions,
@@ -15,6 +16,7 @@ import {
     Grid,
     InputLabel,
     MenuItem,
+    ListItemText,
     Paper,
     Select,
     Stack,
@@ -123,6 +125,7 @@ const DoctorProfilePage = () => {
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const [bioDraft, setBioDraft] = useState<string | null>(null);
+    const [specializationDraft, setSpecializationDraft] = useState<number[] | null>(null);
     const [scheduleDraft, setScheduleDraft] = useState(createEmptyScheduleDraft());
     const [scheduleError, setScheduleError] = useState<string | null>(null);
     const [selectedAppointment, setSelectedAppointment] = useState<DoctorAppointmentEvent | null>(
@@ -158,6 +161,12 @@ const DoctorProfilePage = () => {
         enabled: isDoctor,
     });
 
+    const specializationsQuery = useQuery({
+        queryKey: ["doctor-specializations"],
+        queryFn: () => doctorsApi.getSpecializations(),
+        enabled: isDoctor,
+    });
+
     const appointmentNotificationsQuery = useQuery({
         queryKey: ["doctor-appointment-notifications"],
         queryFn: () => notificationsApi.getAppointmentNotifications(),
@@ -168,6 +177,7 @@ const DoctorProfilePage = () => {
         mutationFn: () =>
             doctorsApi.updateMyProfile({
                 bio: (bioDraft ?? profileQuery.data?.bio ?? "").trim() || null,
+                specializationIds: specializationDraft ?? undefined,
             }),
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["doctor-my-profile"] });
@@ -306,6 +316,33 @@ const DoctorProfilePage = () => {
     };
 
     const editingLabel = scheduleDraft.scheduleId ? "Edytuj grafik" : "Dodaj grafik";
+
+    const selectedSpecializationIds = useMemo(() => {
+        if (!profileQuery.data || !specializationsQuery.data) {
+            return [] as number[];
+        }
+
+        return specializationsQuery.data
+            .filter((item) => profileQuery.data.specializations.includes(item.name))
+            .map((item) => item.specializationId);
+    }, [profileQuery.data, specializationsQuery.data]);
+
+    useEffect(() => {
+        if (specializationDraft !== null) {
+            return;
+        }
+
+        if (!profileQuery.data || !specializationsQuery.data) {
+            return;
+        }
+
+        setSpecializationDraft(selectedSpecializationIds);
+    }, [
+        profileQuery.data,
+        selectedSpecializationIds,
+        specializationDraft,
+        specializationsQuery.data,
+    ]);
 
     const submitAppointmentType = () => {
         const name = appointmentTypeDraft.name.trim();
@@ -516,6 +553,64 @@ const DoctorProfilePage = () => {
                                     multiline
                                     fullWidth
                                 />
+
+                                <FormControl fullWidth disabled={specializationsQuery.isLoading}>
+                                    <InputLabel id="doctor-specializations-label">
+                                        Specjalizacje
+                                    </InputLabel>
+                                    <Select
+                                        labelId="doctor-specializations-label"
+                                        multiple
+                                        label="Specjalizacje"
+                                        value={specializationDraft ?? []}
+                                        onChange={(event) => {
+                                            const value = event.target.value;
+                                            setSpecializationDraft(
+                                                typeof value === "string"
+                                                    ? value.split(",").map(Number)
+                                                    : (value as number[]),
+                                            );
+                                        }}
+                                        renderValue={(selected) => {
+                                            const selectedIds = selected as number[];
+
+                                            if (selectedIds.length === 0) {
+                                                return "Wybierz specjalizacje";
+                                            }
+
+                                            return selectedIds
+                                                .map(
+                                                    (id) =>
+                                                        specializationsQuery.data?.find(
+                                                            (item) => item.specializationId === id,
+                                                        )?.name ?? String(id),
+                                                )
+                                                .join(", ");
+                                        }}
+                                    >
+                                        {specializationsQuery.data?.map((item) => {
+                                            const checked = (specializationDraft ?? []).includes(
+                                                item.specializationId,
+                                            );
+
+                                            return (
+                                                <MenuItem
+                                                    key={item.specializationId}
+                                                    value={item.specializationId}
+                                                >
+                                                    <Checkbox checked={checked} />
+                                                    <ListItemText primary={item.name} />
+                                                </MenuItem>
+                                            );
+                                        })}
+                                    </Select>
+                                </FormControl>
+
+                                {specializationsQuery.isError ? (
+                                    <Alert severity="error">
+                                        Nie udało się pobrać listy specjalizacji.
+                                    </Alert>
+                                ) : null}
 
                                 <Button
                                     variant="contained"
