@@ -2,18 +2,15 @@ import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { authApi } from "../api/auth";
+import { useNavigate } from "react-router-dom";
 
 export type RegisterFormValues = {
-  firstName: string;
-  lastName: string;
   email: string;
   password: string;
   confirmPassword: string;
 };
 
 const initialValues: RegisterFormValues = {
-  firstName: "",
-  lastName: "",
   email: "",
   password: "",
   confirmPassword: "",
@@ -22,14 +19,10 @@ const initialValues: RegisterFormValues = {
 const useRegisterForm = () => {
   const [values, setValues] = useState<RegisterFormValues>(initialValues);
   const [error, setError] = useState<string | null>(null);
-
+  const navigate = useNavigate();
   const registerMutation = useMutation({
     mutationFn: async (data: Omit<RegisterFormValues, "confirmPassword">) => {
       return await authApi.register(data);
-    },
-    onSuccess: () => {
-      // TODO: Przekierowanie do logowania lub automatyczne logowanie po udanej rejestracji
-      console.log("Pomyślnie zarejestrowano!");
     },
     onError: (err: any) => {
       console.error("Błąd podczas rejestracji:", err);
@@ -37,6 +30,9 @@ const useRegisterForm = () => {
         err.response?.data?.message || "Wystąpił błąd podczas rejestracji",
       );
     },
+    onSuccess: () => {
+      navigate("/login", { replace: true });
+    }
   });
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {

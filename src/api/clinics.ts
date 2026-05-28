@@ -62,6 +62,17 @@ export type CreateClinicJoinRequestDto = {
     message?: string;
 };
 
+export type CreateClinicRequest = {
+    name: string;
+    description?: string | null;
+    streetAddress: string;
+    openingHours?: string | null;
+    mapLocation?: string | null;
+    cityId: number;
+    phoneNumber?: string | null;
+    email?: string | null;
+};
+
 export type ClinicEditorDto = {
     clinicId: number;
     name: string;
@@ -117,6 +128,10 @@ export const clinicsApi = {
     },
     requestJoin: async (clinicId: number, data: CreateClinicJoinRequestDto) => {
         const response = await api.post(`/api/clinics/${clinicId}/join-request`, data);
+        return response.data;
+    },
+    create: async (data: CreateClinicRequest) => {
+        const response = await api.post("/api/clinics", data);
         return response.data;
     },
 };

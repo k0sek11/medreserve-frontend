@@ -1,0 +1,36 @@
+import type { ReactNode } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { Box, CircularProgress } from "@mui/material";
+import { useAuthUser } from "../../hooks/useAuthUser";
+
+const RequireActiveAccount = ({ children }: { children: ReactNode }) => {
+    const { data: user, isLoading } = useAuthUser();
+    const location = useLocation();
+
+    if (isLoading) {
+        return (
+            <Box
+                sx={{
+                    minHeight: "100vh",
+                    display: "grid",
+                    placeItems: "center",
+                    bgcolor: "#f5f7fb",
+                }}
+            >
+                <CircularProgress />
+            </Box>
+        );
+    }
+
+    if (!user) {
+        return <Navigate to="/login" replace state={{ from: location }} />;
+    }
+
+    if (!user.isActive) {
+        return <Navigate to="/uzupelnij-profil" replace />;
+    }
+
+    return children;
+};
+
+export default RequireActiveAccount;

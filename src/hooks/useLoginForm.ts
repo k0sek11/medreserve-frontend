@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { authApi } from "../api/auth";
+import { authApi, type UserSessionDto } from "../api/auth";
 import { authUserQueryKey } from "./useAuthUser";
 
 export type LoginFormValues = {
@@ -16,7 +16,7 @@ const initialValues: LoginFormValues = {
     rememberMe: false,
 };
 
-const useLoginForm = () => {
+const useLoginForm = (onLoggedIn?: (session: UserSessionDto) => void) => {
     const queryClient = useQueryClient();
     const [values, setValues] = useState<LoginFormValues>(initialValues);
     const [error, setError] = useState<string | null>(null);
@@ -25,9 +25,11 @@ const useLoginForm = () => {
         mutationFn: async (data: Omit<LoginFormValues, "rememberMe">) => {
             return await authApi.login(data);
         },
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: authUserQueryKey });
-            console.log("Pomyślnie zalogowano!", data);
+            onSuccess: async (data) => {
+                await queryClient.invalidateQueries({ queryKey: authUserQueryKey });
+                const session = await authApi.me();
+                onLoggedIn?.(session);
+                console.log("Pomyślnie zalogowano!", data);
         },
         onError: (err: any) => {
             console.error("Błąd logowania:", err);

@@ -1,8 +1,6 @@
 import { api } from "../lib/axios";
 
 export type RegisterRequest = {
-    firstName: string;
-    lastName: string;
     email: string;
     password: string;
 };
@@ -22,6 +20,16 @@ export type UserSessionDto = {
     doctorProfileId: number | null;
 };
 
+export type CompleteProfileRequest = {
+    profileType: "Doctor" | "Patient";
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    birthDate: string;
+    gender: string;
+    licenseNumber?: string | null;
+};
+
 export const authApi = {
     register: async (data: RegisterRequest) => {
         const response = await api.post("/api/Auth/register", data);
@@ -37,6 +45,10 @@ export const authApi = {
     },
     me: async (): Promise<UserSessionDto> => {
         const response = await api.get("/api/Auth/me");
+        return response.data;
+    },
+    completeProfile: async (data: CompleteProfileRequest) => {
+        const response = await api.post("/api/Auth/complete-profile", data);
         return response.data;
     },
     loginWithGoogleApi : async (googleToken: string) => {

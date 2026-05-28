@@ -53,24 +53,7 @@ const RegisterPage = () => {
           </Alert>
         )}
 
-        <TextField
-          name="firstName"
-          label="Imie"
-          autoComplete="given-name"
-          value={values.firstName}
-          onChange={handleInputChange}
-          fullWidth
-          required
-        />
-        <TextField
-          name="lastName"
-          label="Nazwisko"
-          autoComplete="family-name"
-          value={values.lastName}
-          onChange={handleInputChange}
-          fullWidth
-          required
-        />
+       
         <TextField
           name="email"
           label="Adres e-mail"

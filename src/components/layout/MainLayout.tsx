@@ -8,6 +8,7 @@ import { Link as RouterLink, NavLink, Outlet, useNavigate } from "react-router-d
 const navLinks = [
     { to: "/", label: "Glowna" },
     { to: "/lekarze", label: "Lekarze" },
+    { to: "/wizyty", label: "Moje wizyty" },
     { to: "/poradnie", label: "Poradnie" },
     { to: "/o-nas", label: "O nas" },
     { to: "/kontakt", label: "Kontakt" },
@@ -17,6 +18,14 @@ const MainLayout = () => {
     const { data: user, isLoading } = useAuthUser();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
+    const isDoctor = Boolean(user?.roles.includes("Doctor"));
+    const visibleNavLinks = navLinks.filter((item) => {
+        if (!isDoctor) {
+            return true;
+        }
+
+        return !["/", "/lekarze", "/wizyty"].includes(item.to);
+    });
 
     const logoutMutation = useMutation({
         mutationFn: () => authApi.logout(),
@@ -48,7 +57,7 @@ const MainLayout = () => {
                         </Typography>
 
                         <Stack direction="row" spacing={1} sx={{ flexGrow: 1 }}>
-                            {navLinks.map((item) => (
+                            {visibleNavLinks.map((item) => (
                                 <Button
                                     key={item.to}
                                     component={NavLink}
@@ -72,6 +81,24 @@ const MainLayout = () => {
 
                             {!isLoading && user?.doctorProfileId ? (
                                 <>
+                                    <Button
+                                        component={NavLink}
+                                        to="/moj-profil"
+                                        sx={{
+                                            color: "white",
+                                            px: 1.5,
+                                            fontSize: 14,
+                                            fontWeight: 500,
+                                            textTransform: "none",
+                                            borderBottom: "2px solid transparent",
+                                            borderRadius: 0,
+                                            "&.active": {
+                                                borderBottomColor: "white",
+                                            },
+                                        }}
+                                    >
+                                        Mój profil
+                                    </Button>
                                     <Button
                                         component={NavLink}
                                         to="/moje-przychodnie"

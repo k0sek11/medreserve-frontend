@@ -31,21 +31,22 @@ const LoginPage = () => {
     isSuccess,
     handleInputChange,
     handleRememberMeChange,
-    handleSubmit,
-    loginWithGoogle,
-    loginWithFacebook,
-  } = useLoginForm();
+    handleSubmit
+
+  } = useLoginForm((session) => {
+    navigate(session.isActive ? (session.roles.includes("Doctor") ? "/powiadomienia" : "/") : "/uzupelnij-profil", { replace: true });
+  });
 
   const loginMutation = useMutation({
     mutationFn: authApi.loginWithGoogleApi,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data?.token) {
         localStorage.setItem('token', data.token);
       }
 
-      queryClient.invalidateQueries({ queryKey: ['authUser'] });
-
-      navigate('/', { replace: true });
+      await queryClient.invalidateQueries({ queryKey: ['authUser'] });
+      const session = await authApi.me();
+      navigate(session.isActive ? (session.roles.includes("Doctor") ? "/powiadomienia" : "/") : "/uzupelnij-profil", { replace: true });
     },
     onError: (error) => {
       console.error("Backend odrzucił token Google lub wystąpił błąd sieci:", error);
@@ -61,7 +62,8 @@ const LoginPage = () => {
   };
 
   if (!isAuthLoading && user) {
-    return <Navigate to="/" replace />;
+    const nextRoute = user.isActive ? (user.roles.includes("Doctor") ? "/powiadomienia" : "/") : "/uzupelnij-profil";
+    return <Navigate to={nextRoute} replace />;
   }
 
 
