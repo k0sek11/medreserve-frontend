@@ -6,6 +6,7 @@ import {
     Chip,
     CircularProgress,
     Divider,
+    Button,
     Stack,
     Typography,
 } from "@mui/material";
@@ -200,7 +201,7 @@ const NotificationsPage = () => {
                                                         {notification.patientName}
                                                     </Typography>
                                                     <Typography sx={{ color: "#4f627a" }}>
-                                                        {notification.appointmentType} • {notification.date} • {notification.startTime}
+                                                        {notification.appointmentType ?? "Nieznane"} • {notification.date} • {notification.startTime}
                                                     </Typography>
                                                 </Box>
 

@@ -23,7 +23,7 @@ export type AppointmentSummaryDto = {
   doctorId: number;
   doctorName: string;
   doctorSpecialization: string;
-  appointmentType: string;
+  appointmentType: string | null;
   date: string;
   startTime: string;
   endTime: string;

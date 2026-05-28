@@ -17,7 +17,7 @@ export type AppointmentNotificationDto = {
     doctorId: number;
     doctorName: string;
     patientName: string;
-    appointmentType: string;
+    appointmentType: string | null;
     date: string;
     startTime: string;
     endTime: string;

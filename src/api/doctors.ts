@@ -21,6 +21,12 @@ export type DoctorAppointmentTypeDto = {
   durationMinutes: number;
 };
 
+export type CreateDoctorAppointmentTypeDto = {
+  name: string;
+  basePrice: number;
+  durationMinutes: number;
+};
+
 export type DoctorClinicDto = {
   clinicId: number;
   name: string;
@@ -172,6 +178,18 @@ export const doctorsApi = {
 
   updateMyProfile: async (data: UpdateDoctorProfileDto) => {
     const response = await api.put("/api/doctors/me/profile", data);
+    return response.data;
+  },
+
+  createMyAppointmentType: async (
+    data: CreateDoctorAppointmentTypeDto,
+  ): Promise<DoctorAppointmentTypeDto> => {
+    const response = await api.post("/api/doctors/me/appointment-types", data);
+    return response.data;
+  },
+
+  deleteMyAppointmentType: async (appointmentTypeId: number) => {
+    const response = await api.delete(`/api/doctors/me/appointment-types/${appointmentTypeId}`);
     return response.data;
   },
 

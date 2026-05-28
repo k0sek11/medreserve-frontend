@@ -49,7 +49,7 @@ const MyAppointmentsPage = () => {
                       {appointment.doctorName}
                     </Typography>
                     <Typography sx={{ color: "#4f627a" }}>
-                      {appointment.appointmentType} • {appointment.doctorSpecialization || "Brak specjalizacji"}
+                      {appointment.appointmentType ?? "Nieznane"} • {appointment.doctorSpecialization || "Brak specjalizacji"}
                     </Typography>
                   </Box>
 

@@ -128,7 +128,7 @@ const getAppointmentSpecialization = (
 
 const getAppointmentType = (appointment: BookAppointmentResultDto | AppointmentDetailDto) => {
   if ("appointmentType" in appointment) {
-    return appointment.appointmentType;
+    return appointment.appointmentType ?? "Nieznane";
   }
 
   return "-";

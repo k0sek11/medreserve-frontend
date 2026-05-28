@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import {
   Alert,
@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   Chip,
-  Divider,
   FormControl,
   Dialog,
   DialogActions,
@@ -25,9 +24,14 @@ import {
 import { DatePicker, LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Calendar as BigCalendar, dayjsLocalizer, type SlotInfo } from "react-big-calendar";
+import { Calendar as BigCalendar, dayjsLocalizer } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import { doctorsApi, type DoctorScheduleDto, type UpsertDoctorScheduleDto } from "../api/doctors";
+import {
+  doctorsApi,
+  type CreateDoctorAppointmentTypeDto,
+  type DoctorAppointmentTypeDto,
+  type UpsertDoctorScheduleDto,
+} from "../api/doctors";
 import { clinicsApi, type ClinicListItemDto } from "../api/clinics";
 import { notificationsApi, type AppointmentNotificationDto } from "../api/notifications";
 import { useAuth } from "../context/AuthContext";
@@ -62,15 +66,22 @@ const createEmptyScheduleDraft = () => ({
   validTo: null as Dayjs | null,
 });
 
+const createEmptyAppointmentTypeDraft = () => ({
+  name: "",
+  basePrice: "",
+  durationMinutes: "",
+});
+
 type AppointmentAction = "Confirmed" | "Cancelled";
 
 type DoctorAppointmentEvent = {
   id: number;
   notificationId: number;
   appointmentId: number;
+  title: string;
   patientName: string;
   doctorName: string;
-  appointmentType: string;
+  appointmentType: string | null;
   status: string;
   notificationStatus: string;
   message: string | null;
@@ -90,6 +101,7 @@ const buildAppointmentEvent = (appointment: AppointmentNotificationDto): DoctorA
     id: appointment.notificationId,
     notificationId: appointment.notificationId,
     appointmentId: appointment.appointmentId,
+    title: `${appointment.patientName} • ${appointment.appointmentType ?? "Nieznane"}`,
     patientName: appointment.patientName,
     doctorName: appointment.doctorName,
     appointmentType: appointment.appointmentType,
@@ -101,28 +113,19 @@ const buildAppointmentEvent = (appointment: AppointmentNotificationDto): DoctorA
   };
 };
 
-const CustomEvent = ({ event }: { event: any }) => {
-  return (
-    <div style={{ padding: '2px 4px', fontSize: '12px' }}>
-      <strong>{event.title}</strong>
-      <div style={{ marginTop: '2px' }}>
-        {event.patientName && <span>👤 {event.patientName}</span>}
-        <br />
-        {event.serviceType && <span>🛠 {event.serviceType}</span>}
-      </div>
-    </div>
-  );
-};
-
 const DoctorProfilePage = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [bio, setBio] = useState("");
+  const [bioDraft, setBioDraft] = useState<string | null>(null);
   const [scheduleDraft, setScheduleDraft] = useState(createEmptyScheduleDraft());
   const [scheduleError, setScheduleError] = useState<string | null>(null);
   const [selectedAppointment, setSelectedAppointment] = useState<DoctorAppointmentEvent | null>(null);
   const [appointmentAction, setAppointmentAction] = useState<AppointmentAction>("Confirmed");
   const [calendarDate, setCalendarDate] = useState(() => dayjs().startOf("week").toDate());
+  const [appointmentTypeModalOpen, setAppointmentTypeModalOpen] = useState(false);
+  const [appointmentTypeDraft, setAppointmentTypeDraft] = useState(createEmptyAppointmentTypeDraft());
+  const [appointmentTypeError, setAppointmentTypeError] = useState<string | null>(null);
+  const [appointmentTypeToDelete, setAppointmentTypeToDelete] = useState<DoctorAppointmentTypeDto | null>(null);
 
   const isDoctor = Boolean(user?.doctorProfileId);
 
@@ -150,16 +153,12 @@ const DoctorProfilePage = () => {
     enabled: isDoctor,
   });
 
-  useEffect(() => {
-    if (profileQuery.data) {
-      setBio(profileQuery.data.bio ?? "");
-    }
-  }, [profileQuery.data]);
-
   const saveProfileMutation = useMutation({
-    mutationFn: () => doctorsApi.updateMyProfile({ bio: bio.trim() || null }),
+    mutationFn: () =>
+      doctorsApi.updateMyProfile({ bio: (bioDraft ?? profileQuery.data?.bio ?? "").trim() || null }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["doctor-my-profile"] });
+      setBioDraft(null);
     },
   });
 
@@ -187,6 +186,29 @@ const DoctorProfilePage = () => {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["doctor-my-schedules"] });
       await queryClient.invalidateQueries({ queryKey: ["doctor-my-profile"] });
+    },
+  });
+
+  const createAppointmentTypeMutation = useMutation({
+    mutationFn: (payload: CreateDoctorAppointmentTypeDto) => doctorsApi.createMyAppointmentType(payload),
+    onSuccess: async () => {
+      setAppointmentTypeError(null);
+      setAppointmentTypeModalOpen(false);
+      setAppointmentTypeDraft(createEmptyAppointmentTypeDraft());
+      await queryClient.invalidateQueries({ queryKey: ["doctor-my-profile"] });
+    },
+    onError: (error) => {
+      setAppointmentTypeError(error instanceof Error ? error.message : "Nie udało się utworzyć typu wizyty.");
+    },
+  });
+
+  const deleteAppointmentTypeMutation = useMutation({
+    mutationFn: (appointmentTypeId: number) => doctorsApi.deleteMyAppointmentType(appointmentTypeId),
+    onSuccess: async () => {
+      setAppointmentTypeToDelete(null);
+      await queryClient.invalidateQueries({ queryKey: ["doctor-my-profile"] });
+      await queryClient.invalidateQueries({ queryKey: ["doctor-appointment-notifications"] });
+      await queryClient.invalidateQueries({ queryKey: ["appointment-notifications"] });
     },
   });
 
@@ -262,6 +284,33 @@ const DoctorProfilePage = () => {
   };
 
   const editingLabel = scheduleDraft.scheduleId ? "Edytuj grafik" : "Dodaj grafik";
+
+  const submitAppointmentType = () => {
+    const name = appointmentTypeDraft.name.trim();
+    const basePrice = Number(appointmentTypeDraft.basePrice);
+    const durationMinutes = Number(appointmentTypeDraft.durationMinutes);
+
+    if (!name) {
+      setAppointmentTypeError("Podaj nazwę typu wizyty.");
+      return;
+    }
+
+    if (!Number.isFinite(basePrice) || basePrice < 0) {
+      setAppointmentTypeError("Podaj prawidłową cenę.");
+      return;
+    }
+
+    if (!Number.isFinite(durationMinutes) || durationMinutes <= 0) {
+      setAppointmentTypeError("Podaj prawidłowy czas trwania w minutach.");
+      return;
+    }
+
+    createAppointmentTypeMutation.mutate({
+      name,
+      basePrice,
+      durationMinutes,
+    });
+  };
 
   const submitSchedule = () => {
     const hasClinic = Boolean(scheduleDraft.clinicId);
@@ -417,8 +466,8 @@ const DoctorProfilePage = () => {
 
                 <TextField
                   label="Bio"
-                  value={bio}
-                  onChange={(event) => setBio(event.target.value)}
+                  value={bioDraft ?? profileQuery.data?.bio ?? ""}
+                  onChange={(event) => setBioDraft(event.target.value)}
                   minRows={5}
                   multiline
                   fullWidth
@@ -438,7 +487,7 @@ const DoctorProfilePage = () => {
                     <Typography sx={{ fontWeight: 700, color: "#4f627a", mb: 0.8 }}>
                       Specjalizacje
                     </Typography>
-                    <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                    <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
                       {profileQuery.data.specializations.map((item) => (
                         <Chip key={item} label={item} sx={{ bgcolor: "#eef6ff", color: "#0b74c9" }} />
                       ))}
@@ -448,27 +497,74 @@ const DoctorProfilePage = () => {
 
                 {profileQuery.data?.appointmentTypes?.length ? (
                   <Box>
-                    <Typography sx={{ fontWeight: 700, color: "#4f627a", mb: 0.8 }}>
-                      Typy wizyt
-                    </Typography>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      sx={{ justifyContent: "space-between", alignItems: "center", mb: 0.8 }}
+                    >
+                      <Typography sx={{ fontWeight: 700, color: "#4f627a" }}>
+                        Typy wizyt
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        onClick={() => setAppointmentTypeModalOpen(true)}
+                        sx={{ textTransform: "none" }}
+                      >
+                        Dodaj typ wizyty
+                      </Button>
+                    </Stack>
                     <Stack spacing={1}>
                       {profileQuery.data.appointmentTypes.map((item) => (
                         <Card key={item.appointmentTypeId} variant="outlined" sx={{ borderRadius: 2 }}>
                           <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
-                            <Stack spacing={0.3}>
-                              <Typography sx={{ fontWeight: 700, color: "#11223a" }}>
-                                {item.name}
-                              </Typography>
-                              <Typography sx={{ color: "#4f627a", fontSize: 14 }}>
-                                {item.basePrice.toFixed(0)} zł • {item.durationMinutes} min
-                              </Typography>
+                            <Stack
+                              direction={{ xs: "column", sm: "row" }}
+                              spacing={1}
+                              sx={{ justifyContent: "space-between", alignItems: { sm: "center" } }}
+                            >
+                              <Stack spacing={0.3}>
+                                <Typography sx={{ fontWeight: 700, color: "#11223a" }}>
+                                  {item.name}
+                                </Typography>
+                                <Typography sx={{ color: "#4f627a", fontSize: 14 }}>
+                                  {item.basePrice.toFixed(0)} zł • {item.durationMinutes} min
+                                </Typography>
+                              </Stack>
+                              <Button
+                                color="error"
+                                variant="outlined"
+                                onClick={() => setAppointmentTypeToDelete(item)}
+                                sx={{ textTransform: "none" }}
+                              >
+                                Usuń
+                              </Button>
                             </Stack>
                           </CardContent>
                         </Card>
                       ))}
                     </Stack>
                   </Box>
-                ) : null}
+                ) : (
+                  <Box>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      sx={{ justifyContent: "space-between", alignItems: "center", mb: 0.8 }}
+                    >
+                      <Typography sx={{ fontWeight: 700, color: "#4f627a" }}>
+                        Typy wizyt
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        onClick={() => setAppointmentTypeModalOpen(true)}
+                        sx={{ textTransform: "none" }}
+                      >
+                        Dodaj typ wizyty
+                      </Button>
+                    </Stack>
+                    <Alert severity="info">Nie masz jeszcze żadnych typów wizyt.</Alert>
+                  </Box>
+                )}
               </Stack>
             </Paper>
           </Grid>
@@ -710,7 +806,7 @@ const DoctorProfilePage = () => {
                     {selectedAppointment.patientName}
                   </Typography>
                   <Typography sx={{ color: "#4f627a" }}>
-                    {selectedAppointment.appointmentType} • {dayjs(selectedAppointment.start).format("DD.MM.YYYY HH:mm")}
+                    {selectedAppointment.appointmentType ?? "Nieznane"} • {dayjs(selectedAppointment.start).format("DD.MM.YYYY HH:mm")}
                   </Typography>
                 </Box>
 
@@ -754,6 +850,113 @@ const DoctorProfilePage = () => {
               sx={{ textTransform: "none", fontWeight: 700 }}
             >
               {updateAppointmentStatusMutation.isPending ? "Zapisywanie..." : "Zatwierdź"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={Boolean(appointmentTypeToDelete)}
+          onClose={() => setAppointmentTypeToDelete(null)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle sx={{ fontWeight: 800, color: "#11223a" }}>Usuń typ wizyty</DialogTitle>
+          <DialogContent dividers>
+            <Stack spacing={1.5} sx={{ pt: 0.5 }}>
+              <Alert severity="warning">
+                Usunięcie typu wizyty nie skasuje historii wizyt. W istniejących wpisach nazwa typu będzie widoczna jako „Nieznane”.
+              </Alert>
+              <Typography sx={{ color: "#4f627a" }}>
+                Czy na pewno chcesz usunąć typ wizyty {appointmentTypeToDelete?.name ?? ""}?
+              </Typography>
+            </Stack>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, py: 2 }}>
+            <Button
+              onClick={() => setAppointmentTypeToDelete(null)}
+              sx={{ textTransform: "none" }}
+            >
+              Anuluj
+            </Button>
+            <Button
+              color="error"
+              variant="contained"
+              onClick={() => {
+                if (appointmentTypeToDelete) {
+                  deleteAppointmentTypeMutation.mutate(appointmentTypeToDelete.appointmentTypeId);
+                }
+              }}
+              disabled={deleteAppointmentTypeMutation.isPending}
+              sx={{ textTransform: "none", fontWeight: 700 }}
+            >
+              {deleteAppointmentTypeMutation.isPending ? "Usuwanie..." : "Usuń"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={appointmentTypeModalOpen}
+          onClose={() => {
+            setAppointmentTypeModalOpen(false);
+            setAppointmentTypeError(null);
+          }}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle sx={{ fontWeight: 800, color: "#11223a" }}>Dodaj typ wizyty</DialogTitle>
+          <DialogContent dividers>
+            <Stack spacing={2} sx={{ pt: 0.5 }}>
+              {appointmentTypeError ? <Alert severity="error">{appointmentTypeError}</Alert> : null}
+              <TextField
+                label="Nazwa"
+                value={appointmentTypeDraft.name}
+                onChange={(event) => {
+                  setAppointmentTypeDraft((current) => ({ ...current, name: event.target.value }));
+                }}
+                fullWidth
+              />
+              <TextField
+                label="Cena"
+                type="number"
+                slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
+                value={appointmentTypeDraft.basePrice}
+                onChange={(event) => {
+                  setAppointmentTypeDraft((current) => ({ ...current, basePrice: event.target.value }));
+                }}
+                fullWidth
+              />
+              <TextField
+                label="Czas trwania w minutach"
+                type="number"
+                slotProps={{ htmlInput: { min: 1, step: 1 } }}
+                value={appointmentTypeDraft.durationMinutes}
+                onChange={(event) => {
+                  setAppointmentTypeDraft((current) => ({
+                    ...current,
+                    durationMinutes: event.target.value,
+                  }));
+                }}
+                fullWidth
+              />
+            </Stack>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, py: 2 }}>
+            <Button
+              onClick={() => {
+                setAppointmentTypeModalOpen(false);
+                setAppointmentTypeError(null);
+              }}
+              sx={{ textTransform: "none" }}
+            >
+              Anuluj
+            </Button>
+            <Button
+              variant="contained"
+              onClick={submitAppointmentType}
+              disabled={createAppointmentTypeMutation.isPending}
+              sx={{ textTransform: "none", fontWeight: 700 }}
+            >
+              {createAppointmentTypeMutation.isPending ? "Zapisywanie..." : "Utwórz"}
             </Button>
           </DialogActions>
         </Dialog>
