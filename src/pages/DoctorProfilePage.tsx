@@ -38,6 +38,7 @@ import {
 import { clinicsApi, type ClinicListItemDto } from "../api/clinics";
 import { notificationsApi, type AppointmentNotificationDto } from "../api/notifications";
 import { useAuth } from "../context/AuthContext";
+import { OfflinePaymentAction } from "../components/Payment/OfflinePaymentAction";
 
 const calendarLocalizer = dayjsLocalizer(dayjs);
 
@@ -93,10 +94,13 @@ type DoctorAppointmentEvent = {
     message: string | null;
     start: Date;
     end: Date;
-};
 
+    paymentId?: number | null;
+    paymentStatus?: string | null;
+    paymentMethod?: string | null;
+};
 const buildAppointmentEvent = (
-    appointment: AppointmentNotificationDto,
+    appointment: AppointmentNotificationDto & { paymentId?: number; paymentStatus?: string; paymentMethod?: string }, 
 ): DoctorAppointmentEvent | null => {
     const start = dayjs(`${appointment.date}T${appointment.startTime}`);
     const end = dayjs(`${appointment.date}T${appointment.endTime}`);
@@ -118,6 +122,10 @@ const buildAppointmentEvent = (
         message: appointment.message,
         start: start.toDate(),
         end: end.toDate(),
+
+        paymentId: appointment.paymentId,
+        paymentStatus: appointment.paymentStatus,
+        paymentMethod: appointment.paymentMethod,
     };
 };
 
@@ -1071,65 +1079,78 @@ const DoctorProfilePage = () => {
                         Szczegóły wizyty
                     </DialogTitle>
                     <DialogContent dividers>
-                        {selectedAppointment ? (
-                            <Stack spacing={2} sx={{ pt: 0.5 }}>
-                                <Box>
-                                    <Typography
-                                        sx={{ fontWeight: 800, color: "#11223a", fontSize: 18 }}
-                                    >
-                                        {selectedAppointment.patientName}
-                                    </Typography>
-                                    <Typography sx={{ color: "#4f627a" }}>
-                                        {selectedAppointment.appointmentType ?? "Nieznane"} •{" "}
-                                        {dayjs(selectedAppointment.start).format(
-                                            "DD.MM.YYYY HH:mm",
-                                        )}
-                                    </Typography>
-                                </Box>
+    {selectedAppointment ? (
+        <Stack spacing={2} sx={{ pt: 0.5 }}>
+            <Box>
+                <Typography sx={{ fontWeight: 800, color: "#11223a", fontSize: 18 }}>
+                    {selectedAppointment.patientName}
+                </Typography>
+                <Typography sx={{ color: "#4f627a" }}>
+                    {selectedAppointment.appointmentType ?? "Nieznane"} •{" "}
+                    {dayjs(selectedAppointment.start).format("DD.MM.YYYY HH:mm")}
+                </Typography>
+            </Box>
 
-                                <Box>
-                                    <Typography sx={{ color: "#4f627a", fontSize: 14 }}>
-                                        Lekarz
-                                    </Typography>
-                                    <Typography sx={{ fontWeight: 700 }}>
-                                        {selectedAppointment.doctorName}
-                                    </Typography>
-                                </Box>
+            <Box>
+                <Typography sx={{ color: "#4f627a", fontSize: 14 }}>Lekarz</Typography>
+                <Typography sx={{ fontWeight: 700 }}>
+                    {selectedAppointment.doctorName}
+                </Typography>
+            </Box>
 
-                                <Box>
-                                    <Typography sx={{ color: "#4f627a", fontSize: 14 }}>
-                                        Status
-                                    </Typography>
-                                    <Typography sx={{ fontWeight: 700 }}>
-                                        {selectedAppointment.status}
-                                    </Typography>
-                                </Box>
+            <Box>
+                <Typography sx={{ color: "#4f627a", fontSize: 14 }}>Status wizyty</Typography>
+                <Typography sx={{ fontWeight: 700 }}>
+                    {selectedAppointment.status}
+                </Typography>
+            </Box>
 
-                                {selectedAppointment.message ? (
-                                    <Alert severity="info">{selectedAppointment.message}</Alert>
-                                ) : null}
+            <Box sx={{ p: 2, bgcolor: "#f8f9fa", borderRadius: 2, border: "1px solid #e9ecef" }}>
+                <Typography sx={{ color: "#4f627a", fontSize: 14, mb: 0.5 }}>Rozliczenie</Typography>
+                
+                {selectedAppointment.paymentStatus === 'Paid' && (
+                    <Chip label="Opłacona" color="success" sx={{ fontWeight: 'bold' }} />
+                )}
 
-                                <FormControl fullWidth>
-                                    <InputLabel id="appointment-action-label">
-                                        Zmień status
-                                    </InputLabel>
-                                    <Select
-                                        labelId="appointment-action-label"
-                                        label="Zmień status"
-                                        value={appointmentAction}
-                                        onChange={(event) =>
-                                            setAppointmentAction(
-                                                event.target.value as AppointmentAction,
-                                            )
-                                        }
-                                    >
-                                        <MenuItem value="Confirmed">Zaakceptowano</MenuItem>
-                                        <MenuItem value="Cancelled">Anuluj</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Stack>
-                        ) : null}
-                    </DialogContent>
+                {selectedAppointment.paymentStatus === 'Pending' && selectedAppointment.paymentMethod === 'Offline' && selectedAppointment.paymentId && (
+                    <Box sx={{ mt: 1 }}>
+                        <Chip label="Oczekuje na zapłatę w placówce" color="warning" sx={{ mb: 2, fontWeight: 'bold' }} />
+                        <OfflinePaymentAction paymentId={selectedAppointment.paymentId} />
+                    </Box>
+                )}
+
+                {selectedAppointment.paymentStatus === 'Pending' && selectedAppointment.paymentMethod === 'PayU' && (
+                    <Chip label="Oczekuje na płatność online (PayU)" color="warning" variant="outlined" />
+                )}
+
+                {!selectedAppointment.paymentStatus && (
+                    <Typography sx={{ color: "#888", fontStyle: "italic", fontSize: 14 }}>
+                        Brak informacji o płatnościach.
+                    </Typography>
+                )}
+            </Box>
+
+            {selectedAppointment.message ? (
+                <Alert severity="info">{selectedAppointment.message}</Alert>
+            ) : null}
+
+            <FormControl fullWidth>
+                <InputLabel id="appointment-action-label">Zmień status wizyty</InputLabel>
+                <Select
+                    labelId="appointment-action-label"
+                    label="Zmień status wizyty"
+                    value={appointmentAction}
+                    onChange={(event) =>
+                        setAppointmentAction(event.target.value as AppointmentAction)
+                    }
+                >
+                    <MenuItem value="Confirmed">Zaakceptowano</MenuItem>
+                    <MenuItem value="Cancelled">Anuluj</MenuItem>
+                </Select>
+            </FormControl>
+        </Stack>
+    ) : null}
+</DialogContent>
                     <DialogActions sx={{ px: 3, py: 2 }}>
                         <Button
                             onClick={() => setSelectedAppointment(null)}

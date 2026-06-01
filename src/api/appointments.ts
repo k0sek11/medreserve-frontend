@@ -30,13 +30,17 @@ export type AppointmentSummaryDto = {
     startTime: string;
     endTime: string;
     status: string;
+    paymentId?: number | null;
+  paymentStatus?: string | null;
+  paymentMethod?: string | null;
+  price: number;
 };
 
 export type AppointmentDetailDto = AppointmentSummaryDto & {
     createdAt: string;
 };
-
 export const appointmentsApi = {
+    // 1. Rezerwacja nowej wizyty
     book: async (data: BookAppointmentRequest): Promise<BookAppointmentResultDto> => {
         try {
             const response = await api.post("/api/appointments", data);
@@ -51,13 +55,33 @@ export const appointmentsApi = {
         }
     },
 
+    // 2. PRZYWRÓCONA METODA: Pobieranie wizyt zalogowanego pacjenta
     mine: async (): Promise<AppointmentSummaryDto[]> => {
-        const response = await api.get("/api/appointments/mine");
-        return response.data;
+        try {
+            const response = await api.get("/api/appointments/mine");
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error?.response?.data?.message ||
+                error?.response?.data?.title ||
+                "Nie udało się pobrać listy Twoich wizyt.";
+
+            throw new Error(message);
+        }
     },
 
-    getById: async (appointmentId: number): Promise<AppointmentDetailDto> => {
-        const response = await api.get(`/api/appointments/${appointmentId}`);
-        return response.data;
+    // 3. Sprawdzanie statusu płatności w bramce PayU Sandbox
+    checkPaymentStatus: async (appointmentId: number): Promise<{ isPaid: boolean }> => {
+        try {
+            const response = await api.post(`/api/payments/check-status/${appointmentId}`);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error?.response?.data?.message ||
+                error?.response?.data?.title ||
+                "Nie udało się zweryfikować statusu płatności w systemie PayU.";
+
+            throw new Error(message);
+        }
     },
 };
