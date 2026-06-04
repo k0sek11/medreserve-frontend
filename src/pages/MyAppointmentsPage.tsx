@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react"; 
-import { Alert, Box, Card, CardContent, Chip, Stack, Typography, Button, Dialog } from "@mui/material"; 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react"; 
+import { Alert, Box, Chip, Button, Dialog, Pagination } from "@mui/material"; 
+import { useQuery } from "@tanstack/react-query";
 import { Link as RouterLink } from "react-router-dom";
 import { appointmentsApi } from "../api/appointments";
-import { PaymentCheckout } from "../components/Payment/PaymentCheckout";
+import { PaymentMethodSelector } from "../components/Payment/PaymentMethodSelector";
+import { PaymentResultBanner } from "../components/Payment/PaymentResultBanner";
 
 const statusColors: Record<string, "default" | "primary" | "success" | "error" | "warning"> = {
   Pending: "warning",
@@ -11,40 +12,24 @@ const statusColors: Record<string, "default" | "primary" | "success" | "error" |
   Cancelled: "error",
 };
 
-const MyAppointmentsPage = () => {
-  const queryClient = useQueryClient();
+const statusTranslations: Record<string, string> = {
+  Pending: "Oczekuje na potwierdzenie",
+  Confirmed: "Potwierdzona",
+  Cancelled: "Anulowana",
+};
 
+const MyAppointmentsPage = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<number | null>(null);
+  
+  // NOWOŚĆ: Stan dla paginacji
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 5; // Ile wizyt chcemy na jednej stronie
 
-  const { data: appointments = [], isLoading } = useQuery({
+  const { data: appointments = [], isLoading, refetch } = useQuery({
     queryKey: ["my-appointments"],
     queryFn: () => appointmentsApi.mine(),
   });
-
-  useEffect(() => {
-    const autoCheckPayments = async () => {
-      const pendingPayUAppointments = appointments.filter(
-        (a) => a.paymentStatus === "Pending" && a.paymentMethod === "PayU"
-      );
-
-      for (const app of pendingPayUAppointments) {
-        try {
-          const result = await appointmentsApi.checkPaymentStatus(app.appointmentId);
-          
-          if (result.isPaid) {
-            queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
-          }
-        } catch (error) {
-          console.error("Automatyczna weryfikacja płatności nie powiodła się:", error);
-        }
-      }
-    };
-
-    if (appointments.length > 0) {
-      autoCheckPayments();
-    }
-  }, [appointments, queryClient]);
 
   const handleOpenPayment = (appointmentId: number) => {
     setSelectedAppointmentId(appointmentId);
@@ -55,112 +40,183 @@ const MyAppointmentsPage = () => {
     (a) => a.appointmentId === selectedAppointmentId
   );
 
+  // NOWOŚĆ: Logika paginacji (cięcie tablicy)
+  const totalPages = Math.ceil(appointments.length / itemsPerPage);
+  const paginatedAppointments = appointments.slice(
+    (page - 1) * itemsPerPage, 
+    page * itemsPerPage
+  );
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+    // Płynne przewinięcie do góry strony po zmianie zakładki
+    window.scrollTo({ top: 0, behavior: "smooth" }); 
+  };
+
   return (
-    <Box sx={{ py: { xs: 2, md: 4 } }}>
-      <Stack spacing={0.8} sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 800, color: "#11223a" }}>
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-8 lg:px-16">
+      
+      <div className="mb-8 max-w-4xl mx-auto">
+        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
           Moje wizyty
-        </Typography>
-        <Typography sx={{ color: "#4f627a" }}>
-          Tutaj widać wszystkie twoje wizyty i ich aktualny status.
-        </Typography>
-      </Stack>
+        </h1>
+        <p className="text-base text-slate-500 font-medium">
+          Zarządzaj swoimi rezerwacjami, sprawdzaj status i opłacaj wizyty.
+        </p>
+      </div>
 
-      {isLoading && <Alert severity="info">Ładowanie wizyt...</Alert>}
-      {!isLoading && appointments.length === 0 && (
-        <Alert severity="info">Nie masz jeszcze żadnych wizyt.</Alert>
-      )}
+      <div className="max-w-4xl mx-auto space-y-4"> {/* Zmniejszony odstęp między kartami (space-y-4) */}
+        {isLoading && (
+          <Alert severity="info" className="rounded-xl shadow-sm border border-blue-100">
+            Trwa ładowanie Twoich wizyt...
+          </Alert>
+        )}
+        
+        {!isLoading && appointments.length === 0 && (
+          <Box className="bg-white p-10 text-center rounded-2xl border border-slate-100 shadow-sm">
+            <span className="text-5xl block mb-3">🩺</span>
+            <h3 className="text-lg font-bold text-slate-800 mb-1">Brak zaplanowanych wizyt</h3>
+            <p className="text-slate-500 text-sm">Nie masz jeszcze żadnych rezerwacji w naszym systemie.</p>
+          </Box>
+        )}
 
-      <Stack spacing={2}>
-        {appointments.map((appointment) => (
-          <Card key={appointment.appointmentId} elevation={0} sx={{ border: "1px solid #dce5f2", borderRadius: 2 }}>
-            <CardContent>
-              <Stack spacing={1.3}>
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ justifyContent: "space-between", alignItems: { sm: "center" } }}>
-                  <Box>
-                    <Typography sx={{ fontWeight: 800, color: "#11223a", fontSize: 20 }}>
-                      {appointment.doctorName}
-                    </Typography>
-                    <Typography sx={{ color: "#4f627a" }}>
-                      {appointment.appointmentType ?? "Nieznane"} • {appointment.doctorSpecialization || "Brak specjalizacji"}
-                    </Typography>
-                  </Box>
+        {/* Używamy pociętej tablicy (paginatedAppointments) zamiast wszystkich */}
+        {paginatedAppointments.map((appointment) => (
+          <div 
+            key={appointment.appointmentId} 
+            className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 group"
+          >
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+              <div>
+                <h2 className="text-xl font-bold text-slate-800 group-hover:text-blue-600 transition-colors duration-300">
+                  {appointment.doctorName}
+                </h2>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mt-1">
+                  {appointment.appointmentType ?? "Nieznane"} <span className="text-slate-300 mx-1">•</span> {appointment.doctorSpecialization || "Brak specjalizacji"}
+                </p>
+              </div>
+              
+              <Chip
+                label={statusTranslations[appointment.status] ?? appointment.status}
+                color={statusColors[appointment.status] ?? "default"}
+                variant={appointment.status === 'Confirmed' ? 'filled' : 'outlined'}
+                size="small" // Mniejszy Chip
+                className="font-bold shadow-sm"
+                sx={{ borderRadius: '8px' }} 
+              />
+            </div>
 
-                  <Chip
-                    label={appointment.status}
-                    color={statusColors[appointment.status] ?? "default"}
-                    sx={{ fontWeight: 700 }}
-                  />
-                </Stack>
+            <div className="inline-flex items-center gap-1.5 bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-100 mb-4 font-medium text-sm">
+              <span>📅</span> 
+              <span>{appointment.date}</span>
+              <span className="text-slate-300 mx-1">|</span>
+              <span>🕒 {appointment.startTime} - {appointment.endTime}</span>
+            </div>
 
-                <Typography sx={{ color: "#23354d" }}>
-                  {appointment.date} • {appointment.startTime} - {appointment.endTime}
-                </Typography>
-                
-                <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap", gap: 1 }}>
-                  <Typography
-                    component={RouterLink}
-                    to={`/wizyty/potwierdzenie/${appointment.appointmentId}`}
-                    sx={{ color: "#0b74c9", textDecoration: "none", fontWeight: 700 }}
-                  >
-                    Zobacz podsumowanie
-                  </Typography>
+            {appointment.paymentStatus === 'Pending' && appointment.paymentMethod === 'PayU' && (
+              <div className="mb-4 rounded-xl overflow-hidden shadow-inner text-sm">
+                <PaymentResultBanner 
+                  appointmentId={appointment.appointmentId} 
+                  onRetry={() => { 
+                    refetch(); 
+                    handleOpenPayment(appointment.appointmentId); 
+                  }} 
+                />
+              </div>
+            )}
 
-                  {appointment.status !== "Cancelled" ? (
-                    <>
-                      {appointment.paymentStatus === 'Paid' && (
-                        <Chip label="✅ Opłacono" color="success" size="small" sx={{ fontWeight: 'bold' }} />
-                      )}
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-100">
+              
+              <RouterLink 
+                to={`/wizyty/potwierdzenie/${appointment.appointmentId}`}
+                className="text-blue-600 hover:text-blue-800 font-bold text-xs uppercase tracking-wide flex items-center gap-1 transition-colors"
+              >
+                Zobacz podsumowanie
+                <span className="text-base leading-none">&rarr;</span>
+              </RouterLink>
 
-                      {appointment.paymentStatus === 'Pending' && appointment.paymentMethod === 'Offline' && (
-                        <Chip label="⏳ Do zapłaty w gabinecie" color="warning" size="small" sx={{ fontWeight: 'bold' }} />
-                      )}
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                {appointment.status !== "Cancelled" && (
+                  <>
+                    {appointment.paymentStatus === 'Paid' && (
+                      <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg font-bold border border-emerald-200 flex items-center gap-1.5">
+                        <span>✅</span> Opłacono
+                      </div>
+                    )}
 
-                      {appointment.paymentStatus === 'Pending' && appointment.paymentMethod === 'PayU' && (
-                        <Chip 
-                          label="⏳ Automatyczna weryfikacja PayU..." 
-                          color="warning" 
-                          variant="outlined" 
-                          size="small" 
-                          sx={{ fontWeight: 'bold' }} 
-                        />
-                      )}
+                    {appointment.paymentStatus === 'Pending' && appointment.paymentMethod === 'Offline' && (
+                      <div className="bg-amber-50 text-amber-700 px-3 py-1.5 rounded-lg font-bold border border-amber-200 flex items-center gap-1.5">
+                        <span>⏳</span> Do zapłaty w gabinecie
+                      </div>
+                    )}
 
-                      {!appointment.paymentStatus && (
-                        <Button 
-                          variant="contained" 
-                          color="success" 
-                          size="small" 
-                          onClick={() => handleOpenPayment(appointment.appointmentId)}
-                          sx={{ fontWeight: 700 }}
-                        >
-                          💳 Opłać wizytę
-                        </Button>
-                      )}
-                    </>
-                  ) : null}
-                </Stack>
-              </Stack>
-            </CardContent>
-          </Card>
+                    {appointment.status === 'Pending' && !appointment.paymentStatus && (
+                      <div className="bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg font-bold border border-slate-200 flex items-center gap-1.5">
+                        <span>👨‍⚕️</span> Czeka na lekarza
+                      </div>
+                    )}
+
+                    {appointment.status === 'Confirmed' && (!appointment.paymentStatus || appointment.paymentStatus === 'Failed') && (
+                      <Button 
+                        variant="contained" 
+                        color={appointment.paymentStatus === 'Failed' ? "error" : "primary"}
+                        disableElevation 
+                        onClick={() => handleOpenPayment(appointment.appointmentId)}
+                        size="small"
+                        sx={{ 
+                          fontWeight: 700, 
+                          borderRadius: '8px', 
+                          textTransform: 'none', 
+                          px: 2, 
+                          py: 0.5 
+                        }}
+                      >
+                        {appointment.paymentStatus === 'Failed' ? '❌ Ponów płatność' : '💳 Opłać wizytę'}
+                      </Button>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
         ))}
-      </Stack>
+
+        {/* NOWOŚĆ: Komponent Paginacji na dole strony */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-8 pt-4">
+            <Pagination 
+              count={totalPages} 
+              page={page} 
+              onChange={handlePageChange} 
+              color="primary" 
+              shape="rounded" // Nowoczesny, lekko zaokrąglony kształt
+              size="large"
+            />
+          </div>
+        )}
+      </div>
 
       <Dialog 
         open={isPaymentModalOpen} 
         onClose={() => setIsPaymentModalOpen(false)}
         maxWidth="sm"
         fullWidth
+        sx={{
+          '& .MuiDialog-paper': {
+            borderRadius: '24px', 
+            padding: '16px'
+          }
+        }}
       >
         {selectedAppointmentId && (
-          <PaymentCheckout 
+          <PaymentMethodSelector 
             appointmentId={selectedAppointmentId} 
             amount={selectedAppointment?.price ?? 0} 
             onSuccessClose={() => setIsPaymentModalOpen(false)} 
           />
         )}
       </Dialog>
-    </Box>
+    </div>
   );
 };
 

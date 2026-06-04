@@ -84,4 +84,8 @@ export const appointmentsApi = {
             throw new Error(message);
         }
     },
+    getById: async (id: number): Promise<AppointmentDetailDto> => {
+    const response = await api.get(`/api/Appointments/${id}`); // upewnij się, że URL pasuje do Twojego backendu
+    return response.data;
+  },
 };

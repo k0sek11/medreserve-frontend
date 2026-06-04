@@ -8,7 +8,7 @@ interface Props {
   onSuccessClose?: () => void; 
 }
 
-export const PaymentCheckout = ({ appointmentId, amount, onSuccessClose }: Props) => {
+export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }: Props) => {
   const [selectedMethod, setSelectedMethod] = useState<'PAYU' | 'OFFLINE' | null>(null);
   const queryClient = useQueryClient();
 
