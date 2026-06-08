@@ -330,14 +330,6 @@ const DoctorDetailsPage = () => {
                                                         ))}
                                                     </Select>
 
-                                                    {selectedClinic ? (
-                                                        <Typography
-                                                            sx={{ color: "#5a6e86", fontSize: 13 }}
-                                                        >
-                                                            {selectedClinic.streetAddress}
-                                                        </Typography>
-                                                    ) : null}
-
                                                     <Select
                                                         value={selectedAppointmentTypeId ?? ""}
                                                         onChange={(event) => {
@@ -367,210 +359,229 @@ const DoctorDetailsPage = () => {
                                                         )}
                                                     </Select>
 
-                                                    <Paper
-                                                        elevation={0}
-                                                        sx={{
-                                                            border: "1px solid #e2eaf5",
-                                                            borderRadius: 2.5,
-                                                            p: 1.5,
-                                                            bgcolor: "#fbfdff",
-                                                        }}
-                                                    >
-                                                        <DateCalendar
-                                                            value={selectedDate}
-                                                            onChange={(value) => {
-                                                                if (value) {
-                                                                    setSelectedDate(
-                                                                        value.startOf("day"),
-                                                                    );
-                                                                    setSelectedSlotId(null);
-                                                                }
-                                                            }}
-                                                            onMonthChange={(month) =>
-                                                                setVisibleMonth(
-                                                                    month.startOf("month"),
-                                                                )
-                                                            }
-                                                            disablePast
-                                                            slots={{ day: BookingCalendarDay }}
-                                                            slotProps={{
-                                                                day: {
-                                                                    availableDays,
-                                                                } as BookingCalendarDayProps,
-                                                            }}
-                                                        />
-                                                    </Paper>
-                                                </Stack>
-                                            </Grid>
-
-                                            <Grid size={{ xs: 12, lg: 8 }}>
-                                                <Stack spacing={1.5}>
-                                                    <Box>
-                                                        <Typography
-                                                            sx={{
-                                                                fontWeight: 700,
-                                                                color: "#4f627a",
-                                                            }}
-                                                        >
-                                                            {selectedAppointmentType
-                                                                ? `${selectedAppointmentType.name} • ${selectedAppointmentType.durationMinutes} min`
-                                                                : "Wybierz typ wizyty"}
-                                                        </Typography>
-                                                        <Typography
-                                                            sx={{
-                                                                color: "#11223a",
-                                                                fontWeight: 700,
-                                                                fontSize: 20,
-                                                            }}
-                                                        >
-                                                            {selectedDate.format("DD.MM.YYYY")}
-                                                        </Typography>
-                                                    </Box>
-
-                                                    {selectedClinicId === null ? (
-                                                        <Alert severity="info">
-                                                            Wybierz przychodnię, aby zobaczyć
-                                                            dostępne terminy.
-                                                        </Alert>
-                                                    ) : availabilityQuery.isLoading ? (
-                                                        <Typography sx={{ color: "#4f627a" }}>
-                                                            Ładowanie dostępnych terminów...
-                                                        </Typography>
-                                                    ) : null}
-
                                                     {selectedClinicId !== null &&
-                                                    !availabilityQuery.isLoading &&
-                                                    availabilityQuery.data ? (
-                                                        <>
-                                                            <Stack
-                                                                direction="row"
-                                                                spacing={1}
-                                                                useFlexGap
-                                                                sx={{ flexWrap: "wrap" }}
+                                                        selectedAppointmentTypeId !== null && (
+                                                            <Paper
+                                                                elevation={0}
+                                                                sx={{
+                                                                    border: "1px solid #e2eaf5",
+                                                                    borderRadius: 2.5,
+                                                                    p: 1.5,
+                                                                    bgcolor: "#fbfdff",
+                                                                }}
                                                             >
-                                                                <Chip
-                                                                    label="Wolny"
-                                                                    sx={{
-                                                                        bgcolor: "#e8f7ee",
-                                                                        color: "#1f9b45",
+                                                                <DateCalendar
+                                                                    value={selectedDate}
+                                                                    onChange={(value) => {
+                                                                        if (value) {
+                                                                            setSelectedDate(
+                                                                                value.startOf(
+                                                                                    "day",
+                                                                                ),
+                                                                            );
+                                                                            setSelectedSlotId(null);
+                                                                        }
+                                                                    }}
+                                                                    onMonthChange={(month) =>
+                                                                        setVisibleMonth(
+                                                                            month.startOf("month"),
+                                                                        )
+                                                                    }
+                                                                    disablePast
+                                                                    slots={{
+                                                                        day: BookingCalendarDay,
+                                                                    }}
+                                                                    slotProps={{
+                                                                        day: {
+                                                                            availableDays,
+                                                                        } as BookingCalendarDayProps,
                                                                     }}
                                                                 />
-                                                                <Chip
-                                                                    label="Zajęty"
-                                                                    sx={{
-                                                                        bgcolor: "#edf2f7",
-                                                                        color: "#73859c",
-                                                                    }}
-                                                                />
-                                                            </Stack>
-
-                                                            {availableSlots.length === 0 ? (
-                                                                <Alert severity="info">
-                                                                    Brak wolnych terminów dla
-                                                                    wybranej daty i typu wizyty.
-                                                                </Alert>
-                                                            ) : (
-                                                                <Grid container spacing={1}>
-                                                                    {availabilityQuery.data.slots.map(
-                                                                        (slot) => (
-                                                                            <Grid
-                                                                                key={
-                                                                                    slot.timeSlotId
-                                                                                }
-                                                                                size={{
-                                                                                    xs: 6,
-                                                                                    sm: 4,
-                                                                                    md: 3,
-                                                                                }}
-                                                                            >
-                                                                                <Button
-                                                                                    fullWidth
-                                                                                    disabled={
-                                                                                        slot.isBooked
-                                                                                    }
-                                                                                    variant={
-                                                                                        selectedSlotId ===
-                                                                                        slot.timeSlotId
-                                                                                            ? "contained"
-                                                                                            : "outlined"
-                                                                                    }
-                                                                                    onClick={() => {
-                                                                                        if (
-                                                                                            !slot.isBooked
-                                                                                        ) {
-                                                                                            setSelectedSlotId(
-                                                                                                slot.timeSlotId,
-                                                                                            );
-                                                                                            setBookingMessage(
-                                                                                                null,
-                                                                                            );
-                                                                                        }
-                                                                                    }}
-                                                                                    sx={{
-                                                                                        textTransform:
-                                                                                            "none",
-                                                                                        minHeight: 46,
-                                                                                        justifyContent:
-                                                                                            "center",
-                                                                                        borderColor:
-                                                                                            slot.isBooked
-                                                                                                ? "#d7e0eb"
-                                                                                                : undefined,
-                                                                                        color: slot.isBooked
-                                                                                            ? "#9aa8ba"
-                                                                                            : undefined,
-                                                                                        bgcolor:
-                                                                                            slot.isBooked
-                                                                                                ? "#f5f7fb"
-                                                                                                : undefined,
-                                                                                    }}
-                                                                                >
-                                                                                    {dayjs(
-                                                                                        slot.startAt,
-                                                                                    ).format(
-                                                                                        "HH:mm",
-                                                                                    )}
-                                                                                </Button>
-                                                                            </Grid>
-                                                                        ),
-                                                                    )}
-                                                                </Grid>
-                                                            )}
-                                                        </>
-                                                    ) : null}
-
-                                                    {bookingMessage ? (
-                                                        <Alert severity="success">
-                                                            {bookingMessage}
-                                                        </Alert>
-                                                    ) : null}
-                                                    {bookMutation.isError ? (
-                                                        <Alert severity="error">
-                                                            Nie udało się zarezerwować wizyty.
-                                                        </Alert>
-                                                    ) : null}
-
-                                                    <Button
-                                                        variant="contained"
-                                                        disabled={
-                                                            selectedSlotId === null ||
-                                                            selectedAppointmentTypeId === null ||
-                                                            selectedClinicId === null ||
-                                                            bookMutation.isPending
-                                                        }
-                                                        onClick={() => bookMutation.mutate()}
-                                                        sx={{
-                                                            textTransform: "none",
-                                                            fontWeight: 700,
-                                                            alignSelf: "flex-start",
-                                                        }}
-                                                    >
-                                                        {bookMutation.isPending
-                                                            ? "Rezerwowanie..."
-                                                            : "Zarezerwuj wizytę"}
-                                                    </Button>
+                                                            </Paper>
+                                                        )}
                                                 </Stack>
                                             </Grid>
+
+                                            {selectedClinicId !== null &&
+                                                selectedAppointmentTypeId !== null && (
+                                                    <Grid size={{ xs: 12, lg: 8 }}>
+                                                        <Stack spacing={1.5}>
+                                                            <Box>
+                                                                <Typography
+                                                                    sx={{
+                                                                        fontWeight: 700,
+                                                                        color: "#4f627a",
+                                                                    }}
+                                                                >
+                                                                    {selectedAppointmentType
+                                                                        ? `${selectedAppointmentType.name} • ${selectedAppointmentType.durationMinutes} min`
+                                                                        : "Wybierz typ wizyty"}
+                                                                </Typography>
+                                                                <Typography
+                                                                    sx={{
+                                                                        color: "#11223a",
+                                                                        fontWeight: 700,
+                                                                        fontSize: 20,
+                                                                    }}
+                                                                >
+                                                                    {selectedDate.format(
+                                                                        "DD.MM.YYYY",
+                                                                    )}
+                                                                </Typography>
+                                                            </Box>
+
+                                                            {selectedClinicId === null ? (
+                                                                <Alert severity="info">
+                                                                    Wybierz przychodnię, aby
+                                                                    zobaczyć dostępne terminy.
+                                                                </Alert>
+                                                            ) : availabilityQuery.isLoading ? (
+                                                                <Typography
+                                                                    sx={{ color: "#4f627a" }}
+                                                                >
+                                                                    Ładowanie dostępnych terminów...
+                                                                </Typography>
+                                                            ) : null}
+
+                                                            {selectedClinicId !== null &&
+                                                            !availabilityQuery.isLoading &&
+                                                            availabilityQuery.data ? (
+                                                                <>
+                                                                    <Stack
+                                                                        direction="row"
+                                                                        spacing={1}
+                                                                        useFlexGap
+                                                                        sx={{ flexWrap: "wrap" }}
+                                                                    >
+                                                                        <Chip
+                                                                            label="Wolny"
+                                                                            sx={{
+                                                                                bgcolor: "#e8f7ee",
+                                                                                color: "#1f9b45",
+                                                                            }}
+                                                                        />
+                                                                        <Chip
+                                                                            label="Zajęty"
+                                                                            sx={{
+                                                                                bgcolor: "#edf2f7",
+                                                                                color: "#73859c",
+                                                                            }}
+                                                                        />
+                                                                    </Stack>
+
+                                                                    {availableSlots.length === 0 ? (
+                                                                        <Alert severity="info">
+                                                                            Brak wolnych terminów
+                                                                            dla wybranej daty i typu
+                                                                            wizyty.
+                                                                        </Alert>
+                                                                    ) : (
+                                                                        <Grid container spacing={1}>
+                                                                            {availabilityQuery.data.slots.map(
+                                                                                (slot) => (
+                                                                                    <Grid
+                                                                                        key={
+                                                                                            slot.timeSlotId
+                                                                                        }
+                                                                                        size={{
+                                                                                            xs: 6,
+                                                                                            sm: 4,
+                                                                                            md: 3,
+                                                                                        }}
+                                                                                    >
+                                                                                        <Button
+                                                                                            fullWidth
+                                                                                            disabled={
+                                                                                                slot.isBooked
+                                                                                            }
+                                                                                            variant={
+                                                                                                selectedSlotId ===
+                                                                                                slot.timeSlotId
+                                                                                                    ? "contained"
+                                                                                                    : "outlined"
+                                                                                            }
+                                                                                            onClick={() => {
+                                                                                                if (
+                                                                                                    !slot.isBooked
+                                                                                                ) {
+                                                                                                    setSelectedSlotId(
+                                                                                                        slot.timeSlotId,
+                                                                                                    );
+                                                                                                    setBookingMessage(
+                                                                                                        null,
+                                                                                                    );
+                                                                                                }
+                                                                                            }}
+                                                                                            sx={{
+                                                                                                textTransform:
+                                                                                                    "none",
+                                                                                                minHeight: 46,
+                                                                                                justifyContent:
+                                                                                                    "center",
+                                                                                                borderColor:
+                                                                                                    slot.isBooked
+                                                                                                        ? "#d7e0eb"
+                                                                                                        : undefined,
+                                                                                                color: slot.isBooked
+                                                                                                    ? "#9aa8ba"
+                                                                                                    : undefined,
+                                                                                                bgcolor:
+                                                                                                    slot.isBooked
+                                                                                                        ? "#f5f7fb"
+                                                                                                        : undefined,
+                                                                                            }}
+                                                                                        >
+                                                                                            {dayjs(
+                                                                                                slot.startAt,
+                                                                                            ).format(
+                                                                                                "HH:mm",
+                                                                                            )}
+                                                                                        </Button>
+                                                                                    </Grid>
+                                                                                ),
+                                                                            )}
+                                                                        </Grid>
+                                                                    )}
+                                                                </>
+                                                            ) : null}
+
+                                                            {bookingMessage ? (
+                                                                <Alert severity="success">
+                                                                    {bookingMessage}
+                                                                </Alert>
+                                                            ) : null}
+                                                            {bookMutation.isError ? (
+                                                                <Alert severity="error">
+                                                                    Nie udało się zarezerwować
+                                                                    wizyty.
+                                                                </Alert>
+                                                            ) : null}
+
+                                                            <Button
+                                                                variant="contained"
+                                                                disabled={
+                                                                    selectedSlotId === null ||
+                                                                    selectedAppointmentTypeId ===
+                                                                        null ||
+                                                                    selectedClinicId === null ||
+                                                                    bookMutation.isPending
+                                                                }
+                                                                onClick={() =>
+                                                                    bookMutation.mutate()
+                                                                }
+                                                                sx={{
+                                                                    textTransform: "none",
+                                                                    fontWeight: 700,
+                                                                    alignSelf: "flex-start",
+                                                                }}
+                                                            >
+                                                                {bookMutation.isPending
+                                                                    ? "Rezerwowanie..."
+                                                                    : "Zarezerwuj wizytę"}
+                                                            </Button>
+                                                        </Stack>
+                                                    </Grid>
+                                                )}
                                         </Grid>
                                     )}
                                 </Stack>
