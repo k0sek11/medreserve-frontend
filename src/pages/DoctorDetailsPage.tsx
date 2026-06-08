@@ -212,7 +212,6 @@ const DoctorDetailsPage = () => {
                                     alt={profileQuery.data.fullName}
                                     sx={{ width: "100%", height: 320, objectFit: "cover" }}
                                 />
-                                <ChipRating value={profileQuery.data.rating} />
                             </Box>
 
                             <CardContent>
