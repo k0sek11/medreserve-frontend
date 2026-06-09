@@ -6,13 +6,13 @@ export type { DoctorAppointmentEvent };
 export type AppointmentAction = "Confirmed" | "Cancelled";
 
 export const weekdayOptions = [
-    { value: 1, label: "Poniedziałek" },
-    { value: 2, label: "Wtorek" },
-    { value: 3, label: "Środa" },
-    { value: 4, label: "Czwartek" },
-    { value: 5, label: "Piątek" },
-    { value: 6, label: "Sobota" },
-    { value: 7, label: "Niedziela" },
+    { value: 1, label: "Poniedziałek", labelKey: "monday" },
+    { value: 2, label: "Wtorek", labelKey: "tuesday" },
+    { value: 3, label: "Środa", labelKey: "wednesday" },
+    { value: 4, label: "Czwartek", labelKey: "thursday" },
+    { value: 5, label: "Piątek", labelKey: "friday" },
+    { value: 6, label: "Sobota", labelKey: "saturday" },
+    { value: 7, label: "Niedziela", labelKey: "sunday" },
 ] as const;
 
 export const toDateString = (value: Dayjs | null) => (value ? value.format("YYYY-MM-DD") : "");

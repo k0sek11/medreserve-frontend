@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { initPayuPayment, createOfflinePaymentIntent } from "../../api/paymentApi";
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }: Props) => {
+    const { t } = useTranslation();
     const [selectedMethod, setSelectedMethod] = useState<"PAYU" | "OFFLINE" | null>(null);
     const queryClient = useQueryClient();
 
@@ -17,17 +19,17 @@ export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }:
         onSuccess: (data) => {
             window.location.href = data.redirectUri;
         },
-        onError: () => alert("Wystąpił błąd podczas łączenia z systemem PayU."),
+        onError: () => alert(t("payment.payuError")),
     });
 
     const offlineMutation = useMutation({
         mutationFn: createOfflinePaymentIntent,
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
-            alert("Wybrano płatność na miejscu. Wizyta została zarezerwowana!");
+            alert(t("payment.offlineSuccess"));
             if (onSuccessClose) onSuccessClose();
         },
-        onError: () => alert("Nie udało się zapisać wyboru płatności."),
+        onError: () => alert(t("payment.offlineError")),
     });
 
     const handlePaymentSubmit = () => {
@@ -50,18 +52,22 @@ export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }:
                 backgroundColor: "#fff",
             }}
         >
-            <h2 style={{ marginTop: "0" }}>Finalizacja płatności</h2>
+            <h2 style={{ marginTop: "0" }}>{t("payment.finalizationTitle")}</h2>
             <p>
-                Kwota do zapłaty:{" "}
+                {t("payment.amount")}:{" "}
                 <strong style={{ fontSize: "18px", color: "#007bff" }}>
                     {amount.toFixed(2)} PLN
                 </strong>
             </p>
 
             <div
-                style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "20px" }}
+                style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "12px",
+                    marginTop: "20px",
+                }}
             >
-                {/* Opcja PayU */}
                 <label
                     style={{
                         border: selectedMethod === "PAYU" ? "2px solid #007bff" : "1px solid #ccc",
@@ -80,7 +86,7 @@ export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }:
                         checked={selectedMethod === "PAYU"}
                         onChange={() => setSelectedMethod("PAYU")}
                     />
-                    <strong>💳 Szybki przelew / BLIK (PayU)</strong>
+                    <strong>{t("payment.payuLabel")}</strong>
                 </label>
 
                 <label
@@ -102,7 +108,7 @@ export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }:
                         checked={selectedMethod === "OFFLINE"}
                         onChange={() => setSelectedMethod("OFFLINE")}
                     />
-                    <strong>🏥 Zapłacę na miejscu w gabinecie</strong>
+                    <strong>{t("payment.offlineLabel")}</strong>
                 </label>
             </div>
 
@@ -123,10 +129,10 @@ export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }:
                 }}
             >
                 {isLoading
-                    ? "Przetwarzanie..."
+                    ? t("payment.processing")
                     : selectedMethod === "PAYU"
-                      ? "Przejdź do PayU"
-                      : "Potwierdzam rezerwację"}
+                      ? t("payment.goPayu")
+                      : t("payment.confirmReservation")}
             </button>
         </div>
     );

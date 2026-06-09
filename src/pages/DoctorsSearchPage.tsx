@@ -18,23 +18,25 @@ import {
     Typography,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useDoctorSearch } from "../hooks/useDoctorSearch";
 import { Show } from "../components/shared/ShowHide";
 
 const sortOptions = [
-    { value: "priceAsc", label: "Cena rosnaco" },
-    { value: "priceDesc", label: "Cena malejaco" },
-    { value: "nameAsc", label: "Nazwisko A-Z" },
-    { value: "nameDesc", label: "Nazwisko Z-A" },
+    { value: "priceAsc", label: "doctors.sortOptions.priceAsc" },
+    { value: "priceDesc", label: "doctors.sortOptions.priceDesc" },
+    { value: "nameAsc", label: "doctors.sortOptions.nameAsc" },
+    { value: "nameDesc", label: "doctors.sortOptions.nameDesc" },
 ] as const;
 
 const DoctorsSearchPage = () => {
+    const { t } = useTranslation();
     const s = useDoctorSearch();
 
     return (
         <Box sx={{ py: { xs: 2, md: 4 } }}>
             <Typography variant="h4" sx={{ fontWeight: 800, color: "#11223a", mb: 0.8 }}>
-                Wyniki wyszukiwania lekarzy
+                {t("doctors.searchResults")}
             </Typography>
             <Grid container spacing={2.5}>
                 <Grid size={{ xs: 12, md: 4, lg: 3.4 }}>
@@ -50,7 +52,7 @@ const DoctorsSearchPage = () => {
                     >
                         <Stack spacing={2}>
                             <Typography sx={{ fontWeight: 700, color: "#11223a" }}>
-                                Filtry
+                                {t("common.filters")}
                             </Typography>
                             <Autocomplete
                                 options={s.cities}
@@ -62,7 +64,11 @@ const DoctorsSearchPage = () => {
                                 getOptionLabel={(o) => `${o.name} • ${o.district}`}
                                 isOptionEqualToValue={(o, v) => o.cityId === v.cityId}
                                 renderInput={(p) => (
-                                    <TextField {...p} label="Miasto" placeholder="Szukaj miasta" />
+                                    <TextField
+                                        {...p}
+                                        label={t("common.city")}
+                                        placeholder={t("doctors.cityPlaceholder")}
+                                    />
                                 )}
                             />
                             <Autocomplete
@@ -82,13 +88,13 @@ const DoctorsSearchPage = () => {
                                 renderInput={(p) => (
                                     <TextField
                                         {...p}
-                                        label="Specjalizacja"
-                                        placeholder="Szukaj specjalizacji"
+                                        label={t("common.specialization")}
+                                        placeholder={t("doctors.specializationPlaceholder")}
                                     />
                                 )}
                             />
                             <TextField
-                                label="Data"
+                                label={t("common.date")}
                                 type="date"
                                 value={s.filters.date}
                                 onChange={(e) => s.updateFilter("date", e.target.value)}
@@ -96,7 +102,7 @@ const DoctorsSearchPage = () => {
                                 fullWidth
                             />
                             <TextField
-                                label="Cena maksymalna"
+                                label={t("doctors.maxPrice")}
                                 type="number"
                                 value={s.filters.priceMax}
                                 onChange={(e) => s.updateFilter("priceMax", e.target.value)}
@@ -104,16 +110,16 @@ const DoctorsSearchPage = () => {
                                 slotProps={{ htmlInput: { min: 0, step: 10 } }}
                             />
                             <FormControl fullWidth>
-                                <InputLabel id="results-sort">Sortowanie</InputLabel>
+                                <InputLabel id="results-sort">{t("doctors.sortBy")}</InputLabel>
                                 <Select
                                     labelId="results-sort"
-                                    label="Sortowanie"
+                                    label={t("doctors.sortBy")}
                                     value={s.filters.sort}
                                     onChange={(e) => s.updateFilter("sort", e.target.value)}
                                 >
                                     {sortOptions.map((o) => (
                                         <MenuItem key={o.value} value={o.value}>
-                                            {o.label}
+                                            {t(o.label)}
                                         </MenuItem>
                                     ))}
                                 </Select>
@@ -123,7 +129,7 @@ const DoctorsSearchPage = () => {
                                 onClick={s.clearFilters}
                                 sx={{ textTransform: "none" }}
                             >
-                                Wyczyść filtry
+                                {t("common.clearFilters")}
                             </Button>
                         </Stack>
                     </Paper>
@@ -150,7 +156,7 @@ const DoctorsSearchPage = () => {
                                 >
                                     <CircularProgress size={20} />
                                     <Typography sx={{ color: "#4f627a" }}>
-                                        Ładowanie danych...
+                                        {t("doctors.loadingDoctors")}
                                     </Typography>
                                 </Stack>
                             </Paper>
@@ -166,7 +172,7 @@ const DoctorsSearchPage = () => {
                                 }}
                             >
                                 <Typography sx={{ color: "#4f627a" }}>
-                                    Brak wyników dla podanych filtrów.
+                                    {t("doctors.noResults")}
                                 </Typography>
                             </Paper>
                         </Show>
@@ -197,12 +203,13 @@ const DoctorsSearchPage = () => {
                                                     {d.fullName}
                                                 </Typography>
                                                 <Typography sx={{ color: "#4f627a" }}>
-                                                    {d.specialization || "Brak specjalizacji"} |{" "}
-                                                    {d.city}
+                                                    {d.specialization ||
+                                                        t("doctors.noSpecialization")}{" "}
+                                                    | {d.city}
                                                 </Typography>
                                             </Box>
                                             <Chip
-                                                label={`${d.lowestPrice.toFixed(0)} zł`}
+                                                label={`${d.lowestPrice.toFixed(0)} ${t("doctors.pricePrefix")}`}
                                                 sx={{
                                                     bgcolor: "#eef6ff",
                                                     color: "#0b74c9",
@@ -211,7 +218,8 @@ const DoctorsSearchPage = () => {
                                             />
                                         </Stack>
                                         <Typography sx={{ color: "#23354d" }}>
-                                            Ocena: {d.rating?.toFixed(1) ?? "brak danych"}
+                                            {t("doctors.rating")}:{" "}
+                                            {d.rating?.toFixed(1) ?? t("doctors.noRating")}
                                         </Typography>
                                         <Button
                                             variant="contained"
@@ -219,7 +227,7 @@ const DoctorsSearchPage = () => {
                                             to={`/lekarze/${d.doctorId}`}
                                             sx={{ textTransform: "none", alignSelf: "flex-start" }}
                                         >
-                                            Umów wizytę
+                                            {t("doctors.bookVisit")}
                                         </Button>
                                     </Stack>
                                 </CardContent>

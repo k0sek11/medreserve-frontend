@@ -1,16 +1,18 @@
 import { Alert, Button, Chip, Stack } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useConfirmation } from "../hooks/useConfirmation";
 import { statusTranslations, statusColors } from "../lib/appointmentStatus";
 import { getAppointmentDoctorName, getAppointmentSpecialization } from "../lib/appointmentHelpers";
 import { SummaryCard } from "../components/shared/SummaryCard";
 
 const AppointmentConfirmationPage = () => {
+    const { t } = useTranslation();
     const c = useConfirmation();
 
-    if (!c.hasValidId) return <ErrorScreen icon="🤷‍♂️" title="Nieprawidłowy numer wizyty" />;
-    if (c.isLoading) return <LoadingScreen />;
-    if (!c.appointment) return <ErrorScreen icon="❌" title="Nie udało się pobrać podsumowania" />;
+    if (!c.hasValidId) return <ErrorScreen icon="🤷‍♂️" title={t("confirmation.invalidId")} />;
+    if (c.isLoading) return <LoadingScreen t={t} />;
+    if (!c.appointment) return <ErrorScreen icon="❌" title={t("confirmation.loadError")} />;
 
     const a = c.appointment;
 
@@ -28,14 +30,11 @@ const AppointmentConfirmationPage = () => {
                         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
                             {c.title}
                         </h1>
-                        <p className="text-slate-500 font-medium">
-                            Poniżej znajdziesz unikalny numer rezerwacji oraz najważniejsze
-                            informacje o Twojej wizycie.
-                        </p>
+                        <p className="text-slate-500 font-medium">{t("confirmation.subtitle")}</p>
                     </div>
                     <div className="flex justify-center">
                         <Chip
-                            label={`Status: ${statusTranslations[a.status] ?? a.status}`}
+                            label={`${t("confirmation.statusPrefix")}: ${statusTranslations[a.status] ?? a.status}`}
                             color={statusColors[a.status] ?? "default"}
                             sx={{
                                 fontWeight: 800,
@@ -47,14 +46,23 @@ const AppointmentConfirmationPage = () => {
                         />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 bg-slate-50 p-4 sm:p-6 rounded-3xl border border-slate-100">
-                        <SummaryCard label="Numer wizyty" value={`#${a.appointmentId}`} />
-                        <SummaryCard label="Lekarz" value={getAppointmentDoctorName(a)} />
                         <SummaryCard
-                            label="Specjalizacja"
+                            label={t("confirmation.appointmentNumber")}
+                            value={`#${a.appointmentId}`}
+                        />
+                        <SummaryCard
+                            label={t("confirmation.doctor")}
+                            value={getAppointmentDoctorName(a)}
+                        />
+                        <SummaryCard
+                            label={t("confirmation.specialization")}
                             value={getAppointmentSpecialization(a)}
                         />
-                        <SummaryCard label="Data" value={a.date} />
-                        <SummaryCard label="Godzina" value={`${a.startTime} - ${a.endTime}`} />
+                        <SummaryCard label={t("confirmation.date")} value={a.date} />
+                        <SummaryCard
+                            label={t("confirmation.time")}
+                            value={`${a.startTime} - ${a.endTime}`}
+                        />
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3 pt-4 justify-center">
                         <Button
@@ -70,7 +78,7 @@ const AppointmentConfirmationPage = () => {
                                 py: 1.5,
                             }}
                         >
-                            Przejdź do moich wizyt
+                            {t("confirmation.goToAppointments")}
                         </Button>
                         <Button
                             component={RouterLink}
@@ -84,7 +92,7 @@ const AppointmentConfirmationPage = () => {
                                 py: 1.5,
                             }}
                         >
-                            Umów kolejną wizytę
+                            {t("confirmation.bookAnother")}
                         </Button>
                     </div>
                 </Stack>
@@ -102,11 +110,11 @@ const ErrorScreen = ({ icon, title }: { icon: string; title: string }) => (
     </div>
 );
 
-const LoadingScreen = () => (
+const LoadingScreen = ({ t }: { t: (key: string) => string }) => (
     <div className="min-h-screen bg-slate-50 py-12 px-4 flex justify-center">
         <div className="max-w-xl w-full bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
             <Alert severity="info" className="rounded-xl">
-                Ładowanie podsumowania wizyty...
+                {t("confirmation.loadingInfo")}
             </Alert>
         </div>
     </div>

@@ -17,10 +17,12 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { plPL } from "@mui/x-date-pickers/locales";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import { Navigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Show } from "../components/shared/ShowHide";
 import { useCreateClinic } from "../hooks/useCreateClinic";
 
 export const CreateClinicPage = () => {
+    const { t } = useTranslation();
     const c = useCreateClinic();
 
     if (c.shouldRedirect) return <Navigate to="/" replace />;
@@ -47,11 +49,10 @@ export const CreateClinicPage = () => {
                                 component="h1"
                                 sx={{ fontWeight: 800, color: "#11223a" }}
                             >
-                                Zarejestruj przychodnię
+                                {t("createClinic.title")}
                             </Typography>
                             <Typography sx={{ color: "#4f627a", mt: 1 }}>
-                                Uzupełnij dane podstawowe. Klinika zostanie utworzona jako aktywna i
-                                przypisana do Twojego profilu lekarza.
+                                {t("createClinic.subtitle")}
                             </Typography>
                         </Box>
 
@@ -61,7 +62,7 @@ export const CreateClinicPage = () => {
 
                         <Stack spacing={2}>
                             <TextField
-                                label="Nazwa przychodni"
+                                label={t("createClinic.clinicName")}
                                 name="name"
                                 value={c.formData.name}
                                 onChange={c.handleChange}
@@ -69,7 +70,7 @@ export const CreateClinicPage = () => {
                                 fullWidth
                             />
                             <TextField
-                                label="Opis"
+                                label={t("createClinic.description")}
                                 name="description"
                                 value={c.formData.description}
                                 onChange={c.handleChange}
@@ -78,7 +79,7 @@ export const CreateClinicPage = () => {
                                 fullWidth
                             />
                             <TextField
-                                label="Adres"
+                                label={t("createClinic.address")}
                                 name="streetAddress"
                                 value={c.formData.streetAddress}
                                 onChange={c.handleChange}
@@ -87,24 +88,26 @@ export const CreateClinicPage = () => {
                             />
 
                             <FormControl required fullWidth>
-                                <InputLabel id="city-select-label">Miasto</InputLabel>
+                                <InputLabel id="city-select-label">
+                                    {t("createClinic.city")}
+                                </InputLabel>
                                 <Select
                                     labelId="city-select-label"
                                     name="cityId"
                                     value={c.formData.cityId}
-                                    label="Miasto"
+                                    label={t("createClinic.city")}
                                     onChange={c.handleSelectChange}
                                     disabled={c.citiesQuery.isLoading || c.citiesQuery.isError}
                                 >
                                     <Show when={c.citiesQuery.isLoading}>
                                         <MenuItem disabled value="">
-                                            <CircularProgress size={20} sx={{ mr: 2 }} /> Ładowanie
-                                            miast...
+                                            <CircularProgress size={20} sx={{ mr: 2 }} />{" "}
+                                            {t("createClinic.loadingCities")}
                                         </MenuItem>
                                     </Show>
                                     <Show when={Boolean(c.citiesQuery.isError)}>
                                         <MenuItem disabled value="">
-                                            Błąd pobierania miast
+                                            {t("createClinic.citiesError")}
                                         </MenuItem>
                                     </Show>
                                     {c.citiesQuery.data?.map((city) => (
@@ -117,14 +120,14 @@ export const CreateClinicPage = () => {
 
                             <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
                                 <TimePicker
-                                    label="Godzina otwarcia"
+                                    label={t("createClinic.openingTime")}
                                     value={c.openingFrom}
                                     onChange={c.setOpeningFrom}
                                     ampm={false}
                                     slotProps={{ textField: { fullWidth: true, required: true } }}
                                 />
                                 <TimePicker
-                                    label="Godzina zamknięcia"
+                                    label={t("createClinic.closingTime")}
                                     value={c.openingTo}
                                     onChange={c.setOpeningTo}
                                     ampm={false}
@@ -134,28 +137,24 @@ export const CreateClinicPage = () => {
 
                             <Show when={c.openingHoursInvalid}>
                                 <Typography variant="body2" sx={{ color: "#b42318" }}>
-                                    Godzina zamknięcia musi być późniejsza niż otwarcie.
+                                    {t("createClinic.openingHoursInvalid")}
                                 </Typography>
                             </Show>
 
                             <TextField
-                                label="Telefon"
+                                label={t("common.phone")}
                                 name="phoneNumber"
                                 value={c.formData.phoneNumber}
                                 onChange={c.handleChange}
                                 type="tel"
                                 inputMode="tel"
-                                placeholder="np. +48 123 456 789"
+                                placeholder={t("createClinic.phonePlaceholder")}
                                 error={c.phoneError}
-                                helperText={
-                                    c.phoneError
-                                        ? "Podaj poprawny numer telefonu lub zostaw pole puste."
-                                        : ""
-                                }
+                                helperText={c.phoneError ? t("createClinic.phoneError") : ""}
                                 fullWidth
                             />
                             <TextField
-                                label="Email"
+                                label={t("common.email")}
                                 name="email"
                                 type="email"
                                 value={c.formData.email}
@@ -163,7 +162,7 @@ export const CreateClinicPage = () => {
                                 fullWidth
                             />
                             <TextField
-                                label="Lokalizacja na mapie"
+                                label={t("createClinic.mapLocation")}
                                 name="mapLocation"
                                 value={c.formData.mapLocation}
                                 onChange={c.handleChange}
@@ -180,8 +179,8 @@ export const CreateClinicPage = () => {
                                 sx={{ textTransform: "none", fontWeight: 700 }}
                             >
                                 {c.createClinicMutation.isPending
-                                    ? "Zapisywanie..."
-                                    : "Zapisz przychodnię"}
+                                    ? t("common.saving")
+                                    : t("createClinic.saveClinic")}
                             </Button>
                         </Stack>
                     </Stack>

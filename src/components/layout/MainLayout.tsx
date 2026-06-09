@@ -1,20 +1,31 @@
-import { AppBar, Box, Button, Container, Stack, Toolbar, Typography } from "@mui/material";
+import {
+    AppBar,
+    Box,
+    Button,
+    Container,
+    IconButton,
+    Stack,
+    Toolbar,
+    Typography,
+} from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useAuthUser } from "../../hooks/useAuthUser";
 import { authApi } from "../../api/auth";
 import { authUserQueryKey } from "../../hooks/useAuthUser";
 import { Link as RouterLink, NavLink, Outlet, useNavigate } from "react-router-dom";
 
 const navLinks = [
-    { to: "/", label: "Glowna" },
-    { to: "/lekarze", label: "Lekarze" },
-    { to: "/wizyty", label: "Moje wizyty" },
-    { to: "/poradnie", label: "Poradnie" },
-    { to: "/o-nas", label: "O nas" },
-    { to: "/kontakt", label: "Kontakt" },
+    { to: "/", labelKey: "nav.home" },
+    { to: "/lekarze", labelKey: "nav.doctors" },
+    { to: "/wizyty", labelKey: "nav.myAppointments" },
+    { to: "/poradnie", labelKey: "nav.clinics" },
+    { to: "/o-nas", labelKey: "nav.about" },
+    { to: "/kontakt", labelKey: "nav.contact" },
 ];
 
 const MainLayout = () => {
+    const { t, i18n } = useTranslation();
     const { data: user, isLoading } = useAuthUser();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
@@ -53,7 +64,7 @@ const MainLayout = () => {
                                 letterSpacing: 0.4,
                             }}
                         >
-                            MedReserve
+                            {t("layout.brandName")}
                         </Typography>
 
                         <Stack direction="row" spacing={1} sx={{ flexGrow: 1 }}>
@@ -75,7 +86,7 @@ const MainLayout = () => {
                                         },
                                     }}
                                 >
-                                    {item.label}
+                                    {t(item.labelKey)}
                                 </Button>
                             ))}
 
@@ -97,7 +108,7 @@ const MainLayout = () => {
                                             },
                                         }}
                                     >
-                                        Mój profil
+                                        {t("nav.profile")}
                                     </Button>
                                     <Button
                                         component={NavLink}
@@ -115,7 +126,7 @@ const MainLayout = () => {
                                             },
                                         }}
                                     >
-                                        Moje przychodnie
+                                        {t("nav.myClinics")}
                                     </Button>
                                     <Button
                                         component={NavLink}
@@ -133,10 +144,52 @@ const MainLayout = () => {
                                             },
                                         }}
                                     >
-                                        Powiadomienia
+                                        {t("nav.notifications")}
                                     </Button>
                                 </>
                             ) : null}
+                        </Stack>
+
+                        <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ml: 1 }}>
+                            <IconButton
+                                onClick={() => i18n.changeLanguage("pl")}
+                                size="small"
+                                sx={{
+                                    color:
+                                        i18n.language === "pl" ? "white" : "rgba(255,255,255,0.5)",
+                                    fontWeight: i18n.language === "pl" ? 800 : 500,
+                                    fontSize: 13,
+                                    minWidth: 36,
+                                    borderRadius: 1,
+                                    "&:hover": {
+                                        color: "white",
+                                        bgcolor: "rgba(255,255,255,0.15)",
+                                    },
+                                }}
+                            >
+                                PL
+                            </IconButton>
+                            <Typography sx={{ color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
+                                |
+                            </Typography>
+                            <IconButton
+                                onClick={() => i18n.changeLanguage("en")}
+                                size="small"
+                                sx={{
+                                    color:
+                                        i18n.language === "en" ? "white" : "rgba(255,255,255,0.5)",
+                                    fontWeight: i18n.language === "en" ? 800 : 500,
+                                    fontSize: 13,
+                                    minWidth: 36,
+                                    borderRadius: 1,
+                                    "&:hover": {
+                                        color: "white",
+                                        bgcolor: "rgba(255,255,255,0.15)",
+                                    },
+                                }}
+                            >
+                                EN
+                            </IconButton>
                         </Stack>
 
                         {!isLoading && !user ? (
@@ -157,7 +210,7 @@ const MainLayout = () => {
                                         },
                                     }}
                                 >
-                                    Zaloguj sie
+                                    {t("nav.login")}
                                 </Button>
                                 <Button
                                     component={RouterLink}
@@ -174,7 +227,7 @@ const MainLayout = () => {
                                         },
                                     }}
                                 >
-                                    Zarejestruj sie
+                                    {t("nav.register")}
                                 </Button>
                             </Stack>
                         ) : null}
@@ -196,7 +249,9 @@ const MainLayout = () => {
                                         },
                                     }}
                                 >
-                                    {logoutMutation.isPending ? "Wylogowywanie..." : "Wyloguj"}
+                                    {logoutMutation.isPending
+                                        ? t("common.saving")
+                                        : t("nav.logout")}
                                 </Button>
                             </Stack>
                         ) : null}

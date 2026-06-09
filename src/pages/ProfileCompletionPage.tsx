@@ -14,19 +14,21 @@ import {
 } from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Navigate, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import AuthPageShell from "../components/auth/AuthPageShell";
 import { RoleCard } from "../components/auth/RoleCard";
 import { authApi, type CompleteProfileRequest } from "../api/auth";
 import { useAuthUser, authUserQueryKey } from "../hooks/useAuthUser";
 import type { ProfileType } from "../types/profile";
 
-const genderOptions = [
-    { value: "Kobieta", label: "Kobieta" },
-    { value: "Mezczyzna", label: "Mężczyzna" },
-    { value: "Inne", label: "Inne" },
-];
-
 const ProfileCompletionPage = () => {
+    const { t } = useTranslation();
+    const genderOptions = [
+        { value: "Kobieta", label: t("profileCompletion.genderOptions.female") },
+        { value: "Mezczyzna", label: t("profileCompletion.genderOptions.male") },
+        { value: "Inne", label: t("profileCompletion.genderOptions.other") },
+    ];
+
     const { data: user, isLoading } = useAuthUser();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
@@ -60,7 +62,7 @@ const ProfileCompletionPage = () => {
     if (isLoading) {
         return (
             <Box sx={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
-                <Typography>Ładowanie...</Typography>
+                <Typography>{t("common.loading")}</Typography>
             </Box>
         );
     }
@@ -88,30 +90,30 @@ const ProfileCompletionPage = () => {
 
     return (
         <AuthPageShell
-            title="Dokończ konfigurację konta"
-            subtitle="Wybierz, czy zakładasz konto lekarza czy pacjenta, a następnie uzupełnij dane profilu."
+            title={t("profileCompletion.title")}
+            subtitle={t("profileCompletion.subtitle")}
             footer={
                 <Typography sx={{ color: "#4f627a", textAlign: "center" }}>
-                    Po zapisaniu profil zostanie aktywowany i będziesz mógł korzystać z aplikacji.
+                    {t("profileCompletion.footer")}
                 </Typography>
             }
         >
             <Stack spacing={2.5}>
                 <Box>
                     <Typography sx={{ fontWeight: 800, color: "#11223a", mb: 1 }}>
-                        Kim jesteś?
+                        {t("profileCompletion.whoAreYou")}
                     </Typography>
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
                         <RoleCard
                             active={profileType === "Doctor"}
-                            title="Lekarz"
-                            description="Profil lekarza, numer licencji i później grafik wizyt."
+                            title={t("profileCompletion.doctor")}
+                            description={t("profileCompletion.doctorDesc")}
                             onClick={() => setProfileType("Doctor")}
                         />
                         <RoleCard
                             active={profileType === "Patient"}
-                            title="Pacjent"
-                            description="Profil pacjenta do rezerwacji i śledzenia wizyt."
+                            title={t("profileCompletion.patient")}
+                            description={t("profileCompletion.patientDesc")}
                             onClick={() => setProfileType("Patient")}
                         />
                     </Stack>
@@ -128,28 +130,28 @@ const ProfileCompletionPage = () => {
                     }}
                 >
                     <TextField
-                        label="Imię"
+                        label={t("profileCompletion.firstNameLabel")}
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         fullWidth
                         required
                     />
                     <TextField
-                        label="Nazwisko"
+                        label={t("profileCompletion.lastNameLabel")}
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         fullWidth
                         required
                     />
                     <TextField
-                        label="Telefon"
+                        label={t("profileCompletion.phoneLabel")}
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         fullWidth
                         required
                     />
                     <TextField
-                        label="Data urodzenia"
+                        label={t("profileCompletion.birthDateLabel")}
                         type="date"
                         value={birthDate}
                         onChange={(e) => setBirthDate(e.target.value)}
@@ -158,10 +160,12 @@ const ProfileCompletionPage = () => {
                         required
                     />
                     <FormControl fullWidth required>
-                        <InputLabel id="gender-label">Płeć</InputLabel>
+                        <InputLabel id="gender-label">
+                            {t("profileCompletion.genderLabel")}
+                        </InputLabel>
                         <Select
                             labelId="gender-label"
-                            label="Płeć"
+                            label={t("profileCompletion.genderLabel")}
                             value={gender}
                             onChange={(e) => setGender(e.target.value)}
                         >
@@ -175,7 +179,7 @@ const ProfileCompletionPage = () => {
 
                     {profileType === "Doctor" && (
                         <TextField
-                            label="Numer licencji"
+                            label={t("profileCompletion.licenseNumberLabel")}
                             value={licenseNumber}
                             onChange={(e) => setLicenseNumber(e.target.value)}
                             fullWidth
@@ -184,9 +188,7 @@ const ProfileCompletionPage = () => {
                     )}
 
                     {completionMutation.isError && (
-                        <Alert severity="error">
-                            Nie udało się zapisać profilu. Sprawdź dane i spróbuj ponownie.
-                        </Alert>
+                        <Alert severity="error">{t("profileCompletion.saveError")}</Alert>
                     )}
 
                     <Button
@@ -196,7 +198,9 @@ const ProfileCompletionPage = () => {
                         disabled={!canSubmit || completionMutation.isPending}
                         sx={{ textTransform: "none", fontWeight: 700, py: 1.2 }}
                     >
-                        {completionMutation.isPending ? "Zapisywanie..." : "Zapisz i przejdź dalej"}
+                        {completionMutation.isPending
+                            ? t("common.saving")
+                            : t("profileCompletion.saveButton")}
                     </Button>
                 </Stack>
             </Stack>

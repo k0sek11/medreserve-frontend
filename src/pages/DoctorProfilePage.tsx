@@ -2,6 +2,7 @@ import { Box, Chip, Grid, Paper, Stack, Typography } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { plPL } from "@mui/x-date-pickers/locales";
+import { useTranslation } from "react-i18next";
 import { useDoctorProfile } from "../hooks/useDoctorProfile";
 import { DoctorBio } from "../components/DoctorProfileComponents/DoctorBio";
 import { DoctorCalendar } from "../components/DoctorProfileComponents/DoctorCalendar";
@@ -10,16 +11,17 @@ import { AppointmentTypesSection } from "../components/DoctorProfileComponents/A
 import { Show } from "../components/shared/ShowHide";
 
 const DoctorProfilePage = () => {
+    const { t } = useTranslation();
     const { isDoctor, profileQuery } = useDoctorProfile();
 
     if (!isDoctor) {
         return (
             <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: "1px solid #dce5f2" }}>
                 <Typography variant="h5" sx={{ fontWeight: 800, color: "#11223a", mb: 1 }}>
-                    Brak profilu lekarza
+                    {t("doctorProfile.noProfile")}
                 </Typography>
                 <Typography sx={{ color: "#4f627a" }}>
-                    To konto nie ma jeszcze przypisanego profilu lekarza.
+                    {t("doctorProfile.noProfileDesc")}
                 </Typography>
             </Paper>
         );
@@ -34,10 +36,10 @@ const DoctorProfilePage = () => {
             <Stack spacing={3}>
                 <Box>
                     <Typography variant="h4" sx={{ fontWeight: 800, color: "#11223a", mb: 0.8 }}>
-                        Mój profil lekarza
+                        {t("doctorProfile.myProfile")}
                     </Typography>
                     <Typography sx={{ color: "#4f627a" }}>
-                        Zarządzaj opisem profilu i grafikami przypisanymi do konkretnych przychodni.
+                        {t("doctorProfile.profileManagementDesc")}
                     </Typography>
                 </Box>
                 <Paper elevation={0} sx={{ p: 2.5, borderRadius: 3, border: "1px solid #dce5f2" }}>
@@ -56,7 +58,7 @@ const DoctorProfilePage = () => {
                                         <Typography
                                             sx={{ fontWeight: 700, color: "#4f627a", mb: 0.8 }}
                                         >
-                                            Specjalizacje
+                                            {t("doctorProfile.specializations")}
                                         </Typography>
                                         <Stack
                                             direction="row"

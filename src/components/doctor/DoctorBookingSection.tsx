@@ -5,7 +5,6 @@ import {
     Button,
     Chip,
     CircularProgress,
-    Grid,
     MenuItem,
     Paper,
     Select,
@@ -13,6 +12,7 @@ import {
     Typography,
 } from "@mui/material";
 import { DateCalendar } from "@mui/x-date-pickers";
+import { useTranslation } from "react-i18next";
 import { BookingCalendarDay, type BookingCalendarDayProps } from "./BookingCalendarDay";
 import { formatMoney } from "../../lib/formatMoney";
 import { Show } from "../shared/ShowHide";
@@ -40,6 +40,7 @@ export const DoctorBookingSection = ({
     bookMutation,
     resetSlot,
 }: Props) => {
+    const { t } = useTranslation();
     const profile = profileQuery.data;
 
     if (!profile) return null;
@@ -65,7 +66,6 @@ export const DoctorBookingSection = ({
         }
     };
 
-    const slotLines = groupSlotsByHour(availabilityQuery.data?.slots ?? []);
     const allSlots = [...(availabilityQuery.data?.slots ?? [])].sort((a, b) =>
         a.startAt.localeCompare(b.startAt),
     );
@@ -76,20 +76,18 @@ export const DoctorBookingSection = ({
                 <Stack spacing={2.5}>
                     <Box>
                         <Typography sx={{ fontWeight: 800, color: "#11223a", fontSize: 22 }}>
-                            Umów wizytę
+                            {t("doctorDetails.bookVisit")}
                         </Typography>
                         <Typography sx={{ color: "#4f627a" }}>
-                            Wybierz przychodnię, typ wizyty, a następnie datę i godzinę.
+                            {t("doctorDetails.bookingSubtitle")}
                         </Typography>
                     </Box>
 
                     <Show when={noClinics}>
-                        <Alert severity="info">
-                            Ten lekarz nie ma jeszcze przypisanej przychodni.
-                        </Alert>
+                        <Alert severity="info">{t("doctorDetails.noClinics")}</Alert>
                     </Show>
                     <Show when={!noClinics && noTypes}>
-                        <Alert severity="info">Ten lekarz nie ma przypisanych typów wizyt.</Alert>
+                        <Alert severity="info">{t("doctorDetails.noAppointmentTypes")}</Alert>
                     </Show>
 
                     <Show when={!noClinics && !noTypes}>
@@ -102,7 +100,7 @@ export const DoctorBookingSection = ({
                                     sx={{ minWidth: 240, flex: 1 }}
                                 >
                                     <MenuItem value="" disabled>
-                                        Wybierz przychodnię
+                                        {t("doctorDetails.selectClinic")}
                                     </MenuItem>
                                     {profile.clinics.map((c) => (
                                         <MenuItem key={c.clinicId} value={c.clinicId}>
@@ -118,7 +116,7 @@ export const DoctorBookingSection = ({
                                     sx={{ minWidth: 260, flex: 1 }}
                                 >
                                     <MenuItem value="" disabled>
-                                        Wybierz typ wizyty
+                                        {t("doctorDetails.selectAppointmentType")}
                                     </MenuItem>
                                     {profile.appointmentTypes.map((t) => (
                                         <MenuItem
@@ -184,7 +182,7 @@ export const DoctorBookingSection = ({
                                         >
                                             <CircularProgress size={18} />
                                             <Typography sx={{ color: "#4f627a", fontSize: 14 }}>
-                                                Ładowanie dostępnych terminów...
+                                                {t("doctorDetails.loadingSlots")}
                                             </Typography>
                                         </Stack>
                                     </Show>
@@ -197,12 +195,10 @@ export const DoctorBookingSection = ({
                                     >
                                         {availableSlots.length === 0 ? (
                                             <Alert severity="info" sx={{ mt: 1 }}>
-                                                Brak wolnych terminów dla wybranej daty i typu
-                                                wizyty.
+                                                {t("doctorDetails.noSlots")}
                                             </Alert>
                                         ) : (
                                             <Stack spacing={1}>
-                                                {/* Time slots as scrollable Chip row */}
                                                 <Box
                                                     sx={{
                                                         display: "flex",
@@ -256,7 +252,6 @@ export const DoctorBookingSection = ({
                                 </Box>
                             </Show>
 
-                            {/* Results and submit */}
                             <Show when={selectedSlotId !== null}>
                                 <Stack spacing={1.5} sx={{ pt: 1 }}>
                                     <Show when={Boolean(bookingMessage)}>
@@ -264,7 +259,7 @@ export const DoctorBookingSection = ({
                                     </Show>
                                     <Show when={bookMutation.isError}>
                                         <Alert severity="error">
-                                            Nie udało się zarezerwować wizyty.
+                                            {t("doctorDetails.bookingError")}
                                         </Alert>
                                     </Show>
                                     <Button
@@ -280,8 +275,8 @@ export const DoctorBookingSection = ({
                                         }}
                                     >
                                         {bookMutation.isPending
-                                            ? "Rezerwowanie..."
-                                            : `Zarezerwuj wizytę ${selectedDate.format("DD.MM")} o ${selectedSlotId ? dayjs(selectedSlotId).format("HH:mm") : ""}`}
+                                            ? t("doctorDetails.reserving")
+                                            : `${t("doctorDetails.reserveButton")} ${selectedDate.format("DD.MM")} ${t("doctorProfile.from")} ${selectedSlotId ? dayjs(selectedSlotId).format("HH:mm") : ""}`}
                                     </Button>
                                 </Stack>
                             </Show>
@@ -292,14 +287,3 @@ export const DoctorBookingSection = ({
         </Stack>
     );
 };
-
-/** Group slots by hour for display - unused for now but available for future use */
-function groupSlotsByHour(slots: { startAt: string; endAt: string; isBooked: boolean }[]) {
-    const groups: Record<string, { startAt: string; endAt: string; isBooked: boolean }[]> = {};
-    for (const slot of slots) {
-        const hour = dayjs(slot.startAt).format("HH");
-        if (!groups[hour]) groups[hour] = [];
-        groups[hour].push(slot);
-    }
-    return groups;
-}

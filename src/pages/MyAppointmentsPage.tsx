@@ -1,20 +1,22 @@
 import { Dialog, Pagination } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { useMyAppointments } from "../hooks/useMyAppointments";
 import { Show } from "../components/shared/ShowHide";
 import { PaymentMethodSelector } from "../components/Payment/PaymentMethodSelector";
 import { AppointmentCard } from "../components/appointment/AppointmentCard";
 
 const MyAppointmentsPage = () => {
+    const { t } = useTranslation();
     const h = useMyAppointments();
 
     return (
         <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-8 lg:px-16">
             <div className="mb-8 max-w-4xl mx-auto">
                 <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-                    Moje wizyty
+                    {t("appointments.myAppointments")}
                 </h1>
                 <p className="text-base text-slate-500 font-medium">
-                    Zarządzaj swoimi rezerwacjami, sprawdzaj status i opłacaj wizyty.
+                    {t("appointments.myAppointmentsDesc")}
                 </p>
             </div>
             <div className="max-w-4xl mx-auto space-y-4">

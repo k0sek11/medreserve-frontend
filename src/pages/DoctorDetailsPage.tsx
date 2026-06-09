@@ -13,6 +13,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { plPL } from "@mui/x-date-pickers/locales";
 import { Link as RouterLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import doctorImage from "../assets/Cr7_doctor.png";
 import { useDoctorBooking } from "../hooks/useDoctorBooking";
 import { RoundIconInfo } from "../components/doctor/RoundIconInfo";
@@ -21,6 +22,7 @@ import { DoctorBookingSection } from "../components/doctor/DoctorBookingSection"
 import { Show } from "../components/shared/ShowHide";
 
 const DoctorDetailsPage = () => {
+    const { t } = useTranslation();
     const booking = useDoctorBooking();
     const { isValidDoctorId, profileQuery, isOwnProfile } = booking;
 
@@ -28,7 +30,7 @@ const DoctorDetailsPage = () => {
         return (
             <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: "1px solid #dce5f2" }}>
                 <Typography variant="h5" sx={{ fontWeight: 800, color: "#11223a" }}>
-                    Nieprawidłowy lekarz
+                    {t("doctorDetails.invalidDoctor")}
                 </Typography>
             </Paper>
         );
@@ -37,7 +39,9 @@ const DoctorDetailsPage = () => {
     if (profileQuery.isLoading) {
         return (
             <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: "1px solid #dce5f2" }}>
-                <Typography sx={{ color: "#4f627a" }}>Ładowanie profilu lekarza...</Typography>
+                <Typography sx={{ color: "#4f627a" }}>
+                    {t("doctorDetails.loadingProfile")}
+                </Typography>
             </Paper>
         );
     }
@@ -46,7 +50,7 @@ const DoctorDetailsPage = () => {
         return (
             <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: "1px solid #dce5f2" }}>
                 <Typography variant="h5" sx={{ fontWeight: 800, color: "#11223a" }}>
-                    Nie znaleziono lekarza
+                    {t("doctorDetails.notFound")}
                 </Typography>
             </Paper>
         );
@@ -88,22 +92,25 @@ const DoctorDetailsPage = () => {
                                         </Typography>
                                         <Typography sx={{ color: "#5a6e86", fontSize: 18 }}>
                                             {profile.specializations.join(", ") ||
-                                                "Brak specjalizacji"}
+                                                t("doctors.noSpecialization")}
                                         </Typography>
                                     </Box>
                                     <Divider />
                                     <Stack spacing={0.8}>
                                         <RoundIconInfo
                                             icon="P"
-                                            text={profile.phoneNumber ?? "Brak telefonu"}
+                                            text={profile.phoneNumber ?? t("doctorDetails.noPhone")}
                                         />
                                         <RoundIconInfo
                                             icon="M"
-                                            text={profile.city ?? "Brak miasta"}
+                                            text={profile.city ?? t("doctorDetails.noCity")}
                                         />
                                         <RoundIconInfo
                                             icon="A"
-                                            text={profile.streetAddress ?? "Brak adresu placówki"}
+                                            text={
+                                                profile.streetAddress ??
+                                                t("doctorDetails.noAddress")
+                                            }
                                         />
                                     </Stack>
                                     <Show when={Boolean(profile.bio)}>
@@ -118,7 +125,7 @@ const DoctorDetailsPage = () => {
                                             variant="outlined"
                                             sx={{ textTransform: "none", fontWeight: 700 }}
                                         >
-                                            Przejdź do mojego profilu
+                                            {t("doctorDetails.goToMyProfile")}
                                         </Button>
                                     </Show>
                                 </Stack>

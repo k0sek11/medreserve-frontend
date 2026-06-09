@@ -1,4 +1,5 @@
 import { Box, Button, Chip, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import type { ClinicDetailDto } from "../../api/clinics";
 
 type ClinicHeroBannerProps = {
@@ -6,57 +7,70 @@ type ClinicHeroBannerProps = {
     isOwner: boolean;
 };
 
-export const ClinicHeroBanner = ({ clinic, isOwner }: ClinicHeroBannerProps) => (
-    <PaperBanner>
-        <InnerGlow />
-        <Stack spacing={2} sx={{ position: "relative" }}>
-            <Box>
-                <Chip
-                    label={clinic.isActive ? "Aktywna poradnia" : "Nieaktywna poradnia"}
-                    sx={{
-                        mb: 2,
-                        bgcolor: clinic.isActive ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)",
-                        color: "white",
-                    }}
-                />
-                <Typography variant="h3" fontWeight={800} gutterBottom>
-                    {clinic.name}
-                </Typography>
-                <Typography variant="h6" sx={{ maxWidth: 780, color: "rgba(255,255,255,0.88)" }}>
-                    {clinic.description || "Ta poradnia nie ma jeszcze opisu."}
-                </Typography>
-            </Box>
-            <Stack
-                direction={{ xs: "column", sm: "row" }}
-                spacing={1.5}
-                alignItems={{ xs: "stretch", sm: "center" }}
-            >
-                <Button
-                    variant="contained"
-                    color="inherit"
-                    sx={{ color: "#0f172a", fontWeight: 700 }}
-                    href="#doctor-list"
-                >
-                    Zobacz lekarzy
-                </Button>
-                <Button
-                    variant="outlined"
-                    sx={{ borderColor: "rgba(255,255,255,0.45)", color: "white" }}
-                    href="#clinic-contact"
-                >
-                    Kontakt i godziny
-                </Button>
-                {isOwner && (
+export const ClinicHeroBanner = ({ clinic, isOwner }: ClinicHeroBannerProps) => {
+    const { t } = useTranslation();
+
+    return (
+        <PaperBanner>
+            <InnerGlow />
+            <Stack spacing={2} sx={{ position: "relative" }}>
+                <Box>
                     <Chip
-                        label="Widok właściciela"
-                        sx={{ color: "white", borderColor: "rgba(255,255,255,0.35)" }}
-                        variant="outlined"
+                        label={
+                            clinic.isActive
+                                ? t("clinicDetails.activeClinic")
+                                : t("clinicDetails.inactiveClinic")
+                        }
+                        sx={{
+                            mb: 2,
+                            bgcolor: clinic.isActive
+                                ? "rgba(34,197,94,0.2)"
+                                : "rgba(239,68,68,0.2)",
+                            color: "white",
+                        }}
                     />
-                )}
+                    <Typography variant="h3" fontWeight={800} gutterBottom>
+                        {clinic.name}
+                    </Typography>
+                    <Typography
+                        variant="h6"
+                        sx={{ maxWidth: 780, color: "rgba(255,255,255,0.88)" }}
+                    >
+                        {clinic.description || t("clinicDetails.noDescriptionHero")}
+                    </Typography>
+                </Box>
+                <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={1.5}
+                    alignItems={{ xs: "stretch", sm: "center" }}
+                >
+                    <Button
+                        variant="contained"
+                        color="inherit"
+                        sx={{ color: "#0f172a", fontWeight: 700 }}
+                        href="#doctor-list"
+                    >
+                        {t("clinicDetails.seeDoctors")}
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        sx={{ borderColor: "rgba(255,255,255,0.45)", color: "white" }}
+                        href="#clinic-contact"
+                    >
+                        {t("clinicDetails.contactHours")}
+                    </Button>
+                    {isOwner && (
+                        <Chip
+                            label={t("clinicDetails.ownerView")}
+                            sx={{ color: "white", borderColor: "rgba(255,255,255,0.35)" }}
+                            variant="outlined"
+                        />
+                    )}
+                </Stack>
             </Stack>
-        </Stack>
-    </PaperBanner>
-);
+        </PaperBanner>
+    );
+};
 
 const PaperBanner = ({ children }: { children: React.ReactNode }) => (
     <Box

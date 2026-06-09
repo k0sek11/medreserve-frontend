@@ -14,6 +14,7 @@ import {
     Typography,
 } from "@mui/material";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
     doctorsApi,
     type DoctorAppointmentTypeDto,
@@ -22,6 +23,7 @@ import {
 import { createEmptyAppointmentTypeDraft } from "./DoctorProfilehelpers";
 
 export const AppointmentTypesSection = () => {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [modalOpen, setModalOpen] = useState(false);
     const [draft, setDraft] = useState(createEmptyAppointmentTypeDraft());
@@ -43,7 +45,11 @@ export const AppointmentTypesSection = () => {
             await queryClient.invalidateQueries({ queryKey: ["doctor-my-profile"] });
         },
         onError: (err) => {
-            setError(err instanceof Error ? err.message : "Nie udało się utworzyć typu wizyty.");
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : t("doctorProfile.scheduleErrors.createTypeError"),
+            );
         },
     });
 
@@ -52,7 +58,9 @@ export const AppointmentTypesSection = () => {
         onSuccess: async () => {
             setTypeToDelete(null);
             await queryClient.invalidateQueries({ queryKey: ["doctor-my-profile"] });
-            await queryClient.invalidateQueries({ queryKey: ["doctor-appointment-notifications"] });
+            await queryClient.invalidateQueries({
+                queryKey: ["doctor-appointment-notifications"],
+            });
             await queryClient.invalidateQueries({ queryKey: ["appointment-notifications"] });
         },
     });
@@ -62,10 +70,11 @@ export const AppointmentTypesSection = () => {
         const basePrice = Number(draft.basePrice);
         const durationMinutes = Number(draft.durationMinutes);
 
-        if (!name) return setError("Podaj nazwę typu wizyty.");
-        if (!Number.isFinite(basePrice) || basePrice < 0) return setError("Podaj prawidłową cenę.");
+        if (!name) return setError(t("doctorProfile.scheduleErrors.enterName"));
+        if (!Number.isFinite(basePrice) || basePrice < 0)
+            return setError(t("doctorProfile.scheduleErrors.enterPrice"));
         if (!Number.isFinite(durationMinutes) || durationMinutes <= 0)
-            return setError("Podaj prawidłowy czas trwania.");
+            return setError(t("doctorProfile.scheduleErrors.enterDuration"));
 
         createMutation.mutate({ name, basePrice, durationMinutes });
     };
@@ -79,18 +88,20 @@ export const AppointmentTypesSection = () => {
                 spacing={1}
                 sx={{ justifyContent: "space-between", alignItems: "center", mb: 0.8 }}
             >
-                <Typography sx={{ fontWeight: 700, color: "#4f627a" }}>Typy wizyt</Typography>
+                <Typography sx={{ fontWeight: 700, color: "#4f627a" }}>
+                    {t("doctorProfile.appointmentTypes")}
+                </Typography>
                 <Button
                     variant="outlined"
                     onClick={() => setModalOpen(true)}
                     sx={{ textTransform: "none" }}
                 >
-                    Dodaj typ wizyty
+                    {t("doctorProfile.addAppointmentType")}
                 </Button>
             </Stack>
 
             {types.length === 0 ? (
-                <Alert severity="info">Nie masz jeszcze żadnych typów wizyt.</Alert>
+                <Alert severity="info">{t("doctorProfile.noAppointmentTypesYet")}</Alert>
             ) : (
                 <Stack spacing={1}>
                     {types.map((item) => (
@@ -123,7 +134,7 @@ export const AppointmentTypesSection = () => {
                                         onClick={() => setTypeToDelete(item)}
                                         sx={{ textTransform: "none" }}
                                     >
-                                        Usuń
+                                        {t("common.delete")}
                                     </Button>
                                 </Stack>
                             </CardContent>
@@ -132,7 +143,6 @@ export const AppointmentTypesSection = () => {
                 </Stack>
             )}
 
-            {/* Create dialog */}
             <Dialog
                 open={modalOpen}
                 onClose={() => {
@@ -143,19 +153,19 @@ export const AppointmentTypesSection = () => {
                 maxWidth="sm"
             >
                 <DialogTitle sx={{ fontWeight: 800, color: "#11223a" }}>
-                    Dodaj typ wizyty
+                    {t("doctorProfile.createAppointmentType")}
                 </DialogTitle>
                 <DialogContent dividers>
                     <Stack spacing={2} sx={{ pt: 0.5 }}>
                         {error && <Alert severity="error">{error}</Alert>}
                         <TextField
-                            label="Nazwa"
+                            label={t("common.name")}
                             value={draft.name}
                             onChange={(e) => setDraft((c) => ({ ...c, name: e.target.value }))}
                             fullWidth
                         />
                         <TextField
-                            label="Cena"
+                            label={t("doctorProfile.priceLabel")}
                             type="number"
                             slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
                             value={draft.basePrice}
@@ -163,7 +173,7 @@ export const AppointmentTypesSection = () => {
                             fullWidth
                         />
                         <TextField
-                            label="Czas trwania w minutach"
+                            label={t("doctorProfile.durationLabel")}
                             type="number"
                             slotProps={{ htmlInput: { min: 1, step: 1 } }}
                             value={draft.durationMinutes}
@@ -182,7 +192,7 @@ export const AppointmentTypesSection = () => {
                         }}
                         sx={{ textTransform: "none" }}
                     >
-                        Anuluj
+                        {t("common.cancel")}
                     </Button>
                     <Button
                         variant="contained"
@@ -190,12 +200,11 @@ export const AppointmentTypesSection = () => {
                         disabled={createMutation.isPending}
                         sx={{ textTransform: "none", fontWeight: 700 }}
                     >
-                        {createMutation.isPending ? "Zapisywanie..." : "Utwórz"}
+                        {createMutation.isPending ? t("common.saving") : t("doctorProfile.create")}
                     </Button>
                 </DialogActions>
             </Dialog>
 
-            {/* Delete confirmation dialog */}
             <Dialog
                 open={Boolean(typeToDelete)}
                 onClose={() => setTypeToDelete(null)}
@@ -203,22 +212,19 @@ export const AppointmentTypesSection = () => {
                 maxWidth="sm"
             >
                 <DialogTitle sx={{ fontWeight: 800, color: "#11223a" }}>
-                    Usuń typ wizyty
+                    {t("doctorProfile.deleteAppointmentType")}
                 </DialogTitle>
                 <DialogContent dividers>
                     <Stack spacing={1.5} sx={{ pt: 0.5 }}>
-                        <Alert severity="warning">
-                            Usunięcie typu wizyty nie skasuje historii wizyt. W istniejących wpisach
-                            nazwa typu będzie widoczna jako „Nieznane".
-                        </Alert>
+                        <Alert severity="warning">{t("doctorProfile.deleteWarning")}</Alert>
                         <Typography sx={{ color: "#4f627a" }}>
-                            Czy na pewno chcesz usunąć typ wizyty {typeToDelete?.name ?? ""}?
+                            {t("doctorProfile.deleteConfirm")} {typeToDelete?.name ?? ""}?
                         </Typography>
                     </Stack>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, py: 2 }}>
                     <Button onClick={() => setTypeToDelete(null)} sx={{ textTransform: "none" }}>
-                        Anuluj
+                        {t("common.cancel")}
                     </Button>
                     <Button
                         color="error"
@@ -229,7 +235,7 @@ export const AppointmentTypesSection = () => {
                         disabled={deleteMutation.isPending}
                         sx={{ textTransform: "none", fontWeight: 700 }}
                     >
-                        {deleteMutation.isPending ? "Usuwanie..." : "Usuń"}
+                        {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
                     </Button>
                 </DialogActions>
             </Dialog>

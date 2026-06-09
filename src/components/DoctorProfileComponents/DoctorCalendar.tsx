@@ -16,6 +16,7 @@ import {
     MenuItem,
 } from "@mui/material";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Calendar as BigCalendar, dayjsLocalizer } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { appointmentsApi } from "../../api/appointments";
@@ -30,6 +31,7 @@ import { OfflinePaymentAction } from "../Payment/OfflinePaymentAction";
 const calendarLocalizer = dayjsLocalizer(dayjs);
 
 export const DoctorCalendar = () => {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [calendarDate, setCalendarDate] = useState(() => dayjs().startOf("week").toDate());
     const [selectedAppointment, setSelectedAppointment] = useState<DoctorAppointmentEvent | null>(
@@ -44,20 +46,23 @@ export const DoctorCalendar = () => {
 
     const updateAppointmentStatusMutation = useMutation({
         mutationFn: async (status: AppointmentAction) => {
-            if (!selectedAppointment) throw new Error("Wybierz wizytę.");
+            if (!selectedAppointment)
+                throw new Error(t("doctorProfile.scheduleErrors.selectAppointment"));
             if (status === "Confirmed")
                 return appointmentsApi.confirm(selectedAppointment.appointmentId, true);
             return appointmentsApi.cancel(selectedAppointment.appointmentId);
         },
         onSuccess: async () => {
             setSelectedAppointment(null);
-            await queryClient.invalidateQueries({ queryKey: ["doctor-appointment-notifications"] });
+            await queryClient.invalidateQueries({
+                queryKey: ["doctor-appointment-notifications"],
+            });
         },
         onError: (error) => {
             alert(
                 error instanceof Error
                     ? error.message
-                    : "Nie udało się zaktualizować statusu wizyty.",
+                    : t("doctorProfile.scheduleErrors.updateStatusError"),
             );
         },
     });
@@ -90,24 +95,22 @@ export const DoctorCalendar = () => {
         <Stack spacing={2}>
             <Box>
                 <Typography sx={{ fontWeight: 800, color: "#11223a", fontSize: 20 }}>
-                    Kalendarz wizyt
+                    {t("doctorProfile.calendarTitle")}
                 </Typography>
-                <Typography sx={{ color: "#4f627a" }}>
-                    Tygodniowy widok wszystkich wizyt. Kliknij wizytę, żeby zmienić status.
-                </Typography>
+                <Typography sx={{ color: "#4f627a" }}>{t("doctorProfile.calendarDesc")}</Typography>
             </Box>
 
             <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
                 <Chip
-                    label={`Oczekujące: ${appointmentCounts.pending}`}
+                    label={`${t("doctorProfile.pending")}: ${appointmentCounts.pending}`}
                     sx={{ bgcolor: "#fff3cd", color: "#8a5b00" }}
                 />
                 <Chip
-                    label={`Zaakceptowane: ${appointmentCounts.confirmed}`}
+                    label={`${t("doctorProfile.confirmed")}: ${appointmentCounts.confirmed}`}
                     sx={{ bgcolor: "#e8f7ee", color: "#1f9b45" }}
                 />
                 <Chip
-                    label={`Zrealizowane: ${appointmentCounts.completed}`}
+                    label={`${t("doctorProfile.completed")}: ${appointmentCounts.completed}`}
                     sx={{ bgcolor: "#eef6ff", color: "#0b74c9" }}
                 />
             </Stack>
@@ -127,18 +130,13 @@ export const DoctorCalendar = () => {
                         setAppointmentAction("Confirmed");
                     }}
                     eventPropGetter={(event) => {
-                        let color = "#64748b"; // default grey
-                        if (event.status === "PendingConfirmation")
-                            color = "#f59f00"; // yellow
-                        else if (event.status === "AwaitingPayment")
-                            color = "#f97316"; // orange
-                        else if (event.status === "AwaitingOnSitePayment")
-                            color = "#fef08a"; // light yellow
-                        else if (event.status === "Confirmed")
-                            color = "#1f9b45"; // green
-                        else if (event.status === "Completed")
-                            color = "#0b74c9"; // dark blue
-                        else if (event.status === "Unpaid") color = "#ef4444"; // red
+                        let color = "#64748b";
+                        if (event.status === "PendingConfirmation") color = "#f59f00";
+                        else if (event.status === "AwaitingPayment") color = "#f97316";
+                        else if (event.status === "AwaitingOnSitePayment") color = "#fef08a";
+                        else if (event.status === "Confirmed") color = "#1f9b45";
+                        else if (event.status === "Completed") color = "#0b74c9";
+                        else if (event.status === "Unpaid") color = "#ef4444";
                         return {
                             style: {
                                 backgroundColor: color,
@@ -151,14 +149,15 @@ export const DoctorCalendar = () => {
                 />
             </Box>
 
-            {/* Modal Szczegółów Wizyty */}
             <Dialog
                 open={Boolean(selectedAppointment)}
                 onClose={() => setSelectedAppointment(null)}
                 fullWidth
                 maxWidth="sm"
             >
-                <DialogTitle sx={{ fontWeight: 800 }}>Szczegóły wizyty</DialogTitle>
+                <DialogTitle sx={{ fontWeight: 800 }}>
+                    {t("doctorProfile.appointmentDetails")}
+                </DialogTitle>
                 <DialogContent dividers>
                     {selectedAppointment && (
                         <Stack spacing={2}>
@@ -172,10 +171,10 @@ export const DoctorCalendar = () => {
 
                             <Box sx={{ p: 2, bgcolor: "#f8f9fa", borderRadius: 2 }}>
                                 <Typography sx={{ color: "#4f627a", fontSize: 14 }}>
-                                    Rozliczenie
+                                    {t("doctorProfile.settlement")}
                                 </Typography>
                                 {selectedAppointment.paymentStatus === "Paid" && (
-                                    <Chip label="Opłacona" color="success" />
+                                    <Chip label={t("doctorProfile.paid")} color="success" />
                                 )}
                                 {selectedAppointment.paymentStatus === "Pending" &&
                                     selectedAppointment.paymentMethod === "Offline" && (
@@ -186,28 +185,34 @@ export const DoctorCalendar = () => {
                             </Box>
 
                             <FormControl fullWidth>
-                                <InputLabel>Zmień status wizyty</InputLabel>
+                                <InputLabel>{t("doctorProfile.changeStatus")}</InputLabel>
                                 <Select
                                     value={appointmentAction}
                                     onChange={(e) =>
                                         setAppointmentAction(e.target.value as AppointmentAction)
                                     }
                                 >
-                                    <MenuItem value="Confirmed">Zaakceptowano</MenuItem>
-                                    <MenuItem value="Cancelled">Anuluj</MenuItem>
+                                    <MenuItem value="Confirmed">
+                                        {t("doctorProfile.accepted")}
+                                    </MenuItem>
+                                    <MenuItem value="Cancelled">
+                                        {t("doctorProfile.cancelAppointment")}
+                                    </MenuItem>
                                 </Select>
                             </FormControl>
                         </Stack>
                     )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setSelectedAppointment(null)}>Zamknij</Button>
+                    <Button onClick={() => setSelectedAppointment(null)}>
+                        {t("common.close")}
+                    </Button>
                     <Button
                         variant="contained"
                         onClick={() => updateAppointmentStatusMutation.mutate(appointmentAction)}
                         disabled={updateAppointmentStatusMutation.isPending}
                     >
-                        Zatwierdź
+                        {t("common.confirm")}
                     </Button>
                 </DialogActions>
             </Dialog>

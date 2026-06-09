@@ -1,4 +1,5 @@
 import { Box, CircularProgress, Pagination, Paper, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { useClinicsSearch } from "../hooks/useClinicsSearch";
 import { ClinicCard } from "../components/clinic/ClinicCard";
 import { ClinicFiltersPanel } from "../components/clinic/ClinicFiltersPanel";
@@ -7,6 +8,7 @@ import { Show } from "../components/shared/ShowHide";
 type ClinicsPageProps = { mine?: boolean };
 
 const ClinicsPage = ({ mine = false }: ClinicsPageProps) => {
+    const { t } = useTranslation();
     const {
         specializations,
         clinics,
@@ -57,7 +59,9 @@ const ClinicsPage = ({ mine = false }: ClinicsPageProps) => {
                         sx={{ justifyContent: "center", alignItems: "center" }}
                     >
                         <CircularProgress size={20} />
-                        <Typography sx={{ color: "#4f627a" }}>Ładowanie poradni...</Typography>
+                        <Typography sx={{ color: "#4f627a" }}>
+                            {t("clinics.loadingClinics")}
+                        </Typography>
                     </Stack>
                 </Paper>
             </Show>
@@ -75,9 +79,7 @@ const ClinicsPage = ({ mine = false }: ClinicsPageProps) => {
                             textAlign: "center",
                         }}
                     >
-                        <Typography sx={{ color: "#4f627a" }}>
-                            Brak poradni dla podanych filtrów.
-                        </Typography>
+                        <Typography sx={{ color: "#4f627a" }}>{t("clinics.noClinics")}</Typography>
                     </Paper>
                 </Show>
             </Stack>

@@ -9,11 +9,13 @@ import {
     Stack,
     Typography,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { useNotificationsPage } from "../hooks/useNotificationsPage";
 import { SectionTitle } from "../components/shared/SectionTitle";
 import { PaperLikeLoading } from "../components/shared/PaperLikeLoading";
 
 const NotificationsPage = () => {
+    const { t } = useTranslation();
     const n = useNotificationsPage();
 
     return (
@@ -22,13 +24,11 @@ const NotificationsPage = () => {
                 <Typography variant="h4" sx={{ fontWeight: 800, color: "#11223a" }}>
                     {n.title}
                 </Typography>
-                <Typography sx={{ color: "#4f627a" }}>
-                    Powiadomienia o zaproszeniach do poradni i nowych wizytach.
-                </Typography>
+                <Typography sx={{ color: "#4f627a" }}>{t("notifications.subtitle")}</Typography>
             </Stack>
             <Stack spacing={3}>
                 <Box>
-                    <SectionTitle title="Prośby o dołączenie do poradni" />
+                    <SectionTitle title={t("notifications.clinicRequests")} />
                     {n.isClinicLoading && <PaperLikeLoading />}
                     {n.clinicNotifications.map((n2) => (
                         <Card
@@ -83,7 +83,7 @@ const NotificationsPage = () => {
                                             }
                                             sx={{ textTransform: "none" }}
                                         >
-                                            Akceptuj
+                                            {t("notifications.accept")}
                                         </Button>
                                         <Button
                                             variant="outlined"
@@ -96,7 +96,7 @@ const NotificationsPage = () => {
                                             }
                                             sx={{ textTransform: "none" }}
                                         >
-                                            Odrzuć
+                                            {t("notifications.reject")}
                                         </Button>
                                     </Stack>
                                 </Stack>
@@ -107,7 +107,7 @@ const NotificationsPage = () => {
                 {n.user?.doctorProfileId && (
                     <Box>
                         <Divider sx={{ my: 1 }} />
-                        <SectionTitle title="Wizyty" />
+                        <SectionTitle title={t("notifications.appointments")} />
                         {n.isAppointmentLoading && <PaperLikeLoading />}
                         {n.appointmentNotifications.map((a) => (
                             <Card
@@ -136,8 +136,8 @@ const NotificationsPage = () => {
                                                     {a.patientName}
                                                 </Typography>
                                                 <Typography sx={{ color: "#4f627a" }}>
-                                                    {a.appointmentType ?? "Nieznane"} • {a.date} •{" "}
-                                                    {a.startTime}
+                                                    {a.appointmentType ?? t("common.unknown")} •{" "}
+                                                    {a.date} • {a.startTime}
                                                 </Typography>
                                             </Box>
                                             <Chip

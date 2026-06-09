@@ -1,20 +1,22 @@
 import { Alert, Button, CircularProgress, Stack, TextField, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import AuthPageShell from "../components/auth/AuthPageShell";
 import useRegisterForm from "../hooks/useRegisterForm";
 import { Show } from "../components/shared/ShowHide";
 
 const RegisterPage = () => {
+    const { t } = useTranslation();
     const { values, error, isLoading, isSuccess, handleInputChange, handleSubmit } =
         useRegisterForm();
 
     return (
         <AuthPageShell
-            title="Załóż konto"
-            subtitle="Utwórz profil pacjenta i rezerwuj terminy online w kilka minut."
+            title={t("auth.registerTitle")}
+            subtitle={t("auth.registerSubtitle")}
             footer={
                 <Typography sx={{ color: "#4f627a", textAlign: "center" }}>
-                    Masz już konto?{" "}
+                    {t("auth.haveAccount")}{" "}
                     <Typography
                         component={RouterLink}
                         to="/login"
@@ -26,7 +28,7 @@ const RegisterPage = () => {
                             "&:hover": { textDecoration: "underline" },
                         }}
                     >
-                        Zaloguj się
+                        {t("nav.login")}
                     </Typography>
                 </Typography>
             }
@@ -36,14 +38,12 @@ const RegisterPage = () => {
                     <Alert severity="error">{error}</Alert>
                 </Show>
                 <Show when={isSuccess}>
-                    <Alert severity="success">
-                        Konto zostało utworzone powodzeniem. Możesz się zalogować.
-                    </Alert>
+                    <Alert severity="success">{t("auth.registerSuccess")}</Alert>
                 </Show>
 
                 <TextField
                     name="email"
-                    label="Adres e-mail"
+                    label={t("auth.emailLabel")}
                     type="email"
                     autoComplete="email"
                     value={values.email}
@@ -53,7 +53,7 @@ const RegisterPage = () => {
                 />
                 <TextField
                     name="password"
-                    label="Hasło"
+                    label={t("auth.passwordLabel")}
                     type="password"
                     autoComplete="new-password"
                     value={values.password}
@@ -63,7 +63,7 @@ const RegisterPage = () => {
                 />
                 <TextField
                     name="confirmPassword"
-                    label="Powtórz hasło"
+                    label={t("auth.confirmPasswordLabel")}
                     type="password"
                     autoComplete="new-password"
                     value={values.confirmPassword}
@@ -89,7 +89,7 @@ const RegisterPage = () => {
                         "&:hover": { bgcolor: "#095fa6" },
                     }}
                 >
-                    {isLoading ? "Rejestracja..." : "Zarejestruj się"}
+                    {isLoading ? t("auth.registering") : t("auth.registerButton")}
                 </Button>
             </Stack>
         </AuthPageShell>

@@ -11,9 +11,11 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { useHomeSearch } from "../hooks/useHomeSearch";
 
 const HomePage = () => {
+    const { t } = useTranslation();
     const h = useHomeSearch();
 
     return (
@@ -39,19 +41,21 @@ const HomePage = () => {
                             color: "#11223a",
                         }}
                     >
-                        Znajdź i Umów Wizytę u Specjalisty
+                        {t("home.title")}
                     </Typography>
                     <Typography sx={{ color: "#4f627a", fontSize: { xs: 16, md: 22 } }}>
-                        Najszybszy sposób na rezerwację medyczną online.
+                        {t("home.subtitle")}
                     </Typography>
                 </Stack>
                 <Grid container spacing={2} sx={{ mb: 2.5 }}>
                     <Grid size={{ xs: 12, md: 4 }}>
                         <FormControl fullWidth>
-                            <InputLabel id="specialization-label">Wybierz specjalizację</InputLabel>
+                            <InputLabel id="specialization-label">
+                                {t("home.specializationLabel")}
+                            </InputLabel>
                             <Select
                                 labelId="specialization-label"
-                                label="Wybierz specjalizację"
+                                label={t("home.specializationLabel")}
                                 value={h.specialization}
                                 onChange={(e) => h.setSpecialization(e.target.value)}
                             >
@@ -68,10 +72,10 @@ const HomePage = () => {
                     </Grid>
                     <Grid size={{ xs: 12, md: 4 }}>
                         <FormControl fullWidth>
-                            <InputLabel id="city-label">Wybierz miasto</InputLabel>
+                            <InputLabel id="city-label">{t("home.cityLabel")}</InputLabel>
                             <Select
                                 labelId="city-label"
-                                label="Wybierz miasto"
+                                label={t("home.cityLabel")}
                                 value={h.city}
                                 onChange={(e) => h.setCity(e.target.value)}
                             >
@@ -86,7 +90,7 @@ const HomePage = () => {
                     <Grid size={{ xs: 12, md: 4 }}>
                         <TextField
                             fullWidth
-                            label="Data"
+                            label={t("home.dateLabel")}
                             type="date"
                             value={h.appointmentDate}
                             onChange={(e) => h.setAppointmentDate(e.target.value)}
@@ -108,7 +112,7 @@ const HomePage = () => {
                         "&:hover": { bgcolor: "#095fa6" },
                     }}
                 >
-                    Szukaj terminu
+                    {t("home.searchButton")}
                 </Button>
             </Paper>
         </Box>

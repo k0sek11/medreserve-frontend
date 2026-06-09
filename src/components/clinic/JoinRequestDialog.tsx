@@ -12,6 +12,7 @@ import {
     Typography,
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { clinicsApi } from "../../api/clinics";
 
 type JoinRequestDialogProps = {
@@ -27,6 +28,7 @@ export const JoinRequestDialog = ({
     onClose,
     onSuccess,
 }: JoinRequestDialogProps) => {
+    const { t } = useTranslation();
     const [confirmDoctor, setConfirmDoctor] = useState(true);
     const [joinMessage, setJoinMessage] = useState("");
 
@@ -46,12 +48,11 @@ export const JoinRequestDialog = ({
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle>Prośba o dołączenie</DialogTitle>
+            <DialogTitle>{t("clinicDetails.joinDialog.title")}</DialogTitle>
             <DialogContent>
                 <Stack spacing={2} sx={{ pt: 1 }}>
                     <Typography variant="body2" color="text.secondary">
-                        Wyślij prośbę do właściciela poradni. Formularz jest celowo prosty, żeby nie
-                        zajmował dużo miejsca.
+                        {t("clinicDetails.joinDialog.description")}
                     </Typography>
                     <FormControlLabel
                         control={
@@ -60,10 +61,10 @@ export const JoinRequestDialog = ({
                                 onChange={(e) => setConfirmDoctor(e.target.checked)}
                             />
                         }
-                        label="Potwierdzam, że chcę dołączyć jako lekarz"
+                        label={t("clinicDetails.joinDialog.confirmDoctor")}
                     />
                     <TextField
-                        label="Wiadomość opcjonalna"
+                        label={t("clinicDetails.joinDialog.optionalMessage")}
                         value={joinMessage}
                         onChange={(e) => setJoinMessage(e.target.value)}
                         multiline
@@ -73,13 +74,15 @@ export const JoinRequestDialog = ({
                 </Stack>
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 3 }}>
-                <Button onClick={onClose}>Anuluj</Button>
+                <Button onClick={onClose}>{t("common.cancel")}</Button>
                 <Button
                     variant="contained"
                     onClick={() => joinMutation.mutate()}
                     disabled={!confirmDoctor || joinMutation.isPending}
                 >
-                    {joinMutation.isPending ? "Wysyłanie..." : "Wyślij prośbę"}
+                    {joinMutation.isPending
+                        ? t("clinicDetails.joinDialog.sending")
+                        : t("clinicDetails.joinDialog.send")}
                 </Button>
             </DialogActions>
         </Dialog>

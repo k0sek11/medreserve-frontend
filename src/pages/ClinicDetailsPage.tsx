@@ -18,6 +18,7 @@ import {
     Typography,
 } from "@mui/material";
 import { Navigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useClinicDetails } from "../hooks/useClinicDetails";
 import { InfoBlock } from "../components/shared/InfoBlock";
 import { ClinicHeroBanner } from "../components/clinic/ClinicHeroBanner";
@@ -25,6 +26,7 @@ import { JoinRequestDialog } from "../components/clinic/JoinRequestDialog";
 import { Show } from "../components/shared/ShowHide";
 
 export default function ClinicDetailsPage() {
+    const { t } = useTranslation();
     const d = useClinicDetails();
 
     if (!d.isValid) return <Navigate to="/poradnie" replace />;
@@ -41,9 +43,9 @@ export default function ClinicDetailsPage() {
                 <Card>
                     <CardContent>
                         <Typography variant="h5" fontWeight={700} gutterBottom>
-                            Nie udało się wczytać poradni
+                            {t("clinicDetails.loadError")}
                         </Typography>
-                        <Typography color="text.secondary">Spróbuj ponownie za chwilę.</Typography>
+                        <Typography color="text.secondary">{t("common.tryAgain")}</Typography>
                     </CardContent>
                 </Card>
             </Box>
@@ -60,11 +62,11 @@ export default function ClinicDetailsPage() {
                     <Stack spacing={3}>
                         <Card sx={{ borderRadius: 4 }}>
                             <CardHeader
-                                title="O przychodni"
+                                title={t("clinicDetails.about")}
                                 action={
                                     d.isOwner && !d.isEditing ? (
                                         <Button variant="text" onClick={() => d.setIsEditing(true)}>
-                                            Edytuj
+                                            {t("clinicDetails.edit")}
                                         </Button>
                                     ) : null
                                 }
@@ -73,7 +75,7 @@ export default function ClinicDetailsPage() {
                                 <Show when={d.isEditing}>
                                     <Stack spacing={2}>
                                         <TextField
-                                            label="Nazwa"
+                                            label={t("common.name")}
                                             value={d.draft.name}
                                             onChange={(e) =>
                                                 d.setDraft((c) => ({ ...c, name: e.target.value }))
@@ -81,7 +83,7 @@ export default function ClinicDetailsPage() {
                                             fullWidth
                                         />
                                         <TextField
-                                            label="Opis"
+                                            label={t("common.description")}
                                             value={d.draft.description}
                                             onChange={(e) =>
                                                 d.setDraft((c) => ({
@@ -101,36 +103,35 @@ export default function ClinicDetailsPage() {
                                         color="text.secondary"
                                         sx={{ whiteSpace: "pre-wrap" }}
                                     >
-                                        {clinic.description ||
-                                            "Właściciel nie dodał jeszcze opisu poradni."}
+                                        {clinic.description || t("clinicDetails.noDescription")}
                                     </Typography>
                                 </Show>
                             </CardContent>
                         </Card>
                         <Card sx={{ borderRadius: 4 }} id="clinic-contact">
-                            <CardHeader title="Kontakt i godziny" />
+                            <CardHeader title={t("clinicDetails.contactAndHours")} />
                             <CardContent>
                                 <Grid container spacing={2}>
                                     {[
                                         {
-                                            label: "Telefon",
+                                            label: t("common.phone"),
                                             field: "phoneNumber" as const,
                                             value: clinic.phoneNumber,
                                         },
                                         {
-                                            label: "Email",
+                                            label: t("common.email"),
                                             field: "email" as const,
                                             value: clinic.email,
                                         },
                                         {
-                                            label: "Godziny otwarcia",
+                                            label: t("clinicDetails.openingHours"),
                                             field: "openingHours" as const,
                                             value: clinic.openingHours,
                                             multiline: true,
                                             minRows: 3,
                                         },
                                         {
-                                            label: "Adres",
+                                            label: t("common.address"),
                                             field: "streetAddress" as const,
                                             value: `${clinic.streetAddress}, ${clinic.city}`,
                                         },
@@ -154,7 +155,7 @@ export default function ClinicDetailsPage() {
                                             <Show when={!d.isEditing}>
                                                 <InfoBlock
                                                     label={f.label}
-                                                    value={f.value || "Brak danych"}
+                                                    value={f.value || t("common.noData")}
                                                 />
                                             </Show>
                                         </Grid>
@@ -163,11 +164,11 @@ export default function ClinicDetailsPage() {
                                         <Show when={d.isEditing}>
                                             <FormControl fullWidth>
                                                 <InputLabel id="clinic-city-label">
-                                                    Miasto
+                                                    {t("common.city")}
                                                 </InputLabel>
                                                 <Select
                                                     labelId="clinic-city-label"
-                                                    label="Miasto"
+                                                    label={t("common.city")}
                                                     value={d.draft.cityId}
                                                     onChange={(e) =>
                                                         d.setDraft((c) => ({
@@ -188,17 +189,23 @@ export default function ClinicDetailsPage() {
                                             </FormControl>
                                         </Show>
                                         <Show when={!d.isEditing}>
-                                            <InfoBlock label="Miasto" value={clinic.city} />
+                                            <InfoBlock
+                                                label={t("common.city")}
+                                                value={clinic.city}
+                                            />
                                         </Show>
                                     </Grid>
                                     <Grid item xs={12} md={6}>
-                                        <InfoBlock label="Województwo" value={clinic.voivodeship} />
+                                        <InfoBlock
+                                            label={t("clinicDetails.voivodeship")}
+                                            value={clinic.voivodeship}
+                                        />
                                     </Grid>
                                     <Show when={d.isEditing}>
                                         <Grid item xs={12}>
                                             <TextField
-                                                label="Adres mapy"
-                                                helperText="To pole nie jest jeszcze używane do edycji mapy."
+                                                label={t("clinicDetails.mapAddressField")}
+                                                helperText={t("clinicDetails.mapAddressHelper")}
                                                 value={d.draft.mapLocation}
                                                 onChange={(e) =>
                                                     d.setDraft((c) => ({
@@ -225,7 +232,7 @@ export default function ClinicDetailsPage() {
                                                 d.setIsEditing(false);
                                             }}
                                         >
-                                            Anuluj
+                                            {t("clinicDetails.cancel")}
                                         </Button>
                                         <Button
                                             variant="contained"
@@ -233,15 +240,15 @@ export default function ClinicDetailsPage() {
                                             disabled={d.updateMutation.isPending}
                                         >
                                             {d.updateMutation.isPending
-                                                ? "Zapisywanie..."
-                                                : "Zapisz zmiany"}
+                                                ? t("common.saving")
+                                                : t("clinicDetails.saveChanges")}
                                         </Button>
                                     </Stack>
                                 </Show>
                             </CardContent>
                         </Card>
                         <Card sx={{ borderRadius: 4 }}>
-                            <CardHeader title="Mapa" />
+                            <CardHeader title={t("clinicDetails.map")} />
                             <CardContent>
                                 <Box
                                     sx={{
@@ -256,20 +263,21 @@ export default function ClinicDetailsPage() {
                                     }}
                                 >
                                     <Stack spacing={1} alignItems="center">
-                                        <Typography fontWeight={700}>Podgląd mapy</Typography>
+                                        <Typography fontWeight={700}>
+                                            {t("clinicDetails.mapPreview")}
+                                        </Typography>
                                         <Typography
                                             variant="body2"
                                             color="text.secondary"
                                             textAlign="center"
                                         >
-                                            W tym miejscu pojawi się osadzona mapa po podpięciu
-                                            dostawcy map.
+                                            {t("clinicDetails.mapInfo")}
                                         </Typography>
                                     </Stack>
                                 </Box>
                                 <Divider sx={{ my: 2 }} />
                                 <Typography variant="body2" color="text.secondary">
-                                    Adres mapy:{" "}
+                                    {t("clinicDetails.mapAddress")}:{" "}
                                     {clinic.mapLocation ||
                                         `${clinic.streetAddress}, ${clinic.city}`}
                                 </Typography>
@@ -280,7 +288,9 @@ export default function ClinicDetailsPage() {
                 <Grid item xs={12} lg={5}>
                     <Stack spacing={3} id="doctor-list">
                         <Card sx={{ borderRadius: 4 }}>
-                            <CardHeader title={`Lekarze (${clinic.doctors.length})`} />
+                            <CardHeader
+                                title={`${t("clinicDetails.doctors")} (${clinic.doctors.length})`}
+                            />
                             <CardContent>
                                 <Stack spacing={2}>
                                     {clinic.doctors.map((doc) => (
@@ -315,7 +325,7 @@ export default function ClinicDetailsPage() {
                                                 <Show when={doc.isOwner}>
                                                     <Chip
                                                         size="small"
-                                                        label="Właściciel"
+                                                        label={t("clinicDetails.owner")}
                                                         color="primary"
                                                     />
                                                 </Show>
@@ -346,11 +356,11 @@ export default function ClinicDetailsPage() {
                             "&:hover": { opacity: 1, color: "text.primary" },
                         }}
                     >
-                        Jeśli jesteś lekarzem, możesz poprosić o dołączenie do tej poradni.
+                        {t("clinicDetails.joinRequest")}
                     </Typography>
                     <Show when={d.requestSent}>
                         <Typography variant="body2" color="success.main" sx={{ mt: 1 }}>
-                            Prośba o dołączenie została wysłana.
+                            {t("clinicDetails.requestSent")}
                         </Typography>
                     </Show>
                 </Box>
