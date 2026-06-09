@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import {
     Autocomplete,
     Box,
@@ -18,10 +17,9 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
 import { Link as RouterLink } from "react-router-dom";
-import { doctorsApi } from "../api/doctors";
-import useDoctorSearchFilters from "../hooks/useDoctorSearchFilters";
+import { useDoctorSearch } from "../hooks/useDoctorSearch";
+import { Show } from "../components/shared/ShowHide";
 
 const sortOptions = [
     { value: "priceAsc", label: "Cena rosnaco" },
@@ -31,63 +29,7 @@ const sortOptions = [
 ] as const;
 
 const DoctorsSearchPage = () => {
-    const { filters, updateFilter, clearFilters } = useDoctorSearchFilters();
-    const selectedCityId = filters.cityId ? Number(filters.cityId) : undefined;
-    const selectedSpecializationId = filters.specializationId
-        ? Number(filters.specializationId)
-        : undefined;
-    const selectedPage = Math.max(Number(filters.page || "1"), 1);
-    const maxPrice = filters.priceMax ? Number(filters.priceMax) : undefined;
-
-    const { data: cities = [], isLoading: isCitiesLoading } = useQuery({
-        queryKey: ["search-cities"],
-        queryFn: () => doctorsApi.getCities(),
-    });
-
-    const { data: specializations = [], isLoading: isSpecializationsLoading } = useQuery({
-        queryKey: ["search-specializations"],
-        queryFn: () => doctorsApi.getSpecializations(),
-    });
-
-    const {
-        data: doctorsPage,
-        isLoading: isDoctorsLoading,
-        isFetching: isDoctorsFetching,
-    } = useQuery({
-        queryKey: [
-            "search-doctors",
-            selectedCityId,
-            selectedSpecializationId,
-            filters.date,
-            maxPrice,
-            filters.sort,
-            selectedPage,
-        ],
-        queryFn: () =>
-            doctorsApi.search({
-                cityId: selectedCityId,
-                specializationId: selectedSpecializationId,
-                date: filters.date || undefined,
-                priceMax: maxPrice,
-                sort: filters.sort,
-                page: selectedPage,
-                pageSize: 8,
-            }),
-        placeholderData: (previousData) => previousData,
-    });
-
-    const doctors = doctorsPage?.items ?? [];
-    const isAnyLoading =
-        isCitiesLoading || isDoctorsLoading || isDoctorsFetching || isSpecializationsLoading;
-
-    const selectedCityOption = cities.find((item) => item.cityId === selectedCityId) ?? null;
-    const selectedSpecializationOption =
-        specializations.find((item) => item.specializationId === selectedSpecializationId) ?? null;
-
-    const filtersSummary = useMemo(
-        () => `Znaleziono ${doctorsPage?.totalCount ?? 0} lekarzy.`,
-        [doctorsPage?.totalCount],
-    );
+    const s = useDoctorSearch();
 
     return (
         <Box sx={{ py: { xs: 2, md: 4 } }}>
@@ -110,102 +52,88 @@ const DoctorsSearchPage = () => {
                             <Typography sx={{ fontWeight: 700, color: "#11223a" }}>
                                 Filtry
                             </Typography>
-
                             <Autocomplete
-                                options={cities}
-                                value={selectedCityOption}
-                                loading={isCitiesLoading}
-                                onChange={(_, value) =>
-                                    updateFilter("cityId", value ? String(value.cityId) : "")
+                                options={s.cities}
+                                value={s.selectedCityOption}
+                                loading={s.isCitiesLoading}
+                                onChange={(_, v) =>
+                                    s.updateFilter("cityId", v ? String(v.cityId) : "")
                                 }
-                                getOptionLabel={(option) => `${option.name} • ${option.district}`}
-                                isOptionEqualToValue={(option, value) =>
-                                    option.cityId === value.cityId
-                                }
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label="Miasto"
-                                        placeholder="Szukaj miasta"
-                                    />
+                                getOptionLabel={(o) => `${o.name} • ${o.district}`}
+                                isOptionEqualToValue={(o, v) => o.cityId === v.cityId}
+                                renderInput={(p) => (
+                                    <TextField {...p} label="Miasto" placeholder="Szukaj miasta" />
                                 )}
                             />
-
                             <Autocomplete
-                                options={specializations}
-                                value={selectedSpecializationOption}
-                                loading={isSpecializationsLoading}
-                                onChange={(_, value) =>
-                                    updateFilter(
+                                options={s.specializations}
+                                value={s.selectedSpecializationOption}
+                                loading={s.isSpecializationsLoading}
+                                onChange={(_, v) =>
+                                    s.updateFilter(
                                         "specializationId",
-                                        value ? String(value.specializationId) : "",
+                                        v ? String(v.specializationId) : "",
                                     )
                                 }
-                                getOptionLabel={(option) => option.name}
-                                isOptionEqualToValue={(option, value) =>
-                                    option.specializationId === value.specializationId
+                                getOptionLabel={(o) => o.name}
+                                isOptionEqualToValue={(o, v) =>
+                                    o.specializationId === v.specializationId
                                 }
-                                renderInput={(params) => (
+                                renderInput={(p) => (
                                     <TextField
-                                        {...params}
+                                        {...p}
                                         label="Specjalizacja"
                                         placeholder="Szukaj specjalizacji"
                                     />
                                 )}
                             />
-
                             <TextField
                                 label="Data"
                                 type="date"
-                                value={filters.date}
-                                onChange={(event) => updateFilter("date", event.target.value)}
+                                value={s.filters.date}
+                                onChange={(e) => s.updateFilter("date", e.target.value)}
                                 slotProps={{ inputLabel: { shrink: true } }}
                                 fullWidth
                             />
-
                             <TextField
                                 label="Cena maksymalna"
                                 type="number"
-                                value={filters.priceMax}
-                                onChange={(event) => updateFilter("priceMax", event.target.value)}
+                                value={s.filters.priceMax}
+                                onChange={(e) => s.updateFilter("priceMax", e.target.value)}
                                 fullWidth
                                 slotProps={{ htmlInput: { min: 0, step: 10 } }}
                             />
-
                             <FormControl fullWidth>
                                 <InputLabel id="results-sort">Sortowanie</InputLabel>
                                 <Select
                                     labelId="results-sort"
                                     label="Sortowanie"
-                                    value={filters.sort}
-                                    onChange={(event) => updateFilter("sort", event.target.value)}
+                                    value={s.filters.sort}
+                                    onChange={(e) => s.updateFilter("sort", e.target.value)}
                                 >
-                                    {sortOptions.map((option) => (
-                                        <MenuItem key={option.value} value={option.value}>
-                                            {option.label}
+                                    {sortOptions.map((o) => (
+                                        <MenuItem key={o.value} value={o.value}>
+                                            {o.label}
                                         </MenuItem>
                                     ))}
                                 </Select>
                             </FormControl>
-
                             <Button
                                 variant="outlined"
-                                onClick={clearFilters}
+                                onClick={s.clearFilters}
                                 sx={{ textTransform: "none" }}
                             >
-                                Wyczysc filtry
+                                Wyczyść filtry
                             </Button>
                         </Stack>
                     </Paper>
                 </Grid>
-
                 <Grid size={{ xs: 12, md: 8, lg: 8.6 }}>
                     <Stack spacing={1.6}>
                         <Typography sx={{ color: "#4f627a", fontWeight: 600 }}>
-                            {filtersSummary}
+                            {s.filtersSummary}
                         </Typography>
-
-                        {isAnyLoading ? (
+                        <Show when={s.isAnyLoading}>
                             <Paper
                                 elevation={0}
                                 sx={{
@@ -222,93 +150,12 @@ const DoctorsSearchPage = () => {
                                 >
                                     <CircularProgress size={20} />
                                     <Typography sx={{ color: "#4f627a" }}>
-                                        Ladowanie danych...
+                                        Ładowanie danych...
                                     </Typography>
                                 </Stack>
                             </Paper>
-                        ) : null}
-
-                        {!isAnyLoading
-                            ? doctors.map((doctor) => (
-                                  <Card
-                                      key={doctor.doctorId}
-                                      elevation={0}
-                                      sx={{ border: "1px solid #dce5f2", borderRadius: 2 }}
-                                  >
-                                      <CardContent>
-                                          <Stack spacing={1.1}>
-                                              <Stack
-                                                  direction={{ xs: "column", sm: "row" }}
-                                                  spacing={1}
-                                                  sx={{
-                                                      justifyContent: "space-between",
-                                                      alignItems: {
-                                                          xs: "flex-start",
-                                                          sm: "center",
-                                                      },
-                                                  }}
-                                              >
-                                                  <Box>
-                                                      <Typography
-                                                          sx={{
-                                                              fontWeight: 700,
-                                                              color: "#11223a",
-                                                              fontSize: 20,
-                                                          }}
-                                                      >
-                                                          {doctor.fullName}
-                                                      </Typography>
-                                                      <Typography sx={{ color: "#4f627a" }}>
-                                                          {doctor.specialization ||
-                                                              "Brak specjalizacji"}{" "}
-                                                          | {doctor.city}
-                                                      </Typography>
-                                                  </Box>
-
-                                                  <Chip
-                                                      label={`${doctor.lowestPrice.toFixed(0)} zl`}
-                                                      sx={{
-                                                          bgcolor: "#eef6ff",
-                                                          color: "#0b74c9",
-                                                          fontWeight: 700,
-                                                      }}
-                                                  />
-                                              </Stack>
-
-                                              <Typography sx={{ color: "#23354d" }}>
-                                                  Ocena:{" "}
-                                                  {doctor.rating?.toFixed(1) ?? "brak danych"}
-                                              </Typography>
-
-                                              <Button
-                                                  variant="contained"
-                                                  component={RouterLink}
-                                                  to={`/lekarze/${doctor.doctorId}`}
-                                                  sx={{
-                                                      textTransform: "none",
-                                                      alignSelf: "flex-start",
-                                                  }}
-                                              >
-                                                  Umow wizyte
-                                              </Button>
-                                          </Stack>
-                                      </CardContent>
-                                  </Card>
-                              ))
-                            : null}
-
-                        {!isAnyLoading && (doctorsPage?.totalPages ?? 1) > 1 ? (
-                            <Stack direction="row" sx={{ pt: 1, justifyContent: "center" }}>
-                                <Pagination
-                                    count={doctorsPage?.totalPages ?? 1}
-                                    page={selectedPage}
-                                    onChange={(_, value) => updateFilter("page", String(value))}
-                                    color="primary"
-                                />
-                            </Stack>
-                        ) : null}
-
-                        {!isAnyLoading && doctors.length === 0 ? (
+                        </Show>
+                        <Show when={!s.isAnyLoading && s.doctors.length === 0}>
                             <Paper
                                 elevation={0}
                                 sx={{
@@ -319,10 +166,75 @@ const DoctorsSearchPage = () => {
                                 }}
                             >
                                 <Typography sx={{ color: "#4f627a" }}>
-                                    Brak wynikow dla podanych filtrow. Zmien kryteria wyszukiwania.
+                                    Brak wyników dla podanych filtrów.
                                 </Typography>
                             </Paper>
-                        ) : null}
+                        </Show>
+                        {s.doctors.map((d) => (
+                            <Card
+                                key={d.doctorId}
+                                elevation={0}
+                                sx={{ border: "1px solid #dce5f2", borderRadius: 2 }}
+                            >
+                                <CardContent>
+                                    <Stack spacing={1.1}>
+                                        <Stack
+                                            direction={{ xs: "column", sm: "row" }}
+                                            spacing={1}
+                                            sx={{
+                                                justifyContent: "space-between",
+                                                alignItems: { xs: "flex-start", sm: "center" },
+                                            }}
+                                        >
+                                            <Box>
+                                                <Typography
+                                                    sx={{
+                                                        fontWeight: 700,
+                                                        color: "#11223a",
+                                                        fontSize: 20,
+                                                    }}
+                                                >
+                                                    {d.fullName}
+                                                </Typography>
+                                                <Typography sx={{ color: "#4f627a" }}>
+                                                    {d.specialization || "Brak specjalizacji"} |{" "}
+                                                    {d.city}
+                                                </Typography>
+                                            </Box>
+                                            <Chip
+                                                label={`${d.lowestPrice.toFixed(0)} zł`}
+                                                sx={{
+                                                    bgcolor: "#eef6ff",
+                                                    color: "#0b74c9",
+                                                    fontWeight: 700,
+                                                }}
+                                            />
+                                        </Stack>
+                                        <Typography sx={{ color: "#23354d" }}>
+                                            Ocena: {d.rating?.toFixed(1) ?? "brak danych"}
+                                        </Typography>
+                                        <Button
+                                            variant="contained"
+                                            component={RouterLink}
+                                            to={`/lekarze/${d.doctorId}`}
+                                            sx={{ textTransform: "none", alignSelf: "flex-start" }}
+                                        >
+                                            Umów wizytę
+                                        </Button>
+                                    </Stack>
+                                </CardContent>
+                            </Card>
+                        ))}
+                        <Show when={!s.isAnyLoading && (s.doctorsPage?.totalPages ?? 1) > 1}>
+                            <Stack direction="row" sx={{ pt: 1, justifyContent: "center" }}>
+                                <Pagination
+                                    count={s.doctorsPage?.totalPages ?? 1}
+                                    page={s.selectedPage}
+                                    onChange={(_, v) => s.updateFilter("page", String(v))}
+                                    color="primary"
+                                />
+                            </Stack>
+                        </Show>
                     </Stack>
                 </Grid>
             </Grid>

@@ -1,4 +1,7 @@
 import { api } from "../lib/axios";
+import type { CityDto, SpecializationDto, PagedResultDto } from "../types/common";
+
+export type { CityDto, SpecializationDto, PagedResultDto };
 
 export type ClinicListItemDto = {
     clinicId: number;
@@ -39,14 +42,6 @@ export type ClinicDetailDto = {
     isCurrentUserOwner: boolean;
 };
 
-export type PagedResultDto<T> = {
-    items: T[];
-    page: number;
-    pageSize: number;
-    totalCount: number;
-    totalPages: number;
-};
-
 export type ClinicListParams = {
     name?: string;
     location?: string;
@@ -84,19 +79,6 @@ export type ClinicUpdateRequest = {
     phoneNumber?: string | null;
     email?: string | null;
     isActive?: boolean;
-};
-
-export type CityDto = {
-    cityId: number;
-    name: string;
-    district: string;
-    voivodeship: string;
-};
-
-export type SpecializationDto = {
-    specializationId: number;
-    name: string;
-    description: string | null;
 };
 
 export const clinicsApi = {

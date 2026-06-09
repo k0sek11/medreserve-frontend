@@ -1,17 +1,7 @@
 import { api } from "../lib/axios";
+import type { CityDto, SpecializationDto, PagedResultDto } from "../types/common";
 
-export type CityDto = {
-    cityId: number;
-    name: string;
-    district: string;
-    voivodeship: string;
-};
-
-export type SpecializationDto = {
-    specializationId: number;
-    name: string;
-    description: string | null;
-};
+export type { CityDto, SpecializationDto, PagedResultDto };
 
 export type DoctorAppointmentTypeDto = {
     appointmentTypeId: number;
@@ -112,14 +102,6 @@ export type DoctorSearchItemDto = {
     specialization: string;
     lowestPrice: number;
     rating: number | null;
-};
-
-export type PagedResultDto<T> = {
-    items: T[];
-    page: number;
-    pageSize: number;
-    totalCount: number;
-    totalPages: number;
 };
 
 export type DoctorSearchParams = {

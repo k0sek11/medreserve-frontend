@@ -1,93 +1,117 @@
 import {
     Alert,
     Box,
+    Button,
     Card,
     CardContent,
     Chip,
-    CircularProgress,
     Divider,
-    Button,
     Stack,
     Typography,
 } from "@mui/material";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
-import { notificationsApi } from "../api/notifications";
-import { useAuthUser } from "../hooks/useAuthUser";
+import { useNotificationsPage } from "../hooks/useNotificationsPage";
+import { SectionTitle } from "../components/shared/SectionTitle";
+import { PaperLikeLoading } from "../components/shared/PaperLikeLoading";
 
 const NotificationsPage = () => {
-    const [searchParams] = useSearchParams();
-    const queryClient = useQueryClient();
-    const clinicIdParam = searchParams.get("clinicId");
-    const clinicId = clinicIdParam ? Number(clinicIdParam) : undefined;
-    const effectiveClinicId =
-        clinicId !== undefined && Number.isFinite(clinicId) ? clinicId : undefined;
-    const { data: user } = useAuthUser();
-
-    const { data: clinicNotifications = [], isLoading: isClinicLoading } = useQuery({
-        queryKey: ["clinic-join-requests", effectiveClinicId],
-        queryFn: () => notificationsApi.getClinicJoinRequests(effectiveClinicId),
-    });
-
-    const { data: appointmentNotifications = [], isLoading: isAppointmentLoading } = useQuery({
-        queryKey: ["appointment-notifications"],
-        queryFn: () => notificationsApi.getAppointmentNotifications(),
-        enabled: Boolean(user?.doctorProfileId),
-    });
-
-    const acceptClinicMutation = useMutation({
-        mutationFn: (notificationId: number) =>
-            notificationsApi.acceptClinicJoinRequest(notificationId),
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({
-                queryKey: ["clinic-join-requests", effectiveClinicId],
-            });
-        },
-    });
-
-    const rejectClinicMutation = useMutation({
-        mutationFn: (notificationId: number) =>
-            notificationsApi.rejectClinicJoinRequest(notificationId),
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({
-                queryKey: ["clinic-join-requests", effectiveClinicId],
-            });
-        },
-    });
-
-    const title = useMemo(() => {
-        if (effectiveClinicId) {
-            return "Powiadomienia dla przychodni";
-        }
-
-        return "Powiadomienia";
-    }, [effectiveClinicId]);
+    const n = useNotificationsPage();
 
     return (
         <Box sx={{ py: { xs: 2, md: 4 } }}>
             <Stack spacing={0.8} sx={{ mb: 3 }}>
                 <Typography variant="h4" sx={{ fontWeight: 800, color: "#11223a" }}>
-                    {title}
+                    {n.title}
                 </Typography>
                 <Typography sx={{ color: "#4f627a" }}>
                     Powiadomienia o zaproszeniach do poradni i nowych wizytach.
                 </Typography>
             </Stack>
-
             <Stack spacing={3}>
                 <Box>
                     <SectionTitle title="Prośby o dołączenie do poradni" />
-                    {isClinicLoading ? <PaperLikeLoading /> : null}
-                    {!isClinicLoading && clinicNotifications.length === 0 ? (
-                        <Alert severity="info" sx={{ mb: 2 }}>
-                            Brak nowych próśb o dołączenie.
-                        </Alert>
-                    ) : null}
-                    <Stack spacing={2}>
-                        {clinicNotifications.map((notification) => (
+                    {n.isClinicLoading && <PaperLikeLoading />}
+                    {n.clinicNotifications.map((n2) => (
+                        <Card
+                            key={n2.notificationId}
+                            elevation={0}
+                            sx={{ border: "1px solid #dce5f2", borderRadius: 2 }}
+                        >
+                            <CardContent>
+                                <Stack spacing={1.5}>
+                                    <Stack
+                                        direction="row"
+                                        sx={{
+                                            justifyContent: "space-between",
+                                            flexWrap: "wrap",
+                                            gap: 1,
+                                        }}
+                                    >
+                                        <Box>
+                                            <Typography
+                                                sx={{
+                                                    fontWeight: 800,
+                                                    color: "#11223a",
+                                                    fontSize: 20,
+                                                }}
+                                            >
+                                                {n2.clinicName}
+                                            </Typography>
+                                            <Typography sx={{ color: "#4f627a" }}>
+                                                {n2.requesterName}
+                                            </Typography>
+                                        </Box>
+                                        <Chip
+                                            label={n2.status}
+                                            sx={{
+                                                bgcolor:
+                                                    n2.status === "Pending" ? "#fff3cd" : "#eef6ff",
+                                                color: "#11223a",
+                                                fontWeight: 700,
+                                            }}
+                                        />
+                                    </Stack>
+                                    {n2.message && <Alert severity="info">{n2.message}</Alert>}
+                                    <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+                                        <Button
+                                            variant="contained"
+                                            disabled={
+                                                n2.status !== "Pending" ||
+                                                n.acceptClinicMutation.isPending
+                                            }
+                                            onClick={() =>
+                                                n.acceptClinicMutation.mutate(n2.notificationId)
+                                            }
+                                            sx={{ textTransform: "none" }}
+                                        >
+                                            Akceptuj
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            disabled={
+                                                n2.status !== "Pending" ||
+                                                n.rejectClinicMutation.isPending
+                                            }
+                                            onClick={() =>
+                                                n.rejectClinicMutation.mutate(n2.notificationId)
+                                            }
+                                            sx={{ textTransform: "none" }}
+                                        >
+                                            Odrzuć
+                                        </Button>
+                                    </Stack>
+                                </Stack>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </Box>
+                {n.user?.doctorProfileId && (
+                    <Box>
+                        <Divider sx={{ my: 1 }} />
+                        <SectionTitle title="Wizyty" />
+                        {n.isAppointmentLoading && <PaperLikeLoading />}
+                        {n.appointmentNotifications.map((a) => (
                             <Card
-                                key={notification.notificationId}
+                                key={a.notificationId}
                                 elevation={0}
                                 sx={{ border: "1px solid #dce5f2", borderRadius: 2 }}
                             >
@@ -103,154 +127,38 @@ const NotificationsPage = () => {
                                         >
                                             <Box>
                                                 <Typography
-                                                    sx={{ fontWeight: 800, color: "#11223a", fontSize: 20 }}
+                                                    sx={{
+                                                        fontWeight: 800,
+                                                        color: "#11223a",
+                                                        fontSize: 20,
+                                                    }}
                                                 >
-                                                    {notification.clinicName}
+                                                    {a.patientName}
                                                 </Typography>
                                                 <Typography sx={{ color: "#4f627a" }}>
-                                                    {notification.requesterName}
+                                                    {a.appointmentType ?? "Nieznane"} • {a.date} •{" "}
+                                                    {a.startTime}
                                                 </Typography>
                                             </Box>
-
                                             <Chip
-                                                label={notification.status}
+                                                label={a.notificationStatus}
                                                 sx={{
-                                                    bgcolor:
-                                                        notification.status === "Pending"
-                                                            ? "#fff3cd"
-                                                            : "#eef6ff",
+                                                    bgcolor: "#eef6ff",
                                                     color: "#11223a",
                                                     fontWeight: 700,
                                                 }}
                                             />
                                         </Stack>
-
-                                        {notification.message ? (
-                                            <Alert severity="info">{notification.message}</Alert>
-                                        ) : null}
-
-                                        <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
-                                            <Button
-                                                variant="contained"
-                                                disabled={
-                                                    notification.status !== "Pending" ||
-                                                    acceptClinicMutation.isPending
-                                                }
-                                                onClick={() =>
-                                                    acceptClinicMutation.mutate(notification.notificationId)
-                                                }
-                                                sx={{ textTransform: "none" }}
-                                            >
-                                                Akceptuj
-                                            </Button>
-                                            <Button
-                                                variant="outlined"
-                                                disabled={
-                                                    notification.status !== "Pending" ||
-                                                    rejectClinicMutation.isPending
-                                                }
-                                                onClick={() =>
-                                                    rejectClinicMutation.mutate(notification.notificationId)
-                                                }
-                                                sx={{ textTransform: "none" }}
-                                            >
-                                                Odrzuć
-                                            </Button>
-                                        </Stack>
+                                        {a.message && <Alert severity="info">{a.message}</Alert>}
                                     </Stack>
                                 </CardContent>
                             </Card>
                         ))}
-                    </Stack>
-                </Box>
-
-                {user?.doctorProfileId ? (
-                    <Box>
-                        <Divider sx={{ my: 1 }} />
-                        <SectionTitle title="Wizyty" />
-                        {isAppointmentLoading ? <PaperLikeLoading /> : null}
-                        {!isAppointmentLoading && appointmentNotifications.length === 0 ? (
-                            <Alert severity="info" sx={{ mb: 2 }}>
-                                Brak wizyt do wyświetlenia.
-                            </Alert>
-                        ) : null}
-                        {!isAppointmentLoading && appointmentNotifications.length > 0 ? (
-                            <Alert severity="info" sx={{ mb: 2 }}>
-                                Szczegóły i zmiana statusu wizyty są dostępne w zakładce "Mój profil".
-                            </Alert>
-                        ) : null}
-                        <Stack spacing={2}>
-                            {appointmentNotifications.map((notification) => (
-                                <Card
-                                    key={notification.notificationId}
-                                    elevation={0}
-                                    sx={{ border: "1px solid #dce5f2", borderRadius: 2 }}
-                                >
-                                    <CardContent>
-                                        <Stack spacing={1.5}>
-                                            <Stack
-                                                direction="row"
-                                                sx={{
-                                                    justifyContent: "space-between",
-                                                    flexWrap: "wrap",
-                                                    gap: 1,
-                                                }}
-                                            >
-                                                <Box>
-                                                    <Typography sx={{ fontWeight: 800, color: "#11223a", fontSize: 20 }}>
-                                                        {notification.patientName}
-                                                    </Typography>
-                                                    <Typography sx={{ color: "#4f627a" }}>
-                                                        {notification.appointmentType ?? "Nieznane"} • {notification.date} • {notification.startTime}
-                                                    </Typography>
-                                                </Box>
-
-                                                <Stack spacing={1} alignItems="flex-end">
-      
-                                                    <Chip
-                                                        label={notification.notificationStatus}
-                                                        sx={{ bgcolor: "#eef6ff", color: "#11223a", fontWeight: 700 }}
-                                                    />
-                                                </Stack>
-                                            </Stack>
-
-                                            {notification.message ? (
-                                                <Alert severity="info">{notification.message}</Alert>
-                                            ) : null}
-                                        </Stack>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </Stack>
                     </Box>
-                ) : null}
+                )}
             </Stack>
         </Box>
     );
 };
-
-const SectionTitle = ({ title }: { title: string }) => (
-    <Typography variant="h5" sx={{ fontWeight: 800, color: "#11223a", mb: 1.5 }}>
-        {title}
-    </Typography>
-);
-
-const PaperLikeLoading = () => (
-    <Box
-        sx={{
-            minHeight: 220,
-            display: "grid",
-            placeItems: "center",
-            border: "1px dashed #b8c8de",
-            borderRadius: 2,
-            mb: 2,
-        }}
-    >
-        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-            <CircularProgress size={20} />
-            <Typography sx={{ color: "#4f627a" }}>Ladowanie powiadomien...</Typography>
-        </Stack>
-    </Box>
-);
 
 export default NotificationsPage;

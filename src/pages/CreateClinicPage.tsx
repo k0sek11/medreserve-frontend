@@ -1,5 +1,3 @@
-import React, { useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     Alert,
     Box,
@@ -10,7 +8,6 @@ import {
     MenuItem,
     Paper,
     Select,
-    type SelectChangeEvent,
     Stack,
     TextField,
     Typography,
@@ -19,111 +16,14 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { plPL } from "@mui/x-date-pickers/locales";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
-import dayjs, { type Dayjs } from "dayjs";
-import { Navigate, useNavigate } from "react-router-dom";
-
-import { clinicsApi } from "../api/clinics";
-import { useAuthUser } from "../hooks/useAuthUser";
+import { Navigate } from "react-router-dom";
+import { Show } from "../components/shared/ShowHide";
+import { useCreateClinic } from "../hooks/useCreateClinic";
 
 export const CreateClinicPage = () => {
-    const { data: authUser, isLoading: isAuthLoading } = useAuthUser();
-    const navigate = useNavigate();
-    const queryClient = useQueryClient();
-    const isDoctor = Boolean(authUser?.doctorProfileId);
+    const c = useCreateClinic();
 
-    const [formData, setFormData] = useState({
-        name: "",
-        description: "",
-        streetAddress: "",
-        mapLocation: "",
-        cityId: "",
-        phoneNumber: "",
-        email: "",
-    });
-    const [openingFrom, setOpeningFrom] = useState<Dayjs | null>(dayjs().hour(8).minute(0));
-    const [openingTo, setOpeningTo] = useState<Dayjs | null>(dayjs().hour(16).minute(0));
-    const [submitError, setSubmitError] = useState<string | null>(null);
-
-    const citiesQuery = useQuery({
-        queryKey: ["clinic-cities"],
-        queryFn: () => clinicsApi.list({ view: "cities" }),
-        enabled: isDoctor,
-    });
-
-    const createClinicMutation = useMutation({
-        mutationFn: clinicsApi.create,
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ["clinic-mine"] });
-            navigate("/moje-przychodnie", { replace: true });
-        },
-        onError: (error) => {
-            setSubmitError(
-                error instanceof Error ? error.message : "Nie udało się utworzyć przychodni.",
-            );
-        },
-    });
-
-    const phonePattern = /^\+?[0-9\s()-]{7,20}$/;
-    const phoneValue = formData.phoneNumber.trim();
-    const phoneError = phoneValue.length > 0 && !phonePattern.test(phoneValue);
-    const openingHoursValue = useMemo(() => {
-        if (!openingFrom || !openingTo) {
-            return null;
-        }
-
-        return `${openingFrom.format("HH:mm")}-${openingTo.format("HH:mm")}`;
-    }, [openingFrom, openingTo]);
-    const openingHoursInvalid = Boolean(
-        openingFrom && openingTo && openingTo.isBefore(openingFrom),
-    );
-    const canSubmit =
-        Boolean(formData.name.trim()) &&
-        Boolean(formData.streetAddress.trim()) &&
-        Boolean(formData.cityId) &&
-        Boolean(openingHoursValue) &&
-        !openingHoursInvalid &&
-        !phoneError &&
-        !createClinicMutation.isPending;
-
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = event.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const handleSelectChange = (event: SelectChangeEvent<string>) => {
-        const { name, value } = event.target;
-        setFormData((prev) => ({ ...prev, [name as string]: value }));
-    };
-
-    const handleSubmit = (event: React.FormEvent) => {
-        event.preventDefault();
-        setSubmitError(null);
-
-        if (!openingHoursValue || openingHoursInvalid) {
-            setSubmitError("Godziny otwarcia muszą mieć poprawny zakres.");
-            return;
-        }
-
-        if (phoneError) {
-            setSubmitError("Podaj poprawny numer telefonu albo zostaw pole puste.");
-            return;
-        }
-
-        createClinicMutation.mutate({
-            name: formData.name.trim(),
-            description: formData.description.trim() || null,
-            streetAddress: formData.streetAddress.trim(),
-            openingHours: openingHoursValue,
-            mapLocation: formData.mapLocation.trim() || null,
-            cityId: Number(formData.cityId),
-            phoneNumber: phoneValue || null,
-            email: formData.email.trim() || null,
-        });
-    };
-
-    if (!isAuthLoading && !isDoctor) {
-        return <Navigate to="/" replace />;
-    }
+    if (c.shouldRedirect) return <Navigate to="/" replace />;
 
     return (
         <LocalizationProvider
@@ -131,7 +31,11 @@ export const CreateClinicPage = () => {
             adapterLocale="pl"
             localeText={plPL.components.MuiLocalizationProvider.defaultProps.localeText}
         >
-            <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 760, mx: "auto", p: 2 }}>
+            <Box
+                component="form"
+                onSubmit={c.handleSubmit}
+                sx={{ maxWidth: 760, mx: "auto", p: 2 }}
+            >
                 <Paper
                     elevation={0}
                     sx={{ p: { xs: 3, md: 4 }, border: "1px solid #dce5f2", borderRadius: 3 }}
@@ -151,33 +55,33 @@ export const CreateClinicPage = () => {
                             </Typography>
                         </Box>
 
-                        {submitError ? <Alert severity="error">{submitError}</Alert> : null}
+                        <Show when={Boolean(c.submitError)}>
+                            <Alert severity="error">{c.submitError}</Alert>
+                        </Show>
 
                         <Stack spacing={2}>
                             <TextField
                                 label="Nazwa przychodni"
                                 name="name"
-                                value={formData.name}
-                                onChange={handleChange}
+                                value={c.formData.name}
+                                onChange={c.handleChange}
                                 required
                                 fullWidth
                             />
-
                             <TextField
                                 label="Opis"
                                 name="description"
-                                value={formData.description}
-                                onChange={handleChange}
+                                value={c.formData.description}
+                                onChange={c.handleChange}
                                 multiline
                                 rows={3}
                                 fullWidth
                             />
-
                             <TextField
                                 label="Adres"
                                 name="streetAddress"
-                                value={formData.streetAddress}
-                                onChange={handleChange}
+                                value={c.formData.streetAddress}
+                                onChange={c.handleChange}
                                 required
                                 fullWidth
                             />
@@ -187,25 +91,23 @@ export const CreateClinicPage = () => {
                                 <Select
                                     labelId="city-select-label"
                                     name="cityId"
-                                    value={formData.cityId}
+                                    value={c.formData.cityId}
                                     label="Miasto"
-                                    onChange={handleSelectChange}
-                                    disabled={citiesQuery.isLoading || citiesQuery.isError}
+                                    onChange={c.handleSelectChange}
+                                    disabled={c.citiesQuery.isLoading || c.citiesQuery.isError}
                                 >
-                                    {citiesQuery.isLoading && (
+                                    <Show when={c.citiesQuery.isLoading}>
                                         <MenuItem disabled value="">
                                             <CircularProgress size={20} sx={{ mr: 2 }} /> Ładowanie
                                             miast...
                                         </MenuItem>
-                                    )}
-
-                                    {citiesQuery.isError && (
+                                    </Show>
+                                    <Show when={Boolean(c.citiesQuery.isError)}>
                                         <MenuItem disabled value="">
                                             Błąd pobierania miast
                                         </MenuItem>
-                                    )}
-
-                                    {citiesQuery.data?.map((city) => (
+                                    </Show>
+                                    {c.citiesQuery.data?.map((city) => (
                                         <MenuItem key={city.cityId} value={String(city.cityId)}>
                                             {city.name} ({city.voivodeship})
                                         </MenuItem>
@@ -216,57 +118,55 @@ export const CreateClinicPage = () => {
                             <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
                                 <TimePicker
                                     label="Godzina otwarcia"
-                                    value={openingFrom}
-                                    onChange={setOpeningFrom}
+                                    value={c.openingFrom}
+                                    onChange={c.setOpeningFrom}
                                     ampm={false}
                                     slotProps={{ textField: { fullWidth: true, required: true } }}
                                 />
                                 <TimePicker
                                     label="Godzina zamknięcia"
-                                    value={openingTo}
-                                    onChange={setOpeningTo}
+                                    value={c.openingTo}
+                                    onChange={c.setOpeningTo}
                                     ampm={false}
                                     slotProps={{ textField: { fullWidth: true, required: true } }}
                                 />
                             </Stack>
 
-                            {openingHoursInvalid ? (
+                            <Show when={c.openingHoursInvalid}>
                                 <Typography variant="body2" sx={{ color: "#b42318" }}>
                                     Godzina zamknięcia musi być późniejsza niż otwarcie.
                                 </Typography>
-                            ) : null}
+                            </Show>
 
                             <TextField
                                 label="Telefon"
                                 name="phoneNumber"
-                                value={formData.phoneNumber}
-                                onChange={handleChange}
+                                value={c.formData.phoneNumber}
+                                onChange={c.handleChange}
                                 type="tel"
                                 inputMode="tel"
                                 placeholder="np. +48 123 456 789"
-                                error={phoneError}
+                                error={c.phoneError}
                                 helperText={
-                                    phoneError
+                                    c.phoneError
                                         ? "Podaj poprawny numer telefonu lub zostaw pole puste."
                                         : ""
                                 }
                                 fullWidth
                             />
-
                             <TextField
                                 label="Email"
                                 name="email"
                                 type="email"
-                                value={formData.email}
-                                onChange={handleChange}
+                                value={c.formData.email}
+                                onChange={c.handleChange}
                                 fullWidth
                             />
-
                             <TextField
                                 label="Lokalizacja na mapie"
                                 name="mapLocation"
-                                value={formData.mapLocation}
-                                onChange={handleChange}
+                                value={c.formData.mapLocation}
+                                onChange={c.handleChange}
                                 fullWidth
                             />
                         </Stack>
@@ -276,10 +176,10 @@ export const CreateClinicPage = () => {
                                 type="submit"
                                 variant="contained"
                                 size="large"
-                                disabled={!canSubmit || citiesQuery.isLoading || !isDoctor}
+                                disabled={!c.canSubmit || c.citiesQuery.isLoading || !c.isDoctor}
                                 sx={{ textTransform: "none", fontWeight: 700 }}
                             >
-                                {createClinicMutation.isPending
+                                {c.createClinicMutation.isPending
                                     ? "Zapisywanie..."
                                     : "Zapisz przychodnię"}
                             </Button>
