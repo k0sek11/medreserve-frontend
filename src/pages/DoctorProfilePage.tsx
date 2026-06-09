@@ -36,6 +36,7 @@ import {
     type UpsertDoctorScheduleDto,
 } from "../api/doctors";
 import { clinicsApi, type ClinicListItemDto } from "../api/clinics";
+import { appointmentsApi } from "../api/appointments";
 import { notificationsApi, type AppointmentNotificationDto } from "../api/notifications";
 import { useAuth } from "../context/AuthContext";
 import { OfflinePaymentAction } from "../components/Payment/OfflinePaymentAction";
@@ -268,10 +269,10 @@ const DoctorProfilePage = () => {
             }
 
             if (status === "Confirmed") {
-                return notificationsApi.confirmAppointment(selectedAppointment.notificationId);
+                return appointmentsApi.confirm(selectedAppointment.appointmentId, true);
             }
 
-            return notificationsApi.cancelAppointment(selectedAppointment.notificationId);
+            return appointmentsApi.cancel(selectedAppointment.appointmentId);
         },
         onSuccess: async () => {
             setSelectedAppointment(null);
@@ -281,6 +282,13 @@ const DoctorProfilePage = () => {
             await queryClient.invalidateQueries({
                 queryKey: ["appointment-notifications"],
             });
+        },
+        onError: (error) => {
+            alert(
+                error instanceof Error
+                    ? error.message
+                    : "Nie udało się zaktualizować statusu wizyty.",
+            );
         },
     });
 
@@ -302,7 +310,9 @@ const DoctorProfilePage = () => {
         return (appointmentNotificationsQuery.data ?? [])
             .filter(
                 (appointment) =>
-                    !["Cancelled", "Canceled", "Rejected"].includes(appointment.status),
+                    !["Cancelled", "Canceled", "Rejected", "Cancelled"].includes(
+                        appointment.status,
+                    ),
             )
             .map(buildAppointmentEvent)
             .filter((event): event is DoctorAppointmentEvent => event !== null)
@@ -320,7 +330,11 @@ const DoctorProfilePage = () => {
         appointmentEvents.forEach((event) => {
             const normalized = event.status.toLowerCase();
 
-            if (normalized === "pending") {
+            if (
+                normalized === "pending" ||
+                normalized === "pendingconfirmation" ||
+                normalized === "awaitingpayment"
+            ) {
                 counts.pending += 1;
             } else if (normalized === "confirmed") {
                 counts.confirmed += 1;
@@ -529,23 +543,26 @@ const DoctorProfilePage = () => {
                                 onNavigate={(nextDate) => setCalendarDate(nextDate)}
                                 onSelectEvent={handleSelectAppointment}
                                 popup
-                                eventPropGetter={(event) => ({
-                                    style: {
-                                        backgroundColor:
-                                            event.status === "Pending"
-                                                ? "#f59f00"
-                                                : event.status === "Confirmed"
-                                                  ? "#1f9b45"
-                                                  : event.status === "Completed"
-                                                    ? "#0b74c9"
-                                                    : "#64748b",
-                                        border: "none",
-                                        color: "#ffffff",
-                                        borderRadius: 3,
-                                        padding: 0,
-                                        margin: 0,
-                                    },
-                                })}
+                                eventPropGetter={(event) => {
+                                    let color = "#64748b";
+                                    if (event.status === "PendingConfirmation") color = "#f59f00";
+                                    else if (event.status === "AwaitingPayment") color = "#f97316";
+                                    else if (event.status === "AwaitingOnSitePayment")
+                                        color = "#fef08a";
+                                    else if (event.status === "Confirmed") color = "#1f9b45";
+                                    else if (event.status === "Completed") color = "#0b74c9";
+                                    else if (event.status === "Unpaid") color = "#ef4444";
+                                    return {
+                                        style: {
+                                            backgroundColor: color,
+                                            border: "none",
+                                            color: "#ffffff",
+                                            borderRadius: 3,
+                                            padding: 0,
+                                            margin: 0,
+                                        },
+                                    };
+                                }}
                             />
                         </Box>
                     </Stack>

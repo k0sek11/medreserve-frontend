@@ -47,7 +47,7 @@ export type PagedResultDto<T> = {
     totalPages: number;
 };
 
-export type ClinicSearchParams = {
+export type ClinicListParams = {
     name?: string;
     location?: string;
     cityId?: number;
@@ -55,6 +55,7 @@ export type ClinicSearchParams = {
     sort?: string;
     page?: number;
     pageSize?: number;
+    view?: "cities" | "specializations";
 };
 
 export type CreateClinicJoinRequestDto = {
@@ -73,29 +74,16 @@ export type CreateClinicRequest = {
     email?: string | null;
 };
 
-export type ClinicEditorDto = {
-    clinicId: number;
-    name: string;
-    description: string | null;
-    streetAddress: string;
-    openingHours: string | null;
-    mapLocation: string | null;
-    cityId: number;
-    phoneNumber: string | null;
-    email: string | null;
-    isActive: boolean;
-};
-
 export type ClinicUpdateRequest = {
-    name: string;
+    name?: string;
     description?: string | null;
-    streetAddress: string;
+    streetAddress?: string;
     openingHours?: string | null;
     mapLocation?: string | null;
-    cityId: number;
+    cityId?: number;
     phoneNumber?: string | null;
     email?: string | null;
-    isActive: boolean;
+    isActive?: boolean;
 };
 
 export type CityDto = {
@@ -105,33 +93,50 @@ export type CityDto = {
     voivodeship: string;
 };
 
+export type SpecializationDto = {
+    specializationId: number;
+    name: string;
+    description: string | null;
+};
+
 export const clinicsApi = {
-    search: async (params: ClinicSearchParams): Promise<PagedResultDto<ClinicListItemDto>> => {
-        const response = await api.get("/api/clinics/search", { params });
+    // ─────────── Consolidated GET /api/clinics ───────────
+
+    list: async (params: ClinicListParams = {}) => {
+        const response = await api.get("/api/clinics", { params });
         return response.data;
     },
+
+    // ─────────── GET /api/clinics/{id} (merged details) ───
+
+    getById: async (clinicId: number): Promise<ClinicDetailDto> => {
+        const response = await api.get(`/api/clinics/${clinicId}`);
+        return response.data;
+    },
+
+    // ─────────── GET /api/clinics/mine ───────────
+
     mine: async (): Promise<ClinicListItemDto[]> => {
         const response = await api.get("/api/clinics/mine");
         return response.data;
     },
-    getCities: async (): Promise<CityDto[]> => {
-        const response = await api.get("/api/clinics/cities");
+
+    // ─────────── CRUD ───────────
+
+    create: async (data: CreateClinicRequest) => {
+        const response = await api.post("/api/clinics", data);
         return response.data;
     },
-    getDetails: async (clinicId: number): Promise<ClinicDetailDto> => {
-        const response = await api.get(`/api/clinics/${clinicId}/details`);
-        return response.data;
-    },
+
     update: async (clinicId: number, data: ClinicUpdateRequest) => {
         const response = await api.put(`/api/clinics/${clinicId}`, data);
         return response.data;
     },
+
+    // ─────────── Join request ───────────
+
     requestJoin: async (clinicId: number, data: CreateClinicJoinRequestDto) => {
         const response = await api.post(`/api/clinics/${clinicId}/join-request`, data);
-        return response.data;
-    },
-    create: async (data: CreateClinicRequest) => {
-        const response = await api.post("/api/clinics", data);
         return response.data;
     },
 };

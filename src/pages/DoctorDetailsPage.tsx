@@ -44,7 +44,7 @@ const DoctorDetailsPage = () => {
     const [selectedAppointmentTypeId, setSelectedAppointmentTypeId] = useState<number | null>(null);
     const [selectedClinicId, setSelectedClinicId] = useState<number | null>(null);
     const [visibleMonth, setVisibleMonth] = useState<Dayjs>(dayjs().startOf("month"));
-    const [selectedSlotId, setSelectedSlotId] = useState<number | null>(null);
+    const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
     const [bookingMessage, setBookingMessage] = useState<string | null>(null);
 
     const profileQuery = useQuery({
@@ -114,7 +114,7 @@ const DoctorDetailsPage = () => {
     const bookMutation = useMutation({
         mutationFn: () => {
             const selectedSlot = availabilityQuery.data?.slots.find(
-                (slot) => slot.timeSlotId === selectedSlotId,
+                (slot) => slot.startAt === selectedSlotId,
             );
 
             if (!selectedSlot || activeAppointmentTypeId === null) {
@@ -480,7 +480,7 @@ const DoctorDetailsPage = () => {
                                                                                 (slot) => (
                                                                                     <Grid
                                                                                         key={
-                                                                                            slot.timeSlotId
+                                                                                            slot.startAt
                                                                                         }
                                                                                         size={{
                                                                                             xs: 6,
@@ -495,7 +495,7 @@ const DoctorDetailsPage = () => {
                                                                                             }
                                                                                             variant={
                                                                                                 selectedSlotId ===
-                                                                                                slot.timeSlotId
+                                                                                                slot.startAt
                                                                                                     ? "contained"
                                                                                                     : "outlined"
                                                                                             }
@@ -504,7 +504,7 @@ const DoctorDetailsPage = () => {
                                                                                                     !slot.isBooked
                                                                                                 ) {
                                                                                                     setSelectedSlotId(
-                                                                                                        slot.timeSlotId,
+                                                                                                        slot.startAt,
                                                                                                     );
                                                                                                     setBookingMessage(
                                                                                                         null,

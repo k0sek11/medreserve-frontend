@@ -67,7 +67,6 @@ export type DoctorProfileDto = DoctorPublicProfileDto & {
 export type DoctorAvailabilitySlotDto = {
     startAt: string;
     endAt: string;
-    timeSlotId: number;
     isBooked: boolean;
 };
 
@@ -134,25 +133,37 @@ export type DoctorSearchParams = {
 };
 
 export const doctorsApi = {
-    getCities: async (): Promise<CityDto[]> => {
-        const response = await api.get("/api/clinics/cities");
+    // ──────── cities & specializations via consolidated clinics endpoint ────────
+
+    getCities: async (specializationId?: number): Promise<CityDto[]> => {
+        const response = await api.get("/api/clinics", {
+            params: { view: "cities", specializationId },
+        });
         return response.data;
     },
 
     getCitiesBySpecialization: async (specializationId: number): Promise<CityDto[]> => {
-        const response = await api.get(`/api/clinics/cities/by-specialization/${specializationId}`);
+        const response = await api.get("/api/clinics", {
+            params: { view: "cities", specializationId },
+        });
         return response.data;
     },
 
     getSpecializationsByCity: async (cityId: number): Promise<SpecializationDto[]> => {
-        const response = await api.get(`/api/clinics/cities/${cityId}/specializations`);
+        const response = await api.get("/api/clinics", {
+            params: { view: "specializations", cityId },
+        });
         return response.data;
     },
 
     getSpecializations: async (): Promise<SpecializationDto[]> => {
-        const response = await api.get("/api/clinics/specializations");
+        const response = await api.get("/api/clinics", {
+            params: { view: "specializations" },
+        });
         return response.data;
     },
+
+    // ──────────────────────── Doctor endpoints ────────────────────────
 
     search: async (params: DoctorSearchParams): Promise<PagedResultDto<DoctorSearchItemDto>> => {
         const response = await api.get("/api/doctors/search", { params });

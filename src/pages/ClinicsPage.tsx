@@ -63,7 +63,7 @@ const ClinicsPage = ({ mine = false }: ClinicsPageProps) => {
             selectedPage,
         ],
         queryFn: () =>
-            clinicsApi.search({
+            clinicsApi.list({
                 name: filters.name || undefined,
                 location: filters.location || undefined,
                 specializationId: selectedSpecializationId,

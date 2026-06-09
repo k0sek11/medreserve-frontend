@@ -46,7 +46,7 @@ export const CreateClinicPage = () => {
 
     const citiesQuery = useQuery({
         queryKey: ["clinic-cities"],
-        queryFn: clinicsApi.getCities,
+        queryFn: () => clinicsApi.list({ view: "cities" }),
         enabled: isDoctor,
     });
 

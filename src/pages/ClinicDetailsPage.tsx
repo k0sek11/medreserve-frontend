@@ -79,13 +79,13 @@ export default function ClinicDetailsPage() {
 
     const clinicQuery = useQuery({
         queryKey: ["clinic-details", parsedClinicId],
-        queryFn: () => clinicsApi.getDetails(parsedClinicId),
+        queryFn: () => clinicsApi.getById(parsedClinicId),
         enabled: Number.isFinite(parsedClinicId) && parsedClinicId > 0,
     });
 
     const citiesQuery = useQuery({
         queryKey: ["clinic-cities"],
-        queryFn: clinicsApi.getCities,
+        queryFn: () => clinicsApi.list({ view: "cities" }),
         enabled: Boolean(authUser?.doctorProfileId),
     });
 

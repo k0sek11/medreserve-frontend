@@ -10,15 +10,21 @@ import {
 
 // Słowniki (żeby zachować spójność z poprzednią stroną)
 const statusTranslations: Record<string, string> = {
-    Pending: "Oczekuje na potwierdzenie",
+    PendingConfirmation: "Oczekuje na potwierdzenie",
+    AwaitingPayment: "Oczekuje na płatność online",
+    AwaitingOnSitePayment: "Płatność na miejscu",
     Confirmed: "Potwierdzona",
     Cancelled: "Anulowana",
+    Unpaid: "Niezapłacona (przeterminowana)",
 };
 
 const statusColors: Record<string, "default" | "primary" | "success" | "error" | "warning"> = {
-    Pending: "warning",
+    PendingConfirmation: "warning",
+    AwaitingPayment: "primary",
+    AwaitingOnSitePayment: "warning",
     Confirmed: "success",
     Cancelled: "error",
+    Unpaid: "error",
 };
 
 const AppointmentConfirmationPage = () => {
