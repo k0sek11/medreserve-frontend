@@ -88,14 +88,14 @@ const LoginPage = () => {
             title={t("auth.loginTitle")}
             subtitle={t("auth.loginSubtitle")}
             footer={
-                <Typography sx={{ color: "#4f627a", textAlign: "center" }}>
+                <Typography sx={{ color: "text.secondary", textAlign: "center" }}>
                     {t("auth.noAccount")}{" "}
                     <Typography
                         component={RouterLink}
                         to="/register"
                         sx={{
                             display: "inline",
-                            color: "#0b74c9",
+                            color: "primary.main",
                             textDecoration: "none",
                             fontWeight: 700,
                             "&:hover": {
@@ -155,7 +155,7 @@ const LoginPage = () => {
                         component={RouterLink}
                         to="/reset-hasla"
                         sx={{
-                            color: "#0b74c9",
+                            color: "primary.main",
                             textDecoration: "none",
                             fontWeight: 600,
                             "&:hover": {
@@ -180,16 +180,16 @@ const LoginPage = () => {
                         py: 1.2,
                         fontWeight: 700,
                         textTransform: "none",
-                        bgcolor: "#0b74c9",
+                        bgcolor: "primary.main",
                         "&:hover": {
-                            bgcolor: "#095fa6",
+                            bgcolor: "primary.dark",
                         },
                     }}
                 >
                     {isLoading ? t("auth.loggingIn") : t("auth.loginButton")}
                 </Button>
 
-                <Divider sx={{ color: "#71839a", fontSize: 13, mt: 1 }}>
+                <Divider sx={{ color: "text.disabled", fontSize: 13, mt: 1 }}>
                     {t("auth.orDivider")}
                 </Divider>
 

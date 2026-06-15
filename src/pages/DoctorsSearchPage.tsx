@@ -1,4 +1,5 @@
 import {
+    alpha,
     Autocomplete,
     Box,
     Button,
@@ -20,6 +21,7 @@ import {
 import { Link as RouterLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDoctorSearch } from "../hooks/useDoctorSearch";
+import { LocationPicker } from "../components/shared/LocationPicker";
 import { Show } from "../components/shared/ShowHide";
 
 const sortOptions = [
@@ -35,7 +37,7 @@ const DoctorsSearchPage = () => {
 
     return (
         <Box sx={{ py: { xs: 2, md: 4 } }}>
-            <Typography variant="h4" sx={{ fontWeight: 800, color: "#11223a", mb: 0.8 }}>
+            <Typography variant="h4" sx={{ fontWeight: 800, color: "text.primary", mb: 0.8 }}>
                 {t("doctors.searchResults")}
             </Typography>
             <Grid container spacing={2.5}>
@@ -45,31 +47,20 @@ const DoctorsSearchPage = () => {
                         sx={{
                             p: 2,
                             borderRadius: 2,
-                            border: "1px solid #dce5f2",
+                            border: (t) => `1px solid ${t.palette.divider}`,
                             position: { md: "sticky" },
                             top: 88,
                         }}
                     >
                         <Stack spacing={2}>
-                            <Typography sx={{ fontWeight: 700, color: "#11223a" }}>
+                            <Typography sx={{ fontWeight: 700, color: "text.primary" }}>
                                 {t("common.filters")}
                             </Typography>
-                            <Autocomplete
-                                options={s.cities}
-                                value={s.selectedCityOption}
-                                loading={s.isCitiesLoading}
-                                onChange={(_, v) =>
-                                    s.updateFilter("cityId", v ? String(v.cityId) : "")
-                                }
-                                getOptionLabel={(o) => `${o.name} • ${o.district}`}
-                                isOptionEqualToValue={(o, v) => o.cityId === v.cityId}
-                                renderInput={(p) => (
-                                    <TextField
-                                        {...p}
-                                        label={t("common.city")}
-                                        placeholder={t("doctors.cityPlaceholder")}
-                                    />
-                                )}
+                            <LocationPicker
+                                label={t("common.city")}
+                                placeholder={t("doctors.cityPlaceholder")}
+                                value={s.filters.location}
+                                onChange={(v) => s.updateFilter("location", v)}
                             />
                             <Autocomplete
                                 options={s.specializations}
@@ -136,7 +127,7 @@ const DoctorsSearchPage = () => {
                 </Grid>
                 <Grid size={{ xs: 12, md: 8, lg: 8.6 }}>
                     <Stack spacing={1.6}>
-                        <Typography sx={{ color: "#4f627a", fontWeight: 600 }}>
+                        <Typography sx={{ color: "text.secondary", fontWeight: 600 }}>
                             {s.filtersSummary}
                         </Typography>
                         <Show when={s.isAnyLoading}>
@@ -144,7 +135,7 @@ const DoctorsSearchPage = () => {
                                 elevation={0}
                                 sx={{
                                     p: 3,
-                                    border: "1px dashed #b8c8de",
+                                    border: (t) => `1px dashed ${t.palette.divider}`,
                                     borderRadius: 2,
                                     textAlign: "center",
                                 }}
@@ -155,7 +146,7 @@ const DoctorsSearchPage = () => {
                                     sx={{ justifyContent: "center", alignItems: "center" }}
                                 >
                                     <CircularProgress size={20} />
-                                    <Typography sx={{ color: "#4f627a" }}>
+                                    <Typography sx={{ color: "text.secondary" }}>
                                         {t("doctors.loadingDoctors")}
                                     </Typography>
                                 </Stack>
@@ -166,12 +157,12 @@ const DoctorsSearchPage = () => {
                                 elevation={0}
                                 sx={{
                                     p: 3,
-                                    border: "1px dashed #b8c8de",
+                                    border: (t) => `1px dashed ${t.palette.divider}`,
                                     borderRadius: 2,
                                     textAlign: "center",
                                 }}
                             >
-                                <Typography sx={{ color: "#4f627a" }}>
+                                <Typography sx={{ color: "text.secondary" }}>
                                     {t("doctors.noResults")}
                                 </Typography>
                             </Paper>
@@ -180,7 +171,10 @@ const DoctorsSearchPage = () => {
                             <Card
                                 key={d.doctorId}
                                 elevation={0}
-                                sx={{ border: "1px solid #dce5f2", borderRadius: 2 }}
+                                sx={{
+                                    border: (t) => `1px solid ${t.palette.divider}`,
+                                    borderRadius: 2,
+                                }}
                             >
                                 <CardContent>
                                     <Stack spacing={1.1}>
@@ -196,13 +190,13 @@ const DoctorsSearchPage = () => {
                                                 <Typography
                                                     sx={{
                                                         fontWeight: 700,
-                                                        color: "#11223a",
+                                                        color: "text.primary",
                                                         fontSize: 20,
                                                     }}
                                                 >
                                                     {d.fullName}
                                                 </Typography>
-                                                <Typography sx={{ color: "#4f627a" }}>
+                                                <Typography sx={{ color: "text.secondary" }}>
                                                     {d.specialization ||
                                                         t("doctors.noSpecialization")}{" "}
                                                     | {d.city}
@@ -210,17 +204,13 @@ const DoctorsSearchPage = () => {
                                             </Box>
                                             <Chip
                                                 label={`${d.lowestPrice.toFixed(0)} ${t("doctors.pricePrefix")}`}
-                                                sx={{
-                                                    bgcolor: "#eef6ff",
-                                                    color: "#0b74c9",
+                                                sx={(t) => ({
+                                                    bgcolor: alpha(t.palette.primary.main, 0.1),
+                                                    color: "primary.main",
                                                     fontWeight: 700,
-                                                }}
+                                                })}
                                             />
                                         </Stack>
-                                        <Typography sx={{ color: "#23354d" }}>
-                                            {t("doctors.rating")}:{" "}
-                                            {d.rating?.toFixed(1) ?? t("doctors.noRating")}
-                                        </Typography>
                                         <Button
                                             variant="contained"
                                             component={RouterLink}

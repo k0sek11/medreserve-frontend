@@ -6,13 +6,8 @@ import { doctorsApi } from "../api/doctors";
 export const useHomeSearch = () => {
     const navigate = useNavigate();
     const [specialization, setSpecialization] = useState("");
-    const [city, setCity] = useState("");
+    const [location, setLocation] = useState("");
     const [appointmentDate, setAppointmentDate] = useState("");
-
-    const { data: cities = [] } = useQuery({
-        queryKey: ["home-cities"],
-        queryFn: () => doctorsApi.getCities(),
-    });
 
     const { data: specializations = [] } = useQuery({
         queryKey: ["home-specializations"],
@@ -22,7 +17,7 @@ export const useHomeSearch = () => {
     const handleSearch = () => {
         const params = new URLSearchParams();
         if (specialization) params.set("specializationId", specialization);
-        if (city) params.set("cityId", city);
+        if (location) params.set("location", location);
         if (appointmentDate) params.set("date", appointmentDate);
         navigate(`/lekarze?${params.toString()}`);
     };
@@ -30,11 +25,10 @@ export const useHomeSearch = () => {
     return {
         specialization,
         setSpecialization,
-        city,
-        setCity,
+        location,
+        setLocation,
         appointmentDate,
         setAppointmentDate,
-        cities,
         specializations,
         handleSearch,
     };

@@ -93,14 +93,14 @@ const ProfileCompletionPage = () => {
             title={t("profileCompletion.title")}
             subtitle={t("profileCompletion.subtitle")}
             footer={
-                <Typography sx={{ color: "#4f627a", textAlign: "center" }}>
+                <Typography sx={{ color: "text.secondary", textAlign: "center" }}>
                     {t("profileCompletion.footer")}
                 </Typography>
             }
         >
             <Stack spacing={2.5}>
                 <Box>
-                    <Typography sx={{ fontWeight: 800, color: "#11223a", mb: 1 }}>
+                    <Typography sx={{ fontWeight: 800, color: "text.primary", mb: 1 }}>
                         {t("profileCompletion.whoAreYou")}
                     </Typography>
                     <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>

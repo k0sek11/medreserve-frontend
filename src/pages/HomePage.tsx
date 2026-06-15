@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useHomeSearch } from "../hooks/useHomeSearch";
+import { LocationPicker } from "../components/shared/LocationPicker";
 
 const HomePage = () => {
     const { t } = useTranslation();
@@ -27,8 +28,8 @@ const HomePage = () => {
                     maxWidth: 980,
                     p: { xs: 2.5, md: 5 },
                     borderRadius: 3,
-                    border: "1px solid #dde7f3",
-                    backgroundColor: "#ffffff",
+                    border: (t) => `1px solid ${t.palette.divider}`,
+                    bgcolor: "background.paper",
                 }}
             >
                 <Stack spacing={1} sx={{ textAlign: "center", mb: 4 }}>
@@ -38,12 +39,12 @@ const HomePage = () => {
                             fontSize: { xs: "2rem", md: "3rem" },
                             lineHeight: 1.15,
                             fontWeight: 800,
-                            color: "#11223a",
+                            color: "text.primary",
                         }}
                     >
                         {t("home.title")}
                     </Typography>
-                    <Typography sx={{ color: "#4f627a", fontSize: { xs: 16, md: 22 } }}>
+                    <Typography sx={{ color: "text.secondary", fontSize: { xs: 16, md: 22 } }}>
                         {t("home.subtitle")}
                     </Typography>
                 </Stack>
@@ -71,21 +72,11 @@ const HomePage = () => {
                         </FormControl>
                     </Grid>
                     <Grid size={{ xs: 12, md: 4 }}>
-                        <FormControl fullWidth>
-                            <InputLabel id="city-label">{t("home.cityLabel")}</InputLabel>
-                            <Select
-                                labelId="city-label"
-                                label={t("home.cityLabel")}
-                                value={h.city}
-                                onChange={(e) => h.setCity(e.target.value)}
-                            >
-                                {h.cities.map((item) => (
-                                    <MenuItem key={item.cityId} value={String(item.cityId)}>
-                                        {item.name}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                        <LocationPicker
+                            label={t("home.cityLabel")}
+                            value={h.location}
+                            onChange={h.setLocation}
+                        />
                     </Grid>
                     <Grid size={{ xs: 12, md: 4 }}>
                         <TextField
@@ -108,8 +99,8 @@ const HomePage = () => {
                         py: 1.35,
                         fontWeight: 700,
                         textTransform: "none",
-                        bgcolor: "#0b74c9",
-                        "&:hover": { bgcolor: "#095fa6" },
+                        bgcolor: "primary.main",
+                        "&:hover": { bgcolor: "primary.dark" },
                     }}
                 >
                     {t("home.searchButton")}

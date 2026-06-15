@@ -6,14 +6,14 @@ export const PaperLikeLoading = () => (
             minHeight: 220,
             display: "grid",
             placeItems: "center",
-            border: "1px dashed #b8c8de",
+            border: (t) => `1px dashed ${t.palette.divider}`,
             borderRadius: 2,
             mb: 2,
         }}
     >
         <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
             <CircularProgress size={20} />
-            <Typography sx={{ color: "#4f627a" }}>Ładowanie powiadomień...</Typography>
+            <Typography sx={{ color: "text.secondary" }}>Ładowanie powiadomień...</Typography>
         </Stack>
     </Box>
 );

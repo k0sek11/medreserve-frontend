@@ -1,7 +1,7 @@
 import { api } from "../lib/axios";
-import type { CityDto, SpecializationDto, PagedResultDto } from "../types/common";
+import type { SpecializationDto, PagedResultDto } from "../types/common";
 
-export type { CityDto, SpecializationDto, PagedResultDto };
+export type { SpecializationDto, PagedResultDto };
 
 export type DoctorAppointmentTypeDto = {
     appointmentTypeId: number;
@@ -44,7 +44,7 @@ export type DoctorPublicProfileDto = {
     phoneNumber: string | null;
     city: string | null;
     streetAddress: string | null;
-    rating: number | null;
+    profileImageUrl: string | null;
     specializations: string[];
     appointmentTypes: DoctorAppointmentTypeDto[];
     clinics: DoctorClinicDto[];
@@ -101,11 +101,10 @@ export type DoctorSearchItemDto = {
     city: string;
     specialization: string;
     lowestPrice: number;
-    rating: number | null;
 };
 
 export type DoctorSearchParams = {
-    cityId?: number;
+    location?: string;
     specializationId?: number;
     date?: string;
     priceMax?: number;
@@ -115,32 +114,11 @@ export type DoctorSearchParams = {
 };
 
 export const doctorsApi = {
-    // ──────── cities & specializations via consolidated clinics endpoint ────────
+    // ──────── specializations via consolidated clinics endpoint ────────
 
-    getCities: async (specializationId?: number): Promise<CityDto[]> => {
+    getSpecializations: async (location?: string): Promise<SpecializationDto[]> => {
         const response = await api.get("/api/clinics", {
-            params: { view: "cities", specializationId },
-        });
-        return response.data;
-    },
-
-    getCitiesBySpecialization: async (specializationId: number): Promise<CityDto[]> => {
-        const response = await api.get("/api/clinics", {
-            params: { view: "cities", specializationId },
-        });
-        return response.data;
-    },
-
-    getSpecializationsByCity: async (cityId: number): Promise<SpecializationDto[]> => {
-        const response = await api.get("/api/clinics", {
-            params: { view: "specializations", cityId },
-        });
-        return response.data;
-    },
-
-    getSpecializations: async (): Promise<SpecializationDto[]> => {
-        const response = await api.get("/api/clinics", {
-            params: { view: "specializations" },
+            params: { view: "specializations", location },
         });
         return response.data;
     },
@@ -216,6 +194,15 @@ export const doctorsApi = {
     ): Promise<DoctorAvailabilityCalendarDto> => {
         const response = await api.get(`/api/doctors/${doctorId}/availability/calendar`, {
             params,
+        });
+        return response.data;
+    },
+
+    uploadProfilePhoto: async (file: File): Promise<{ profileImageUrl: string }> => {
+        const formData = new FormData();
+        formData.append("file", file);
+        const response = await api.post("/api/doctors/me/photo", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
         });
         return response.data;
     },

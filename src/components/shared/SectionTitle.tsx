@@ -5,7 +5,7 @@ type SectionTitleProps = {
 };
 
 export const SectionTitle = ({ title }: SectionTitleProps) => (
-    <Typography variant="h5" sx={{ fontWeight: 800, color: "#11223a", mb: 1.5 }}>
+    <Typography variant="h5" sx={{ fontWeight: 800, color: "text.primary", mb: 1.5 }}>
         {title}
     </Typography>
 );

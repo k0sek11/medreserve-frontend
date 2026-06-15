@@ -88,7 +88,7 @@ export const AppointmentTypesSection = () => {
                 spacing={1}
                 sx={{ justifyContent: "space-between", alignItems: "center", mb: 0.8 }}
             >
-                <Typography sx={{ fontWeight: 700, color: "#4f627a" }}>
+                <Typography sx={{ fontWeight: 700, color: "text.secondary" }}>
                     {t("doctorProfile.appointmentTypes")}
                 </Typography>
                 <Button
@@ -120,11 +120,11 @@ export const AppointmentTypesSection = () => {
                                     }}
                                 >
                                     <Stack spacing={0.3}>
-                                        <Typography sx={{ fontWeight: 700, color: "#11223a" }}>
+                                        <Typography sx={{ fontWeight: 700, color: "text.primary" }}>
                                             {item.name}
                                         </Typography>
-                                        <Typography sx={{ color: "#4f627a", fontSize: 14 }}>
-                                            {item.basePrice.toFixed(0)} zł • {item.durationMinutes}{" "}
+                                        <Typography sx={{ color: "text.secondary", fontSize: 14 }}>
+                                            {item.basePrice.toFixed(0)} {t("doctorProfile.currency")} • {item.durationMinutes}{" "}
                                             min
                                         </Typography>
                                     </Stack>
@@ -152,7 +152,7 @@ export const AppointmentTypesSection = () => {
                 fullWidth
                 maxWidth="sm"
             >
-                <DialogTitle sx={{ fontWeight: 800, color: "#11223a" }}>
+                <DialogTitle sx={{ fontWeight: 800, color: "text.primary" }}>
                     {t("doctorProfile.createAppointmentType")}
                 </DialogTitle>
                 <DialogContent dividers>
@@ -211,13 +211,13 @@ export const AppointmentTypesSection = () => {
                 fullWidth
                 maxWidth="sm"
             >
-                <DialogTitle sx={{ fontWeight: 800, color: "#11223a" }}>
+                <DialogTitle sx={{ fontWeight: 800, color: "text.primary" }}>
                     {t("doctorProfile.deleteAppointmentType")}
                 </DialogTitle>
                 <DialogContent dividers>
                     <Stack spacing={1.5} sx={{ pt: 0.5 }}>
                         <Alert severity="warning">{t("doctorProfile.deleteWarning")}</Alert>
-                        <Typography sx={{ color: "#4f627a" }}>
+                        <Typography sx={{ color: "text.secondary" }}>
                             {t("doctorProfile.deleteConfirm")} {typeToDelete?.name ?? ""}?
                         </Typography>
                     </Stack>

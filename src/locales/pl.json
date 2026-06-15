@@ -1,6 +1,8 @@
 {
     "common": {
         "loading": "Ładowanie...",
+        "location": "Lokalizacja",
+        "locationPlaceholder": "Wpisz nazwę miejscowości, dzielnicy lub adres",
         "save": "Zapisz",
         "cancel": "Anuluj",
         "edit": "Edytuj",
@@ -29,7 +31,8 @@
         "all": "Wszystkie",
         "unknown": "Nieznane",
         "noData": "Brak danych",
-        "back": "Powrót"
+        "back": "Powrót",
+        "dateFormat": "DD.MM.YYYY"
     },
     "nav": {
         "home": "Strona główna",
@@ -112,8 +115,6 @@
             "nameDesc": "Nazwisko Z-A"
         },
         "noSpecialization": "Brak specjalizacji",
-        "rating": "Ocena",
-        "noRating": "brak danych",
         "bookVisit": "Umów wizytę",
         "noResults": "Brak wyników dla podanych filtrów.",
         "pricePrefix": "zł",
@@ -145,11 +146,13 @@
         "noProfileDesc": "To konto nie ma jeszcze przypisanego profilu lekarza.",
         "myProfile": "Mój profil lekarza",
         "profileManagementDesc": "Zarządzaj opisem profilu i grafikami przypisanymi do konkretnych przychodni.",
+        "firstName": "Imię",
+        "lastName": "Nazwisko",
         "specializations": "Specjalizacje",
         "licenseNumber": "Licencja",
         "profileName": "Profil lekarza",
         "bio": "Bio",
-        "saveBio": "Zapisz bio",
+        "saveBio": "Zapisz profil",
         "calendarTitle": "Kalendarz wizyt",
         "calendarDesc": "Tygodniowy widok wszystkich wizyt. Kliknij wizytę, żeby zmienić status.",
         "pending": "Oczekujące",
@@ -170,6 +173,18 @@
         "deleteConfirm": "Czy na pewno chcesz usunąć typ wizyty",
         "priceLabel": "Cena",
         "durationLabel": "Czas trwania w minutach",
+        "currency": "zł",
+        "unknownType": "Nieznane",
+        "dateTimeFormat": "DD.MM.YYYY HH:mm",
+        "calendarToolbar": {
+            "today": "Dzisiaj",
+            "previous": "Wstecz",
+            "next": "Dalej",
+            "month": "Miesiąc",
+            "week": "Tydzień",
+            "day": "Dzień",
+            "agenda": "Agenda"
+        },
         "create": "Utwórz",
         "editSchedule": "Edytuj grafik",
         "addSchedule": "Dodaj grafik",
@@ -199,7 +214,8 @@
             "createTypeError": "Nie udało się utworzyć typu wizyty.",
             "enterName": "Podaj nazwę typu wizyty.",
             "enterPrice": "Podaj prawidłową cenę.",
-            "enterDuration": "Podaj prawidłowy czas trwania."
+            "enterDuration": "Podaj prawidłowy czas trwania.",
+            "updateProfileError": "Nie udało się zaktualizować profilu."
         }
     },
     "clinics": {
@@ -248,6 +264,7 @@
         "saveChanges": "Zapisz zmiany",
         "cancel": "Anuluj",
         "voivodeship": "Województwo",
+        "openInGoogleMaps": "Otwórz w Google Maps",
         "mapAddressField": "Adres mapy",
         "mapAddressHelper": "To pole nie jest jeszcze używane do edycji mapy.",
         "joinRequest": "Jeśli jesteś lekarzem, możesz poprosić o dołączenie do tej poradni.",
@@ -266,17 +283,14 @@
         "subtitle": "Uzupełnij dane podstawowe. Klinika zostanie utworzona jako aktywna i przypisana do Twojego profilu lekarza.",
         "clinicName": "Nazwa przychodni",
         "description": "Opis",
-        "address": "Adres",
-        "city": "Miasto",
+        "location": "Lokalizacja (adres)",
         "openingTime": "Godzina otwarcia",
         "closingTime": "Godzina zamknięcia",
         "openingHoursInvalid": "Godzina zamknięcia musi być późniejsza niż otwarcie.",
         "phonePlaceholder": "np. +48 123 456 789",
         "phoneError": "Podaj poprawny numer telefonu lub zostaw pole puste.",
         "mapLocation": "Lokalizacja na mapie",
-        "saveClinic": "Zapisz przychodnię",
-        "loadingCities": "Ładowanie miast...",
-        "citiesError": "Błąd pobierania miast"
+        "saveClinic": "Zapisz przychodnię"
     },
     "appointments": {
         "myAppointments": "Moje wizyty",
@@ -348,5 +362,14 @@
     "placeholder": {
         "about": "O nas",
         "contact": "Kontakt"
+    },
+    "theme": {
+        "lightMode": "Tryb jasny",
+        "darkMode": "Tryb ciemny"
+    },
+    "patientProfile": {
+        "title": "Mój profil",
+        "subtitle": "Zarządzaj swoimi danymi osobowymi.",
+        "saved": "Profil został zapisany."
     }
 }

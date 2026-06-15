@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 
 export type DoctorSearchFilters = {
     specializationId: string;
-    cityId: string;
+    location: string;
     date: string;
     priceMax: string;
     sort: string;
@@ -20,7 +20,11 @@ const useDoctorSearchFilters = () => {
         () => ({
             specializationId:
                 searchParams.get("specializationId") ?? searchParams.get("specialization") ?? "",
-            cityId: searchParams.get("cityId") ?? searchParams.get("city") ?? "",
+            location:
+                searchParams.get("location") ??
+                searchParams.get("cityId") ??
+                searchParams.get("city") ??
+                "",
             date: searchParams.get("date") ?? "",
             priceMax: searchParams.get("priceMax") ?? "",
             sort: searchParams.get("sort") ?? DEFAULT_SORT,

@@ -29,7 +29,8 @@
         "all": "All",
         "unknown": "Unknown",
         "noData": "No data",
-        "back": "Back"
+        "back": "Back",
+        "dateFormat": "MM/DD/YYYY"
     },
     "nav": {
         "home": "Home",
@@ -145,11 +146,13 @@
         "noProfileDesc": "This account does not have a doctor profile assigned yet.",
         "myProfile": "My doctor profile",
         "profileManagementDesc": "Manage your profile description and schedules assigned to specific clinics.",
+        "firstName": "First name",
+        "lastName": "Last name",
         "specializations": "Specializations",
         "licenseNumber": "License",
         "profileName": "Doctor profile",
         "bio": "Bio",
-        "saveBio": "Save bio",
+        "saveBio": "Save profile",
         "calendarTitle": "Appointment calendar",
         "calendarDesc": "Weekly view of all appointments. Click an appointment to change status.",
         "pending": "Pending",
@@ -170,6 +173,18 @@
         "deleteConfirm": "Are you sure you want to delete appointment type",
         "priceLabel": "Price",
         "durationLabel": "Duration in minutes",
+        "currency": "PLN",
+        "unknownType": "Unknown",
+        "dateTimeFormat": "MM/DD/YYYY hh:mm A",
+        "calendarToolbar": {
+            "today": "Today",
+            "previous": "Back",
+            "next": "Next",
+            "month": "Month",
+            "week": "Week",
+            "day": "Day",
+            "agenda": "Agenda"
+        },
         "create": "Create",
         "editSchedule": "Edit schedule",
         "addSchedule": "Add schedule",
@@ -199,7 +214,8 @@
             "createTypeError": "Failed to create appointment type.",
             "enterName": "Enter appointment type name.",
             "enterPrice": "Enter a valid price.",
-            "enterDuration": "Enter a valid duration."
+            "enterDuration": "Enter a valid duration.",
+            "updateProfileError": "Failed to update profile."
         }
     },
     "clinics": {
@@ -320,6 +336,11 @@
         "accept": "Accept",
         "reject": "Reject"
     },
+    "patientProfile": {
+        "title": "My profile",
+        "subtitle": "Manage your personal data.",
+        "saved": "Profile has been saved."
+    },
     "payment": {
         "finalizationTitle": "Payment finalization",
         "amount": "Amount to pay",
@@ -348,5 +369,9 @@
     "placeholder": {
         "about": "About us",
         "contact": "Contact"
+    },
+    "theme": {
+        "lightMode": "Light mode",
+        "darkMode": "Dark mode"
     }
 }

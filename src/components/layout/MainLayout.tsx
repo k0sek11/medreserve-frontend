@@ -7,13 +7,16 @@ import {
     Stack,
     Toolbar,
     Typography,
+    useTheme,
 } from "@mui/material";
+import { DarkMode, LightMode } from "@mui/icons-material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useAuthUser } from "../../hooks/useAuthUser";
 import { authApi } from "../../api/auth";
 import { authUserQueryKey } from "../../hooks/useAuthUser";
 import { Link as RouterLink, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useThemeMode } from "../../context/ThemeContext";
 
 const navLinks = [
     { to: "/", labelKey: "nav.home" },
@@ -29,6 +32,8 @@ const MainLayout = () => {
     const { data: user, isLoading } = useAuthUser();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
+    const { mode, toggleTheme } = useThemeMode();
+    const theme = useTheme();
     const isDoctor = Boolean(user?.roles.includes("Doctor"));
     const visibleNavLinks = navLinks.filter((item) => {
         if (!isDoctor) {
@@ -48,8 +53,8 @@ const MainLayout = () => {
     });
 
     return (
-        <Box sx={{ minHeight: "100vh", bgcolor: "#f5f7fb" }}>
-            <AppBar position="sticky" elevation={0} sx={{ bgcolor: "#0b74c9" }}>
+        <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+            <AppBar position="sticky" elevation={0} sx={{ bgcolor: "primary.main" }}>
                 <Container maxWidth="xl">
                     <Toolbar disableGutters sx={{ minHeight: 72 }}>
                         <Typography
@@ -90,26 +95,28 @@ const MainLayout = () => {
                                 </Button>
                             ))}
 
+                            {!isLoading && user && (
+                                <Button
+                                    component={NavLink}
+                                    to={user.doctorProfileId ? "/moj-profil" : "/moje-konto"}
+                                    sx={{
+                                        color: "white",
+                                        px: 1.5,
+                                        fontSize: 14,
+                                        fontWeight: 500,
+                                        textTransform: "none",
+                                        borderBottom: "2px solid transparent",
+                                        borderRadius: 0,
+                                        "&.active": {
+                                            borderBottomColor: "white",
+                                        },
+                                    }}
+                                >
+                                    {t("nav.profile")}
+                                </Button>
+                            )}
                             {!isLoading && user?.doctorProfileId ? (
                                 <>
-                                    <Button
-                                        component={NavLink}
-                                        to="/moj-profil"
-                                        sx={{
-                                            color: "white",
-                                            px: 1.5,
-                                            fontSize: 14,
-                                            fontWeight: 500,
-                                            textTransform: "none",
-                                            borderBottom: "2px solid transparent",
-                                            borderRadius: 0,
-                                            "&.active": {
-                                                borderBottomColor: "white",
-                                            },
-                                        }}
-                                    >
-                                        {t("nav.profile")}
-                                    </Button>
                                     <Button
                                         component={NavLink}
                                         to="/moje-przychodnie"
@@ -149,6 +156,21 @@ const MainLayout = () => {
                                 </>
                             ) : null}
                         </Stack>
+
+                        <IconButton
+                            onClick={toggleTheme}
+                            size="small"
+                            sx={{
+                                color: "white",
+                                mr: 0.5,
+                                "&:hover": {
+                                    bgcolor: "rgba(255,255,255,0.15)",
+                                },
+                            }}
+                            title={mode === "dark" ? t("theme.lightMode") : t("theme.darkMode")}
+                        >
+                            {mode === "dark" ? <LightMode /> : <DarkMode />}
+                        </IconButton>
 
                         <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ml: 1 }}>
                             <IconButton
@@ -220,10 +242,13 @@ const MainLayout = () => {
                                         textTransform: "none",
                                         fontWeight: 700,
                                         px: 2,
-                                        bgcolor: "white",
-                                        color: "#0b74c9",
+                                        bgcolor: "background.paper",
+                                        color: "primary.main",
                                         "&:hover": {
-                                            bgcolor: "#eef6ff",
+                                            bgcolor: (t) =>
+                                                t.palette.mode === "dark"
+                                                    ? "rgba(255,255,255,0.15)"
+                                                    : "#eef6ff",
                                         },
                                     }}
                                 >
@@ -242,10 +267,13 @@ const MainLayout = () => {
                                         textTransform: "none",
                                         fontWeight: 700,
                                         px: 2,
-                                        bgcolor: "white",
-                                        color: "#0b74c9",
+                                        bgcolor: "background.paper",
+                                        color: "primary.main",
                                         "&:hover": {
-                                            bgcolor: "#eef6ff",
+                                            bgcolor: (t) =>
+                                                t.palette.mode === "dark"
+                                                    ? "rgba(255,255,255,0.15)"
+                                                    : "#eef6ff",
                                         },
                                     }}
                                 >

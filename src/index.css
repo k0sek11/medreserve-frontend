@@ -1,1 +1,113 @@
 @import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
+
+/* ── react-big-calendar dark mode overrides ── */
+.dark .rbc-calendar {
+    color: #e2e8f0;
+}
+.dark .rbc-toolbar button {
+    color: #cbd5e1;
+    background-color: #1e293b;
+    border-color: #475569;
+}
+.dark .rbc-toolbar button:hover {
+    background-color: #334155;
+}
+.dark .rbc-toolbar button.rbc-active {
+    background-color: #3b82f6;
+    color: #fff;
+    border-color: #3b82f6;
+}
+
+/* header (dni tygodnia u góry) */
+.dark .rbc-header {
+    background-color: #0f172a;
+    color: #94a3b8;
+    border-color: #475569;
+}
+.dark .rbc-time-header-cell {
+    border-color: #475569;
+}
+
+/* cały widok: month / week / agenda */
+.dark .rbc-month-view,
+.dark .rbc-time-view,
+.dark .rbc-agenda-view {
+    background-color: #1e293b;
+    border-color: #475569;
+}
+
+/* komórki tła dnia – poziome i pionowe kreski */
+.dark .rbc-day-bg {
+    border-color: #475569;
+}
+.dark .rbc-day-bg + .rbc-day-bg {
+    border-left-color: #475569;
+}
+
+/* sloty czasu – poziome kreski między godzinami */
+.dark .rbc-timeslot-group {
+    border-color: #475569;
+}
+.dark .rbc-time-slot {
+    border-color: #475569;
+}
+.dark .rbc-day-slot .rbc-time-slot {
+    border-color: #475569;
+}
+
+/* kolumny czasu (pionowe linie między dniami w widoku tygodnia) */
+.dark .rbc-time-content > * + * > .rbc-time-slot,
+.dark .rbc-time-header-content > .rbc-row > .rbc-time-header-cell + .rbc-time-header-cell {
+    border-left-color: #475569;
+}
+
+/* nagłówek czasu i zawartość */
+.dark .rbc-time-header-content,
+.dark .rbc-time-header {
+    border-color: #475569;
+}
+.dark .rbc-time-content {
+    border-color: #475569;
+}
+.dark .rbc-time-header.rbc-overflowing {
+    border-color: #475569;
+}
+
+/* rząd w widoku czasu (podział na dni) */
+.dark .rbc-time-view .rbc-row {
+    border-color: #475569;
+}
+.dark .rbc-time-view .rbc-allday-cell {
+    border-color: #475569;
+}
+
+/* etykiety godzin po lewej */
+.dark .rbc-label {
+    color: #94a3b8;
+}
+
+/* off-range, today, current-time, show-more */
+.dark .rbc-off-range-bg {
+    background-color: #0f172a;
+}
+.dark .rbc-today {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+.dark .rbc-current-time-indicator {
+    background-color: #ef4444;
+}
+.dark .rbc-show-more {
+    color: #93c5fd;
+}
+
+/* agenda */
+.dark .rbc-agenda-table {
+    border-color: #475569;
+}
+.dark .rbc-agenda-table thead > tr > th {
+    border-color: #475569;
+}
+.dark .rbc-agenda-table tbody > tr > td {
+    border-color: #475569;
+}

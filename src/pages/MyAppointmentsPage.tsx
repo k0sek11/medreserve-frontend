@@ -10,12 +10,12 @@ const MyAppointmentsPage = () => {
     const h = useMyAppointments();
 
     return (
-        <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-8 lg:px-16">
+        <div className="min-h-screen bg-slate-50 dark:bg-gray-950 py-8 px-4 sm:px-8 lg:px-16">
             <div className="mb-8 max-w-4xl mx-auto">
-                <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+                <h1 className="text-3xl font-extrabold text-slate-900 dark:text-gray-100 tracking-tight mb-2">
                     {t("appointments.myAppointments")}
                 </h1>
-                <p className="text-base text-slate-500 font-medium">
+                <p className="text-base text-slate-500 dark:text-gray-400 font-medium">
                     {t("appointments.myAppointmentsDesc")}
                 </p>
             </div>

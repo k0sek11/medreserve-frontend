@@ -15,14 +15,14 @@ const RegisterPage = () => {
             title={t("auth.registerTitle")}
             subtitle={t("auth.registerSubtitle")}
             footer={
-                <Typography sx={{ color: "#4f627a", textAlign: "center" }}>
+                <Typography sx={{ color: "text.secondary", textAlign: "center" }}>
                     {t("auth.haveAccount")}{" "}
                     <Typography
                         component={RouterLink}
                         to="/login"
                         sx={{
                             display: "inline",
-                            color: "#0b74c9",
+                            color: "primary.main",
                             textDecoration: "none",
                             fontWeight: 700,
                             "&:hover": { textDecoration: "underline" },
@@ -85,8 +85,8 @@ const RegisterPage = () => {
                         py: 1.2,
                         fontWeight: 700,
                         textTransform: "none",
-                        bgcolor: "#0b74c9",
-                        "&:hover": { bgcolor: "#095fa6" },
+                        bgcolor: "primary.main",
+                        "&:hover": { bgcolor: "primary.dark" },
                     }}
                 >
                     {isLoading ? t("auth.registering") : t("auth.registerButton")}

@@ -48,6 +48,7 @@ export const buildAppointmentEvent = (
         paymentStatus?: string;
         paymentMethod?: string;
     },
+    unknownLabel: string = "???",
 ): DoctorAppointmentEvent | null => {
     const start = dayjs(`${appointment.date}T${appointment.startTime}`);
     const end = dayjs(`${appointment.date}T${appointment.endTime}`);
@@ -58,7 +59,7 @@ export const buildAppointmentEvent = (
         id: appointment.notificationId,
         notificationId: appointment.notificationId,
         appointmentId: appointment.appointmentId,
-        title: `${appointment.patientName} • ${appointment.appointmentType ?? "Nieznane"}`,
+        title: `${appointment.patientName} • ${appointment.appointmentType ?? unknownLabel}`,
         patientName: appointment.patientName,
         doctorName: appointment.doctorName,
         appointmentType: appointment.appointmentType,

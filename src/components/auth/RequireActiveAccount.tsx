@@ -14,7 +14,7 @@ const RequireActiveAccount = ({ children }: { children: ReactNode }) => {
                     minHeight: "100vh",
                     display: "grid",
                     placeItems: "center",
-                    bgcolor: "#f5f7fb",
+                    bgcolor: "background.default",
                 }}
             >
                 <CircularProgress />

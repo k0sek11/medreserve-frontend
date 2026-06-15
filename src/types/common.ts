@@ -1,10 +1,3 @@
-export type CityDto = {
-    cityId: number;
-    name: string;
-    district: string;
-    voivodeship: string;
-};
-
 export type SpecializationDto = {
     specializationId: number;
     name: string;

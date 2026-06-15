@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Alert, Box, Typography } from "@mui/material";
 import { checkPaymentStatus } from "../../api/paymentApi";
 
 interface Props {
@@ -44,81 +45,74 @@ export const PaymentResultBanner = ({ appointmentId, onRetry }: Props) => {
 
     if (status === "LOADING") {
         return (
-            <div
-                style={{
-                    padding: "15px",
-                    backgroundColor: "#fff3cd",
-                    color: "#856404",
-                    borderRadius: "8px",
-                    border: "1px solid #ffeeba",
-                }}
-            >
-                <h4 style={{ margin: "0 0 10px 0" }}>{t("payment.awaitingPayment")}</h4>
-                <p style={{ margin: "0 0 15px 0" }}>{t("payment.awaitingPaymentDesc")}</p>
-
-                <button
+            <Alert severity="warning" sx={{ mb: 1 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    {t("payment.awaitingPayment")}
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 1.5 }}>
+                    {t("payment.awaitingPaymentDesc")}
+                </Typography>
+                <Typography
+                    component="button"
                     onClick={onRetry}
-                    style={{
-                        padding: "8px 15px",
-                        backgroundColor: "#ffc107",
-                        color: "#212529",
-                        border: "1px solid #d39e00",
-                        borderRadius: "4px",
+                    sx={{
+                        px: 2,
+                        py: 0.8,
+                        bgcolor: "warning.main",
+                        color: "warning.contrastText",
+                        border: "none",
+                        borderRadius: 1,
                         cursor: "pointer",
                         fontWeight: "bold",
+                        fontSize: 14,
+                        "&:hover": { opacity: 0.9 },
                     }}
                 >
                     {t("payment.retryPaymentBtn")}
-                </button>
-            </div>
+                </Typography>
+            </Alert>
         );
     }
 
     if (status === "SUCCESS") {
         return (
-            <div
-                style={{
-                    padding: "15px",
-                    backgroundColor: "#d4edda",
-                    color: "#155724",
-                    borderRadius: "8px",
-                    border: "1px solid #c3e6cb",
-                }}
-            >
-                <h4 style={{ margin: "0 0 10px 0" }}>{t("payment.paymentConfirmed")}</h4>
-                <p style={{ margin: 0 }}>{t("payment.paymentConfirmedDesc")}</p>
-            </div>
+            <Alert severity="success">
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    {t("payment.paymentConfirmed")}
+                </Typography>
+                <Typography variant="body2">{t("payment.paymentConfirmedDesc")}</Typography>
+            </Alert>
         );
     }
 
     if (status === "FAILED") {
         return (
-            <div
-                style={{
-                    padding: "15px",
-                    backgroundColor: "#f8d7da",
-                    color: "#721c24",
-                    borderRadius: "8px",
-                    border: "1px solid #f5c6cb",
-                }}
-            >
-                <h4 style={{ margin: "0 0 10px 0" }}>{t("payment.paymentRejected")}</h4>
-                <p style={{ margin: "0 0 15px 0" }}>{t("payment.paymentRejectedDesc")}</p>
-                <button
+            <Alert severity="error" sx={{ mb: 1 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    {t("payment.paymentRejected")}
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 1.5 }}>
+                    {t("payment.paymentRejectedDesc")}
+                </Typography>
+                <Typography
+                    component="button"
                     onClick={onRetry}
-                    style={{
-                        padding: "10px 15px",
-                        backgroundColor: "#dc3545",
-                        color: "white",
+                    sx={{
+                        px: 2,
+                        py: 0.8,
+                        bgcolor: "error.main",
+                        color: "error.contrastText",
                         border: "none",
-                        borderRadius: "4px",
+                        borderRadius: 1,
                         cursor: "pointer",
                         fontWeight: "bold",
+                        fontSize: 14,
+                        "&:hover": { opacity: 0.9 },
                     }}
                 >
                     {t("payment.retryPaymentAgain")}
-                </button>
-            </div>
+                </Typography>
+            </Alert>
         );
     }
 

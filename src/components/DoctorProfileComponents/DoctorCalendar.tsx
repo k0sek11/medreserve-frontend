@@ -14,6 +14,7 @@ import {
     InputLabel,
     Select,
     MenuItem,
+    useTheme,
 } from "@mui/material";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -32,6 +33,7 @@ const calendarLocalizer = dayjsLocalizer(dayjs);
 
 export const DoctorCalendar = () => {
     const { t } = useTranslation();
+    const theme = useTheme();
     const queryClient = useQueryClient();
     const [calendarDate, setCalendarDate] = useState(() => dayjs().startOf("week").toDate());
     const [selectedAppointment, setSelectedAppointment] = useState<DoctorAppointmentEvent | null>(
@@ -70,54 +72,39 @@ export const DoctorCalendar = () => {
     const appointmentEvents = useMemo(() => {
         return (data ?? [])
             .filter((a) => !["Cancelled", "Canceled", "Rejected", "Cancelled"].includes(a.status))
-            .map(buildAppointmentEvent)
+            .map((a) => buildAppointmentEvent(a, t("doctorProfile.unknownType")))
             .filter((event): event is DoctorAppointmentEvent => event !== null)
             .sort((a, b) => a.start.getTime() - b.start.getTime());
-    }, [data]);
+    }, [data, t]);
 
-    const appointmentCounts = useMemo(() => {
-        const counts = { pending: 0, confirmed: 0, completed: 0 };
-        appointmentEvents.forEach((event) => {
-            const normalized = event.status.toLowerCase();
-            if (
-                normalized === "pending" ||
-                normalized === "pendingconfirmation" ||
-                normalized === "awaitingpayment"
-            )
-                counts.pending += 1;
-            else if (normalized === "confirmed") counts.confirmed += 1;
-            else if (normalized === "completed") counts.completed += 1;
-        });
-        return counts;
-    }, [appointmentEvents]);
+    const calendarMessages = useMemo(
+        () => ({
+            today: t("doctorProfile.calendarToolbar.today"),
+            previous: t("doctorProfile.calendarToolbar.previous"),
+            next: t("doctorProfile.calendarToolbar.next"),
+            month: t("doctorProfile.calendarToolbar.month"),
+            week: t("doctorProfile.calendarToolbar.week"),
+            day: t("doctorProfile.calendarToolbar.day"),
+            agenda: t("doctorProfile.calendarToolbar.agenda"),
+        }),
+        [t],
+    );
 
     return (
         <Stack spacing={2}>
             <Box>
-                <Typography sx={{ fontWeight: 800, color: "#11223a", fontSize: 20 }}>
+                <Typography sx={{ fontWeight: 800, color: "text.primary", fontSize: 20 }}>
                     {t("doctorProfile.calendarTitle")}
                 </Typography>
-                <Typography sx={{ color: "#4f627a" }}>{t("doctorProfile.calendarDesc")}</Typography>
+                <Typography sx={{ color: "text.secondary" }}>
+                    {t("doctorProfile.calendarDesc")}
+                </Typography>
             </Box>
-
-            <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
-                <Chip
-                    label={`${t("doctorProfile.pending")}: ${appointmentCounts.pending}`}
-                    sx={{ bgcolor: "#fff3cd", color: "#8a5b00" }}
-                />
-                <Chip
-                    label={`${t("doctorProfile.confirmed")}: ${appointmentCounts.confirmed}`}
-                    sx={{ bgcolor: "#e8f7ee", color: "#1f9b45" }}
-                />
-                <Chip
-                    label={`${t("doctorProfile.completed")}: ${appointmentCounts.completed}`}
-                    sx={{ bgcolor: "#eef6ff", color: "#0b74c9" }}
-                />
-            </Stack>
 
             <Box sx={{ height: { xs: 760, lg: 820 }, "& .rbc-event": { borderRadius: 10 } }}>
                 <BigCalendar
                     localizer={calendarLocalizer}
+                    messages={calendarMessages}
                     events={appointmentEvents}
                     startAccessor="start"
                     endAccessor="end"
@@ -130,17 +117,20 @@ export const DoctorCalendar = () => {
                         setAppointmentAction("Confirmed");
                     }}
                     eventPropGetter={(event) => {
-                        let color = "#64748b";
+                        const isDark = theme.palette.mode === "dark";
+                        let color = isDark ? "#94a3b8" : "#64748b";
                         if (event.status === "PendingConfirmation") color = "#f59f00";
                         else if (event.status === "AwaitingPayment") color = "#f97316";
-                        else if (event.status === "AwaitingOnSitePayment") color = "#fef08a";
-                        else if (event.status === "Confirmed") color = "#1f9b45";
-                        else if (event.status === "Completed") color = "#0b74c9";
+                        else if (event.status === "AwaitingOnSitePayment")
+                            color = isDark ? "#a89f3a" : "#fef08a";
+                        else if (event.status === "Confirmed")
+                            color = isDark ? "#2ecc71" : "#1f9b45";
+                        else if (event.status === "Completed") color = theme.palette.primary.main;
                         else if (event.status === "Unpaid") color = "#ef4444";
                         return {
                             style: {
                                 backgroundColor: color,
-                                color: "#1e293b",
+                                color: isDark ? "#e2e8f0" : "#1e293b",
                                 border: "none",
                                 borderRadius: 12,
                             },
@@ -164,13 +154,13 @@ export const DoctorCalendar = () => {
                             <Typography sx={{ fontWeight: 800, fontSize: 18 }}>
                                 {selectedAppointment.patientName}
                             </Typography>
-                            <Typography sx={{ color: "#4f627a" }}>
+                            <Typography sx={{ color: "text.secondary" }}>
                                 {selectedAppointment.appointmentType} •{" "}
-                                {dayjs(selectedAppointment.start).format("DD.MM.YYYY HH:mm")}
+                                {dayjs(selectedAppointment.start).format(t("doctorProfile.dateTimeFormat"))}
                             </Typography>
 
-                            <Box sx={{ p: 2, bgcolor: "#f8f9fa", borderRadius: 2 }}>
-                                <Typography sx={{ color: "#4f627a", fontSize: 14 }}>
+                            <Box sx={{ p: 2, bgcolor: "background.paper", borderRadius: 2 }}>
+                                <Typography sx={{ color: "text.secondary", fontSize: 14 }}>
                                     {t("doctorProfile.settlement")}
                                 </Typography>
                                 {selectedAppointment.paymentStatus === "Paid" && (

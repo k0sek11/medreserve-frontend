@@ -6,23 +6,20 @@ import {
     CardHeader,
     Chip,
     CircularProgress,
-    Divider,
-    FormControl,
     Grid,
-    InputLabel,
-    MenuItem,
     Paper,
-    Select,
     Stack,
     TextField,
     Typography,
 } from "@mui/material";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link as RouterLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useClinicDetails } from "../hooks/useClinicDetails";
 import { InfoBlock } from "../components/shared/InfoBlock";
 import { ClinicHeroBanner } from "../components/clinic/ClinicHeroBanner";
 import { JoinRequestDialog } from "../components/clinic/JoinRequestDialog";
+import { MapLocationPicker } from "../components/shared/MapLocationPicker";
+import { LeafletMap } from "../components/shared/LeafletMap";
 import { Show } from "../components/shared/ShowHide";
 
 export default function ClinicDetailsPage() {
@@ -30,7 +27,7 @@ export default function ClinicDetailsPage() {
     const d = useClinicDetails();
 
     if (!d.isValid) return <Navigate to="/poradnie" replace />;
-    if (d.clinicQuery.isLoading || d.citiesQuery.isLoading) {
+    if (d.clinicQuery.isLoading) {
         return (
             <Box display="flex" alignItems="center" justifyContent="center" minHeight="50vh">
                 <CircularProgress />
@@ -53,12 +50,17 @@ export default function ClinicDetailsPage() {
     }
 
     const clinic = d.clinic;
+    const fullAddress = clinic.city || clinic.streetAddress;
+    const googleMapsUrl =
+        clinic.latitude && clinic.longitude
+            ? `https://www.google.com/maps?q=${clinic.latitude},${clinic.longitude}`
+            : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
 
     return (
         <Box sx={{ maxWidth: 1200, mx: "auto", py: { xs: 2, md: 4 }, px: { xs: 2, md: 0 } }}>
             <ClinicHeroBanner clinic={clinic} isOwner={d.isOwner} />
             <Grid container spacing={3}>
-                <Grid item xs={12} lg={7}>
+                <Grid sx={{ width: { xs: "100%", lg: "58.33%" } }}>
                     <Stack spacing={3}>
                         <Card sx={{ borderRadius: 4 }}>
                             <CardHeader
@@ -130,13 +132,11 @@ export default function ClinicDetailsPage() {
                                             multiline: true,
                                             minRows: 3,
                                         },
-                                        {
-                                            label: t("common.address"),
-                                            field: "streetAddress" as const,
-                                            value: `${clinic.streetAddress}, ${clinic.city}`,
-                                        },
                                     ].map((f) => (
-                                        <Grid item xs={12} md={6} key={f.label}>
+                                        <Grid
+                                            sx={{ width: { xs: "100%", md: "50%" } }}
+                                            key={f.label}
+                                        >
                                             <Show when={d.isEditing}>
                                                 <TextField
                                                     label={f.label}
@@ -160,70 +160,42 @@ export default function ClinicDetailsPage() {
                                             </Show>
                                         </Grid>
                                     ))}
-                                    <Grid item xs={12} md={6}>
-                                        <Show when={d.isEditing}>
-                                            <FormControl fullWidth>
-                                                <InputLabel id="clinic-city-label">
-                                                    {t("common.city")}
-                                                </InputLabel>
-                                                <Select
-                                                    labelId="clinic-city-label"
-                                                    label={t("common.city")}
-                                                    value={d.draft.cityId}
-                                                    onChange={(e) =>
-                                                        d.setDraft((c) => ({
-                                                            ...c,
-                                                            cityId: Number(e.target.value),
-                                                        }))
-                                                    }
-                                                >
-                                                    {d.citiesQuery.data?.map((city) => (
-                                                        <MenuItem
-                                                            key={city.cityId}
-                                                            value={city.cityId}
-                                                        >
-                                                            {city.name}, {city.district}
-                                                        </MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
-                                        </Show>
-                                        <Show when={!d.isEditing}>
-                                            <InfoBlock
-                                                label={t("common.city")}
-                                                value={clinic.city}
-                                            />
-                                        </Show>
-                                    </Grid>
-                                    <Grid item xs={12} md={6}>
+                                </Grid>
+
+                                <Show when={d.isEditing}>
+                                    <Box sx={{ mt: 2 }}>
+                                        <MapLocationPicker
+                                            label={t("createClinic.location")}
+                                            lat={d.draft.latitude}
+                                            lng={d.draft.longitude}
+                                            city={d.draft.city}
+                                            onChange={(data) =>
+                                                d.setDraft((c) => ({
+                                                    ...c,
+                                                    latitude: data.lat,
+                                                    longitude: data.lng,
+                                                    city: data.city,
+                                                    streetAddress: data.city,
+                                                }))
+                                            }
+                                            height={250}
+                                        />
+                                    </Box>
+                                </Show>
+                                <Show when={!d.isEditing}>
+                                    <Grid sx={{ width: { xs: "100%", md: "50%" } }}>
                                         <InfoBlock
-                                            label={t("clinicDetails.voivodeship")}
-                                            value={clinic.voivodeship}
+                                            label={t("common.address")}
+                                            value={fullAddress || t("common.noData")}
                                         />
                                     </Grid>
-                                    <Show when={d.isEditing}>
-                                        <Grid item xs={12}>
-                                            <TextField
-                                                label={t("clinicDetails.mapAddressField")}
-                                                helperText={t("clinicDetails.mapAddressHelper")}
-                                                value={d.draft.mapLocation}
-                                                onChange={(e) =>
-                                                    d.setDraft((c) => ({
-                                                        ...c,
-                                                        mapLocation: e.target.value,
-                                                    }))
-                                                }
-                                                fullWidth
-                                            />
-                                        </Grid>
-                                    </Show>
-                                </Grid>
+                                </Show>
+
                                 <Show when={d.isEditing}>
                                     <Stack
                                         direction={{ xs: "column", sm: "row" }}
                                         spacing={1.5}
-                                        justifyContent="flex-end"
-                                        sx={{ mt: 3 }}
+                                        sx={{ justifyContent: "flex-end", mt: 3 }}
                                     >
                                         <Button
                                             variant="text"
@@ -248,44 +220,33 @@ export default function ClinicDetailsPage() {
                             </CardContent>
                         </Card>
                         <Card sx={{ borderRadius: 4 }}>
-                            <CardHeader title={t("clinicDetails.map")} />
+                            <CardHeader
+                                title={t("clinicDetails.map")}
+                                action={
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        href={googleMapsUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        sx={{ textTransform: "none" }}
+                                    >
+                                        {t("clinicDetails.openInGoogleMaps")}
+                                    </Button>
+                                }
+                            />
                             <CardContent>
-                                <Box
-                                    sx={{
-                                        minHeight: 260,
-                                        borderRadius: 3,
-                                        border: "1px dashed",
-                                        borderColor: "divider",
-                                        display: "grid",
-                                        placeItems: "center",
-                                        background:
-                                            "linear-gradient(135deg, rgba(148,163,184,0.12) 0%, rgba(56,189,248,0.08) 100%)",
-                                    }}
-                                >
-                                    <Stack spacing={1} alignItems="center">
-                                        <Typography fontWeight={700}>
-                                            {t("clinicDetails.mapPreview")}
-                                        </Typography>
-                                        <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                            textAlign="center"
-                                        >
-                                            {t("clinicDetails.mapInfo")}
-                                        </Typography>
-                                    </Stack>
-                                </Box>
-                                <Divider sx={{ my: 2 }} />
-                                <Typography variant="body2" color="text.secondary">
-                                    {t("clinicDetails.mapAddress")}:{" "}
-                                    {clinic.mapLocation ||
-                                        `${clinic.streetAddress}, ${clinic.city}`}
-                                </Typography>
+                                <LeafletMap
+                                    lat={clinic.latitude}
+                                    lng={clinic.longitude}
+                                    address={fullAddress}
+                                    height={300}
+                                />
                             </CardContent>
                         </Card>
                     </Stack>
                 </Grid>
-                <Grid item xs={12} lg={5}>
+                <Grid sx={{ width: { xs: "100%", lg: "41.67%" } }}>
                     <Stack spacing={3} id="doctor-list">
                         <Card sx={{ borderRadius: 4 }}>
                             <CardHeader
@@ -308,8 +269,15 @@ export default function ClinicDetailsPage() {
                                             <Stack
                                                 direction="row"
                                                 spacing={2}
-                                                alignItems="center"
-                                                justifyContent="space-between"
+                                                component={RouterLink}
+                                                to={`/lekarze/${doc.doctorId}`}
+                                                sx={{
+                                                    alignItems: "center",
+                                                    justifyContent: "space-between",
+                                                    textDecoration: "none",
+                                                    color: "inherit",
+                                                    "&:hover": { opacity: 0.85 },
+                                                }}
                                             >
                                                 <Box>
                                                     <Typography fontWeight={700}>

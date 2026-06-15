@@ -1,7 +1,7 @@
 import { api } from "../lib/axios";
-import type { CityDto, SpecializationDto, PagedResultDto } from "../types/common";
+import type { SpecializationDto, PagedResultDto } from "../types/common";
 
-export type { CityDto, SpecializationDto, PagedResultDto };
+export type { SpecializationDto, PagedResultDto };
 
 export type ClinicListItemDto = {
     clinicId: number;
@@ -27,13 +27,11 @@ export type ClinicDetailDto = {
     description: string | null;
     streetAddress: string;
     openingHours: string | null;
-    mapLocation: string | null;
+    latitude: number | null;
+    longitude: number | null;
     phoneNumber: string | null;
     email: string | null;
-    cityId: number;
     city: string;
-    district: string;
-    voivodeship: string;
     isActive: boolean;
     doctorCount: number;
     specializations: string[];
@@ -45,12 +43,11 @@ export type ClinicDetailDto = {
 export type ClinicListParams = {
     name?: string;
     location?: string;
-    cityId?: number;
     specializationId?: number;
     sort?: string;
     page?: number;
     pageSize?: number;
-    view?: "cities" | "specializations";
+    view?: "specializations";
 };
 
 export type CreateClinicJoinRequestDto = {
@@ -63,8 +60,9 @@ export type CreateClinicRequest = {
     description?: string | null;
     streetAddress: string;
     openingHours?: string | null;
-    mapLocation?: string | null;
-    cityId: number;
+    latitude?: number | null;
+    longitude?: number | null;
+    city: string;
     phoneNumber?: string | null;
     email?: string | null;
 };
@@ -74,8 +72,9 @@ export type ClinicUpdateRequest = {
     description?: string | null;
     streetAddress?: string;
     openingHours?: string | null;
-    mapLocation?: string | null;
-    cityId?: number;
+    latitude?: number | null;
+    longitude?: number | null;
+    city?: string;
     phoneNumber?: string | null;
     email?: string | null;
     isActive?: boolean;

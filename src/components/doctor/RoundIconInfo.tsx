@@ -1,4 +1,4 @@
-import { Avatar, Box, Typography } from "@mui/material";
+import { alpha, Avatar, Box, Typography, useTheme } from "@mui/material";
 
 type RoundIconInfoProps = {
     icon: string;
@@ -6,12 +6,20 @@ type RoundIconInfoProps = {
 };
 
 export const RoundIconInfo = ({ icon, text }: RoundIconInfoProps) => {
+    const theme = useTheme();
     return (
         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            <Avatar sx={{ width: 34, height: 34, bgcolor: "#eef6ff", color: "#0b74c9" }}>
+            <Avatar
+                sx={{
+                    width: 34,
+                    height: 34,
+                    bgcolor: alpha(theme.palette.primary.main, 0.1),
+                    color: "primary.main",
+                }}
+            >
                 {icon}
             </Avatar>
-            <Typography sx={{ color: "#5a6e86", fontSize: 13 }}>{text}</Typography>
+            <Typography sx={{ color: "text.secondary", fontSize: 13 }}>{text}</Typography>
         </Box>
     );
 };

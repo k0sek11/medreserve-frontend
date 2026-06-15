@@ -1,4 +1,4 @@
-import { Card, CardActionArea, CardContent, Typography } from "@mui/material";
+import { alpha, Card, CardActionArea, CardContent, Typography } from "@mui/material";
 
 type RoleCardProps = {
     title: string;
@@ -10,20 +10,26 @@ type RoleCardProps = {
 export const RoleCard = ({ title, description, active, onClick }: RoleCardProps) => (
     <Card
         elevation={0}
-        sx={{
+        sx={(t) => ({
             flex: 1,
-            border: active ? "2px solid #0b74c9" : "1px solid #dce5f2",
+            border: active
+                ? `2px solid ${t.palette.primary.main}`
+                : `1px solid ${t.palette.divider}`,
             borderRadius: 3,
             overflow: "hidden",
-            bgcolor: active ? "#f2f8ff" : "white",
-        }}
+            bgcolor: active
+                ? t.palette.mode === "dark"
+                    ? alpha(t.palette.primary.main, 0.12)
+                    : "#f2f8ff"
+                : "background.paper",
+        })}
     >
         <CardActionArea onClick={onClick} sx={{ height: "100%", alignItems: "stretch" }}>
             <CardContent sx={{ height: "100%" }}>
-                <Typography sx={{ fontWeight: 800, color: "#11223a", fontSize: 20, mb: 0.6 }}>
+                <Typography sx={{ fontWeight: 800, color: "text.primary", fontSize: 20, mb: 0.6 }}>
                     {title}
                 </Typography>
-                <Typography sx={{ color: "#4f627a" }}>{description}</Typography>
+                <Typography sx={{ color: "text.secondary" }}>{description}</Typography>
             </CardContent>
         </CardActionArea>
     </Card>

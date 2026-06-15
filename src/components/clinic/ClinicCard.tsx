@@ -11,7 +11,10 @@ export const ClinicCard = ({ clinic }: ClinicCardProps) => {
     const { t } = useTranslation();
 
     return (
-        <Card elevation={0} sx={{ border: "1px solid #dce5f2", borderRadius: 2 }}>
+        <Card
+            elevation={0}
+            sx={{ border: (t) => `1px solid ${t.palette.divider}`, borderRadius: 2 }}
+        >
             <CardContent>
                 <Stack spacing={1.25}>
                     <Stack
@@ -23,10 +26,12 @@ export const ClinicCard = ({ clinic }: ClinicCardProps) => {
                         }}
                     >
                         <Box>
-                            <Typography sx={{ fontWeight: 700, color: "#11223a", fontSize: 20 }}>
+                            <Typography
+                                sx={{ fontWeight: 700, color: "text.primary", fontSize: 20 }}
+                            >
                                 {clinic.name}
                             </Typography>
-                            <Typography sx={{ color: "#4f627a" }}>
+                            <Typography sx={{ color: "text.secondary" }}>
                                 {clinic.city} | {clinic.streetAddress}
                             </Typography>
                         </Box>
@@ -34,7 +39,14 @@ export const ClinicCard = ({ clinic }: ClinicCardProps) => {
                         <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
                             <Chip
                                 label={`${clinic.doctorCount} ${t("clinics.doctorsCount")}`}
-                                sx={{ bgcolor: "#eef6ff", color: "#0b74c9", fontWeight: 700 }}
+                                sx={(t) => ({
+                                    bgcolor:
+                                        t.palette.mode === "dark"
+                                            ? "rgba(91,173,245,0.15)"
+                                            : "#eef6ff",
+                                    color: "primary.main",
+                                    fontWeight: 700,
+                                })}
                             />
                             {clinic.isOwner && (
                                 <Chip
@@ -60,7 +72,7 @@ export const ClinicCard = ({ clinic }: ClinicCardProps) => {
                             flexWrap: "wrap",
                         }}
                     >
-                        <Typography sx={{ color: "#4f627a" }}>
+                        <Typography sx={{ color: "text.secondary" }}>
                             {t("clinics.statusPrefix")}:{" "}
                             {clinic.isActive ? t("clinics.active") : t("clinics.inactive")}
                         </Typography>

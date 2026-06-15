@@ -1,4 +1,5 @@
 import {
+    alpha,
     Alert,
     Box,
     Button,
@@ -21,10 +22,12 @@ const NotificationsPage = () => {
     return (
         <Box sx={{ py: { xs: 2, md: 4 } }}>
             <Stack spacing={0.8} sx={{ mb: 3 }}>
-                <Typography variant="h4" sx={{ fontWeight: 800, color: "#11223a" }}>
+                <Typography variant="h4" sx={{ fontWeight: 800, color: "text.primary" }}>
                     {n.title}
                 </Typography>
-                <Typography sx={{ color: "#4f627a" }}>{t("notifications.subtitle")}</Typography>
+                <Typography sx={{ color: "text.secondary" }}>
+                    {t("notifications.subtitle")}
+                </Typography>
             </Stack>
             <Stack spacing={3}>
                 <Box>
@@ -34,7 +37,10 @@ const NotificationsPage = () => {
                         <Card
                             key={n2.notificationId}
                             elevation={0}
-                            sx={{ border: "1px solid #dce5f2", borderRadius: 2 }}
+                            sx={{
+                                border: (t) => `1px solid ${t.palette.divider}`,
+                                borderRadius: 2,
+                            }}
                         >
                             <CardContent>
                                 <Stack spacing={1.5}>
@@ -50,24 +56,26 @@ const NotificationsPage = () => {
                                             <Typography
                                                 sx={{
                                                     fontWeight: 800,
-                                                    color: "#11223a",
+                                                    color: "text.primary",
                                                     fontSize: 20,
                                                 }}
                                             >
                                                 {n2.clinicName}
                                             </Typography>
-                                            <Typography sx={{ color: "#4f627a" }}>
+                                            <Typography sx={{ color: "text.secondary" }}>
                                                 {n2.requesterName}
                                             </Typography>
                                         </Box>
                                         <Chip
                                             label={n2.status}
-                                            sx={{
+                                            sx={(t) => ({
                                                 bgcolor:
-                                                    n2.status === "Pending" ? "#fff3cd" : "#eef6ff",
-                                                color: "#11223a",
+                                                    n2.status === "Pending"
+                                                        ? t.palette.warning.light
+                                                        : alpha(t.palette.primary.main, 0.1),
+                                                color: "text.primary",
                                                 fontWeight: 700,
-                                            }}
+                                            })}
                                         />
                                     </Stack>
                                     {n2.message && <Alert severity="info">{n2.message}</Alert>}
@@ -113,7 +121,10 @@ const NotificationsPage = () => {
                             <Card
                                 key={a.notificationId}
                                 elevation={0}
-                                sx={{ border: "1px solid #dce5f2", borderRadius: 2 }}
+                                sx={{
+                                    border: (t) => `1px solid ${t.palette.divider}`,
+                                    borderRadius: 2,
+                                }}
                             >
                                 <CardContent>
                                     <Stack spacing={1.5}>
@@ -129,24 +140,24 @@ const NotificationsPage = () => {
                                                 <Typography
                                                     sx={{
                                                         fontWeight: 800,
-                                                        color: "#11223a",
+                                                        color: "text.primary",
                                                         fontSize: 20,
                                                     }}
                                                 >
                                                     {a.patientName}
                                                 </Typography>
-                                                <Typography sx={{ color: "#4f627a" }}>
+                                                <Typography sx={{ color: "text.secondary" }}>
                                                     {a.appointmentType ?? t("common.unknown")} •{" "}
                                                     {a.date} • {a.startTime}
                                                 </Typography>
                                             </Box>
                                             <Chip
                                                 label={a.notificationStatus}
-                                                sx={{
-                                                    bgcolor: "#eef6ff",
-                                                    color: "#11223a",
+                                                sx={(t) => ({
+                                                    bgcolor: alpha(t.palette.primary.main, 0.1),
+                                                    color: "text.primary",
                                                     fontWeight: 700,
-                                                }}
+                                                })}
                                             />
                                         </Stack>
                                         {a.message && <Alert severity="info">{a.message}</Alert>}

@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import {
+    Box,
+    Button,
+    CircularProgress,
+    Paper,
+    Radio,
+    Typography,
+    alpha,
+    useTheme,
+} from "@mui/material";
 import { initPayuPayment, createOfflinePaymentIntent } from "../../api/paymentApi";
 
 interface Props {
@@ -11,6 +21,7 @@ interface Props {
 
 export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }: Props) => {
     const { t } = useTranslation();
+    const theme = useTheme();
     const [selectedMethod, setSelectedMethod] = useState<"PAYU" | "OFFLINE" | null>(null);
     const queryClient = useQueryClient();
 
@@ -42,98 +53,81 @@ export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }:
 
     const isLoading = payuMutation.isPending || offlineMutation.isPending;
 
+    const optionStyles = (isSelected: boolean) => ({
+        border: isSelected
+            ? `2px solid ${theme.palette.primary.main}`
+            : `1px solid ${theme.palette.divider}`,
+        bgcolor: isSelected ? alpha(theme.palette.primary.main, 0.06) : "background.paper",
+    });
+
     return (
-        <div
-            style={{
-                maxWidth: "400px",
-                padding: "20px",
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                backgroundColor: "#fff",
-            }}
-        >
-            <h2 style={{ marginTop: "0" }}>{t("payment.finalizationTitle")}</h2>
-            <p>
+        <Paper elevation={0} sx={{ p: 3, border: (t) => `1px solid ${t.palette.divider}` }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                {t("payment.finalizationTitle")}
+            </Typography>
+            <Typography sx={{ mb: 2.5 }}>
                 {t("payment.amount")}:{" "}
-                <strong style={{ fontSize: "18px", color: "#007bff" }}>
+                <strong style={{ fontSize: 18, color: theme.palette.primary.main }}>
                     {amount.toFixed(2)} PLN
                 </strong>
-            </p>
+            </Typography>
 
-            <div
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "12px",
-                    marginTop: "20px",
-                }}
-            >
-                <label
-                    style={{
-                        border: selectedMethod === "PAYU" ? "2px solid #007bff" : "1px solid #ccc",
-                        padding: "15px",
-                        borderRadius: "6px",
-                        cursor: "pointer",
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                <Paper
+                    component="label"
+                    elevation={0}
+                    sx={{
                         display: "flex",
                         alignItems: "center",
-                        gap: "10px",
-                        backgroundColor: selectedMethod === "PAYU" ? "#f0f7ff" : "#fff",
+                        gap: 1,
+                        p: 2,
+                        cursor: "pointer",
+                        ...optionStyles(selectedMethod === "PAYU"),
                     }}
                 >
-                    <input
-                        type="radio"
-                        name="payMethod"
+                    <Radio
                         checked={selectedMethod === "PAYU"}
                         onChange={() => setSelectedMethod("PAYU")}
                     />
-                    <strong>{t("payment.payuLabel")}</strong>
-                </label>
+                    <Typography fontWeight={700}>{t("payment.payuLabel")}</Typography>
+                </Paper>
 
-                <label
-                    style={{
-                        border:
-                            selectedMethod === "OFFLINE" ? "2px solid #007bff" : "1px solid #ccc",
-                        padding: "15px",
-                        borderRadius: "6px",
-                        cursor: "pointer",
+                <Paper
+                    component="label"
+                    elevation={0}
+                    sx={{
                         display: "flex",
                         alignItems: "center",
-                        gap: "10px",
-                        backgroundColor: selectedMethod === "OFFLINE" ? "#f0f7ff" : "#fff",
+                        gap: 1,
+                        p: 2,
+                        cursor: "pointer",
+                        ...optionStyles(selectedMethod === "OFFLINE"),
                     }}
                 >
-                    <input
-                        type="radio"
-                        name="payMethod"
+                    <Radio
                         checked={selectedMethod === "OFFLINE"}
                         onChange={() => setSelectedMethod("OFFLINE")}
                     />
-                    <strong>{t("payment.offlineLabel")}</strong>
-                </label>
-            </div>
+                    <Typography fontWeight={700}>{t("payment.offlineLabel")}</Typography>
+                </Paper>
+            </Box>
 
-            <button
-                onClick={handlePaymentSubmit}
+            <Button
+                fullWidth
+                variant="contained"
+                color={selectedMethod ? "success" : "inherit"}
                 disabled={!selectedMethod || isLoading}
-                style={{
-                    marginTop: "25px",
-                    width: "100%",
-                    padding: "12px",
-                    backgroundColor: selectedMethod ? "#28a745" : "#ccc",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "6px",
-                    fontSize: "16px",
-                    fontWeight: "bold",
-                    cursor: selectedMethod ? "pointer" : "not-allowed",
-                }}
+                onClick={handlePaymentSubmit}
+                size="large"
+                sx={{ mt: 3, fontWeight: 700, textTransform: "none" }}
+                startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : undefined}
             >
                 {isLoading
                     ? t("payment.processing")
                     : selectedMethod === "PAYU"
                       ? t("payment.goPayu")
                       : t("payment.confirmReservation")}
-            </button>
-        </div>
+            </Button>
+        </Paper>
     );
 };

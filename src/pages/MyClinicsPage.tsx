@@ -17,10 +17,10 @@ const MyClinicsPage = () => {
                 }}
             >
                 <div>
-                    <Typography variant="h4" sx={{ fontWeight: 800, color: "#11223a" }}>
+                    <Typography variant="h4" sx={{ fontWeight: 800, color: "text.primary" }}>
                         {t("clinics.myClinics")}
                     </Typography>
-                    <Typography sx={{ color: "#4f627a" }}>{t("clinics.myClinicsDesc")}</Typography>
+                    <Typography sx={{ color: "text.secondary" }}>{t("clinics.myClinicsDesc")}</Typography>
                 </div>
 
                 <Button

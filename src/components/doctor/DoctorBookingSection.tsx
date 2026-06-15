@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import {
+    alpha,
     Alert,
     Box,
     Button,
@@ -72,13 +73,16 @@ export const DoctorBookingSection = ({
 
     return (
         <Stack spacing={2.5}>
-            <Paper elevation={0} sx={{ border: "1px solid #dce5f2", borderRadius: 3, p: 2.5 }}>
+            <Paper
+                elevation={0}
+                sx={{ border: (t) => `1px solid ${t.palette.divider}`, borderRadius: 3, p: 2.5 }}
+            >
                 <Stack spacing={2.5}>
                     <Box>
-                        <Typography sx={{ fontWeight: 800, color: "#11223a", fontSize: 22 }}>
+                        <Typography sx={{ fontWeight: 800, color: "text.primary", fontSize: 22 }}>
                             {t("doctorDetails.bookVisit")}
                         </Typography>
-                        <Typography sx={{ color: "#4f627a" }}>
+                        <Typography sx={{ color: "text.secondary" }}>
                             {t("doctorDetails.bookingSubtitle")}
                         </Typography>
                     </Box>
@@ -134,10 +138,10 @@ export const DoctorBookingSection = ({
                                 <Paper
                                     elevation={0}
                                     sx={{
-                                        border: "1px solid #e2eaf5",
+                                        border: (t) => `1px solid ${t.palette.divider}`,
                                         borderRadius: 2.5,
                                         px: 1,
-                                        bgcolor: "#fbfdff",
+                                        bgcolor: "background.paper",
                                     }}
                                 >
                                     <DateCalendar
@@ -161,15 +165,22 @@ export const DoctorBookingSection = ({
                                         sx={{ alignItems: "center", mb: 1.5 }}
                                     >
                                         <Typography
-                                            sx={{ fontWeight: 700, color: "#11223a", fontSize: 20 }}
+                                            sx={{
+                                                fontWeight: 700,
+                                                color: "text.primary",
+                                                fontSize: 20,
+                                            }}
                                         >
-                                            {selectedDate.format("DD.MM.YYYY")}
+                                            {selectedDate.format(t("common.dateFormat"))}
                                         </Typography>
                                         <Show when={Boolean(selectedAppointmentType)}>
                                             <Chip
                                                 label={`${selectedAppointmentType?.name} • ${selectedAppointmentType?.durationMinutes} min`}
                                                 size="small"
-                                                sx={{ bgcolor: "#eef6ff", color: "#0b74c9" }}
+                                                sx={(t) => ({
+                                                    bgcolor: alpha(t.palette.primary.main, 0.1),
+                                                    color: "primary.main",
+                                                })}
                                             />
                                         </Show>
                                     </Stack>
@@ -181,7 +192,9 @@ export const DoctorBookingSection = ({
                                             sx={{ alignItems: "center" }}
                                         >
                                             <CircularProgress size={18} />
-                                            <Typography sx={{ color: "#4f627a", fontSize: 14 }}>
+                                            <Typography
+                                                sx={{ color: "text.secondary", fontSize: 14 }}
+                                            >
                                                 {t("doctorDetails.loadingSlots")}
                                             </Typography>
                                         </Stack>

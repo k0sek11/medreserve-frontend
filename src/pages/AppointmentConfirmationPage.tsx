@@ -17,20 +17,22 @@ const AppointmentConfirmationPage = () => {
     const a = c.appointment;
 
     return (
-        <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-8 flex justify-center items-start">
-            <div className="max-w-2xl w-full bg-white rounded-[2rem] p-6 sm:p-10 border border-slate-100 shadow-sm relative overflow-hidden">
+        <div className="min-h-screen bg-slate-50 dark:bg-gray-950 py-12 px-4 sm:px-8 flex justify-center items-start">
+            <div className="max-w-2xl w-full bg-white dark:bg-gray-800 rounded-[2rem] p-6 sm:p-10 border border-slate-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-2 bg-blue-500" />
                 <Stack spacing={4}>
                     <div className="text-center mt-2">
-                        <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-50 rounded-full mb-4">
+                        <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-50 dark:bg-emerald-900/30 rounded-full mb-4">
                             <span className="text-4xl">
                                 {a.status === "Confirmed" ? "✅" : "⏳"}
                             </span>
                         </div>
-                        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+                        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-gray-100 tracking-tight mb-2">
                             {c.title}
                         </h1>
-                        <p className="text-slate-500 font-medium">{t("confirmation.subtitle")}</p>
+                        <p className="text-slate-500 dark:text-gray-400 font-medium">
+                            {t("confirmation.subtitle")}
+                        </p>
                     </div>
                     <div className="flex justify-center">
                         <Chip
@@ -45,7 +47,7 @@ const AppointmentConfirmationPage = () => {
                             }}
                         />
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 bg-slate-50 p-4 sm:p-6 rounded-3xl border border-slate-100">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 bg-slate-50 dark:bg-gray-900 p-4 sm:p-6 rounded-3xl border border-slate-100 dark:border-gray-700">
                         <SummaryCard
                             label={t("confirmation.appointmentNumber")}
                             value={`#${a.appointmentId}`}
@@ -102,17 +104,17 @@ const AppointmentConfirmationPage = () => {
 };
 
 const ErrorScreen = ({ icon, title }: { icon: string; title: string }) => (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 flex justify-center">
-        <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-slate-100 shadow-sm text-center">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-950 py-12 px-4 flex justify-center">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 p-8 rounded-3xl border border-slate-100 dark:border-gray-700 shadow-sm text-center">
             <span className="text-5xl block mb-4">{icon}</span>
-            <h2 className="text-xl font-bold text-slate-800">{title}</h2>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-gray-200">{title}</h2>
         </div>
     </div>
 );
 
 const LoadingScreen = ({ t }: { t: (key: string) => string }) => (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 flex justify-center">
-        <div className="max-w-xl w-full bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-950 py-12 px-4 flex justify-center">
+        <div className="max-w-xl w-full bg-white dark:bg-gray-800 p-8 rounded-3xl border border-slate-100 dark:border-gray-700 shadow-sm">
             <Alert severity="info" className="rounded-xl">
                 {t("confirmation.loadingInfo")}
             </Alert>

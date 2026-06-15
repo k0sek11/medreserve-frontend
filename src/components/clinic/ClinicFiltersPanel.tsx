@@ -13,6 +13,7 @@ import {
 import { useTranslation } from "react-i18next";
 import type { SpecializationDto } from "../../types/common";
 import { sortOptions } from "./ClinicSortOptions";
+import { LocationPicker } from "../shared/LocationPicker";
 
 type ClinicFiltersPanelProps = {
     filters: {
@@ -36,9 +37,9 @@ export const ClinicFiltersPanel = ({
     const { t } = useTranslation();
 
     return (
-        <Paper elevation={0} sx={{ p: 2, mb: 3, borderRadius: 2, border: "1px solid #dce5f2" }}>
+        <Paper elevation={0} sx={{ p: 2, mb: 3, borderRadius: 2, border: (t) => `1px solid ${t.palette.divider}` }}>
             <Stack spacing={2}>
-                <Typography sx={{ fontWeight: 700, color: "#11223a" }}>
+                <Typography sx={{ fontWeight: 700, color: "text.primary" }}>
                     {t("common.filters")}
                 </Typography>
                 <Grid container spacing={2}>
@@ -52,12 +53,10 @@ export const ClinicFiltersPanel = ({
                         />
                     </Grid>
                     <Grid size={{ xs: 12, md: 4 }}>
-                        <TextField
-                            fullWidth
+                        <LocationPicker
                             label={t("clinics.searchByLocation")}
-                            placeholder={t("clinics.searchByLocationPlaceholder")}
                             value={filters.location}
-                            onChange={(e) => updateFilter("location", e.target.value)}
+                            onChange={(v) => updateFilter("location", v)}
                         />
                     </Grid>
                     <Grid size={{ xs: 12, md: 4 }}>

@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import type { SelectChangeEvent } from "@mui/material";
 import { clinicsApi } from "../api/clinics";
 import { useAuthUser } from "./useAuthUser";
 
@@ -15,21 +14,15 @@ export const useCreateClinic = () => {
     const [formData, setFormData] = useState({
         name: "",
         description: "",
-        streetAddress: "",
-        mapLocation: "",
-        cityId: "",
+        city: "",
+        lat: null as number | null,
+        lng: null as number | null,
         phoneNumber: "",
         email: "",
     });
     const [openingFrom, setOpeningFrom] = useState<Dayjs | null>(dayjs().hour(8).minute(0));
     const [openingTo, setOpeningTo] = useState<Dayjs | null>(dayjs().hour(16).minute(0));
     const [submitError, setSubmitError] = useState<string | null>(null);
-
-    const citiesQuery = useQuery({
-        queryKey: ["clinic-cities"],
-        queryFn: () => clinicsApi.list({ view: "cities" }),
-        enabled: isDoctor,
-    });
 
     const createClinicMutation = useMutation({
         mutationFn: clinicsApi.create,
@@ -57,8 +50,9 @@ export const useCreateClinic = () => {
 
     const canSubmit =
         Boolean(formData.name.trim()) &&
-        Boolean(formData.streetAddress.trim()) &&
-        Boolean(formData.cityId) &&
+        Boolean(formData.city.trim()) &&
+        Boolean(formData.lat) &&
+        Boolean(formData.lng) &&
         Boolean(openingHoursValue) &&
         !openingHoursInvalid &&
         !phoneError &&
@@ -69,8 +63,8 @@ export const useCreateClinic = () => {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSelectChange = (event: SelectChangeEvent<string>) => {
-        setFormData((prev) => ({ ...prev, [event.target.name as string]: event.target.value }));
+    const setLocation = (data: { lat: number; lng: number; city: string }) => {
+        setFormData((prev) => ({ ...prev, lat: data.lat, lng: data.lng, city: data.city }));
     };
 
     const handleSubmit = (event: React.FormEvent) => {
@@ -87,10 +81,11 @@ export const useCreateClinic = () => {
         createClinicMutation.mutate({
             name: formData.name.trim(),
             description: formData.description.trim() || null,
-            streetAddress: formData.streetAddress.trim(),
+            streetAddress: formData.city.trim(),
             openingHours: openingHoursValue,
-            mapLocation: formData.mapLocation.trim() || null,
-            cityId: Number(formData.cityId),
+            latitude: formData.lat,
+            longitude: formData.lng,
+            city: formData.city.trim(),
             phoneNumber: phoneValue || null,
             email: formData.email.trim() || null,
         });
@@ -106,7 +101,6 @@ export const useCreateClinic = () => {
         openingFrom,
         openingTo,
         submitError,
-        citiesQuery,
         createClinicMutation,
         phoneError,
         openingHoursInvalid,
@@ -115,7 +109,7 @@ export const useCreateClinic = () => {
         setOpeningFrom,
         setOpeningTo,
         handleChange,
-        handleSelectChange,
+        setLocation,
         handleSubmit,
     };
 };

@@ -47,7 +47,7 @@ export const ClinicHeroBanner = ({ clinic, isOwner }: ClinicHeroBannerProps) => 
                     <Button
                         variant="contained"
                         color="inherit"
-                        sx={{ color: "#0f172a", fontWeight: 700 }}
+                        sx={{ color: "text.primary", fontWeight: 700 }}
                         href="#doctor-list"
                     >
                         {t("clinicDetails.seeDoctors")}

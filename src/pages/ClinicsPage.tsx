@@ -26,10 +26,10 @@ const ClinicsPage = ({ mine = false }: ClinicsPageProps) => {
     return (
         <Box sx={{ py: { xs: 2, md: 4 } }}>
             <Stack spacing={0.8} sx={{ mb: 3 }}>
-                <Typography variant="h4" sx={{ fontWeight: 800, color: "#11223a" }}>
+                <Typography variant="h4" sx={{ fontWeight: 800, color: "text.primary" }}>
                     {title}
                 </Typography>
-                <Typography sx={{ color: "#4f627a" }}>{subtitle}</Typography>
+                <Typography sx={{ color: "text.secondary" }}>{subtitle}</Typography>
             </Stack>
             <Show when={!mine}>
                 <ClinicFiltersPanel
@@ -39,7 +39,7 @@ const ClinicsPage = ({ mine = false }: ClinicsPageProps) => {
                     clearFilters={clearFilters}
                 />
             </Show>
-            <Typography sx={{ color: "#4f627a", fontWeight: 600, mb: 2 }}>
+            <Typography sx={{ color: "text.secondary", fontWeight: 600, mb: 2 }}>
                 {filtersSummary}
             </Typography>
             <Show when={isLoading}>
@@ -47,7 +47,7 @@ const ClinicsPage = ({ mine = false }: ClinicsPageProps) => {
                     elevation={0}
                     sx={{
                         p: 3,
-                        border: "1px dashed #b8c8de",
+                        border: (t) => `1px dashed ${t.palette.divider}`,
                         borderRadius: 2,
                         textAlign: "center",
                         mb: 2,
@@ -59,7 +59,7 @@ const ClinicsPage = ({ mine = false }: ClinicsPageProps) => {
                         sx={{ justifyContent: "center", alignItems: "center" }}
                     >
                         <CircularProgress size={20} />
-                        <Typography sx={{ color: "#4f627a" }}>
+                        <Typography sx={{ color: "text.secondary" }}>
                             {t("clinics.loadingClinics")}
                         </Typography>
                     </Stack>
@@ -74,12 +74,12 @@ const ClinicsPage = ({ mine = false }: ClinicsPageProps) => {
                         elevation={0}
                         sx={{
                             p: 3,
-                            border: "1px dashed #b8c8de",
+                            border: (t) => `1px dashed ${t.palette.divider}`,
                             borderRadius: 2,
                             textAlign: "center",
                         }}
                     >
-                        <Typography sx={{ color: "#4f627a" }}>{t("clinics.noClinics")}</Typography>
+                        <Typography sx={{ color: "text.secondary" }}>{t("clinics.noClinics")}</Typography>
                     </Paper>
                 </Show>
             </Stack>

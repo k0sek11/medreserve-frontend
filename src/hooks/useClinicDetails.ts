@@ -9,8 +9,9 @@ type ClinicEditDraft = {
     description: string;
     streetAddress: string;
     openingHours: string;
-    mapLocation: string;
-    cityId: number;
+    latitude: number | null;
+    longitude: number | null;
+    city: string;
     phoneNumber: string;
     email: string;
 };
@@ -20,8 +21,9 @@ const emptyDraft: ClinicEditDraft = {
     description: "",
     streetAddress: "",
     openingHours: "",
-    mapLocation: "",
-    cityId: 0,
+    latitude: null,
+    longitude: null,
+    city: "",
     phoneNumber: "",
     email: "",
 };
@@ -32,8 +34,9 @@ function toDraft(clinic: ClinicDetailDto): ClinicEditDraft {
         description: clinic.description ?? "",
         streetAddress: clinic.streetAddress,
         openingHours: clinic.openingHours ?? "",
-        mapLocation: clinic.mapLocation ?? "",
-        cityId: clinic.cityId,
+        latitude: clinic.latitude,
+        longitude: clinic.longitude,
+        city: clinic.city,
         phoneNumber: clinic.phoneNumber ?? "",
         email: clinic.email ?? "",
     };
@@ -55,12 +58,6 @@ export const useClinicDetails = () => {
         enabled: Number.isFinite(parsedClinicId) && parsedClinicId > 0,
     });
 
-    const citiesQuery = useQuery({
-        queryKey: ["clinic-cities"],
-        queryFn: () => clinicsApi.list({ view: "cities" }),
-        enabled: Boolean(authUser?.doctorProfileId),
-    });
-
     useEffect(() => {
         if (clinicQuery.data) {
             setDraft(toDraft(clinicQuery.data));
@@ -76,8 +73,9 @@ export const useClinicDetails = () => {
                 description: draft.description.trim() || null,
                 streetAddress: draft.streetAddress.trim(),
                 openingHours: draft.openingHours.trim() || null,
-                mapLocation: draft.mapLocation.trim() || null,
-                cityId: draft.cityId,
+                latitude: draft.latitude,
+                longitude: draft.longitude,
+                city: draft.city.trim(),
                 phoneNumber: draft.phoneNumber.trim() || null,
                 email: draft.email.trim() || null,
                 isActive: clinicQuery.data?.isActive ?? true,
@@ -100,7 +98,6 @@ export const useClinicDetails = () => {
         parsedClinicId,
         isValid,
         clinicQuery,
-        citiesQuery,
         clinic,
         isOwner,
         canRequestJoin,

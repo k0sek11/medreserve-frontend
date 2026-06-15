@@ -1,37 +1,32 @@
-import {
-    Alert,
-    Box,
-    Button,
-    CircularProgress,
-    FormControl,
-    InputLabel,
-    MenuItem,
-    Paper,
-    Select,
-    Stack,
-    TextField,
-    Typography,
-} from "@mui/material";
+import { Alert, Box, Button, Paper, Stack, TextField, Typography } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { plPL } from "@mui/x-date-pickers/locales";
+import { enUS } from "@mui/x-date-pickers/locales";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import { Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Show } from "../components/shared/ShowHide";
+import { MapLocationPicker } from "../components/shared/MapLocationPicker";
 import { useCreateClinic } from "../hooks/useCreateClinic";
 
 export const CreateClinicPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const c = useCreateClinic();
+
+    const locale = i18n.language?.startsWith("en") ? "en" : "pl";
+    const localeText =
+        locale === "en"
+            ? enUS.components.MuiLocalizationProvider.defaultProps.localeText
+            : plPL.components.MuiLocalizationProvider.defaultProps.localeText;
 
     if (c.shouldRedirect) return <Navigate to="/" replace />;
 
     return (
         <LocalizationProvider
             dateAdapter={AdapterDayjs}
-            adapterLocale="pl"
-            localeText={plPL.components.MuiLocalizationProvider.defaultProps.localeText}
+            adapterLocale={locale}
+            localeText={localeText}
         >
             <Box
                 component="form"
@@ -40,18 +35,18 @@ export const CreateClinicPage = () => {
             >
                 <Paper
                     elevation={0}
-                    sx={{ p: { xs: 3, md: 4 }, border: "1px solid #dce5f2", borderRadius: 3 }}
+                    sx={{ p: { xs: 3, md: 4 }, border: (t) => `1px solid ${t.palette.divider}`, borderRadius: 3 }}
                 >
                     <Stack spacing={3}>
                         <Box>
                             <Typography
                                 variant="h4"
                                 component="h1"
-                                sx={{ fontWeight: 800, color: "#11223a" }}
+                                sx={{ fontWeight: 800, color: "text.primary" }}
                             >
                                 {t("createClinic.title")}
                             </Typography>
-                            <Typography sx={{ color: "#4f627a", mt: 1 }}>
+                            <Typography sx={{ color: "text.secondary", mt: 1 }}>
                                 {t("createClinic.subtitle")}
                             </Typography>
                         </Box>
@@ -78,45 +73,16 @@ export const CreateClinicPage = () => {
                                 rows={3}
                                 fullWidth
                             />
-                            <TextField
-                                label={t("createClinic.address")}
-                                name="streetAddress"
-                                value={c.formData.streetAddress}
-                                onChange={c.handleChange}
-                                required
-                                fullWidth
-                            />
 
-                            <FormControl required fullWidth>
-                                <InputLabel id="city-select-label">
-                                    {t("createClinic.city")}
-                                </InputLabel>
-                                <Select
-                                    labelId="city-select-label"
-                                    name="cityId"
-                                    value={c.formData.cityId}
-                                    label={t("createClinic.city")}
-                                    onChange={c.handleSelectChange}
-                                    disabled={c.citiesQuery.isLoading || c.citiesQuery.isError}
-                                >
-                                    <Show when={c.citiesQuery.isLoading}>
-                                        <MenuItem disabled value="">
-                                            <CircularProgress size={20} sx={{ mr: 2 }} />{" "}
-                                            {t("createClinic.loadingCities")}
-                                        </MenuItem>
-                                    </Show>
-                                    <Show when={Boolean(c.citiesQuery.isError)}>
-                                        <MenuItem disabled value="">
-                                            {t("createClinic.citiesError")}
-                                        </MenuItem>
-                                    </Show>
-                                    {c.citiesQuery.data?.map((city) => (
-                                        <MenuItem key={city.cityId} value={String(city.cityId)}>
-                                            {city.name} ({city.voivodeship})
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
+                            <MapLocationPicker
+                                label={t("createClinic.location")}
+                                lat={c.formData.lat}
+                                lng={c.formData.lng}
+                                city={c.formData.city}
+                                onChange={c.setLocation}
+                                height={300}
+                                required
+                            />
 
                             <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
                                 <TimePicker
@@ -136,7 +102,7 @@ export const CreateClinicPage = () => {
                             </Stack>
 
                             <Show when={c.openingHoursInvalid}>
-                                <Typography variant="body2" sx={{ color: "#b42318" }}>
+                                <Typography variant="body2" sx={{ color: "error.main" }}>
                                     {t("createClinic.openingHoursInvalid")}
                                 </Typography>
                             </Show>
@@ -161,13 +127,6 @@ export const CreateClinicPage = () => {
                                 onChange={c.handleChange}
                                 fullWidth
                             />
-                            <TextField
-                                label={t("createClinic.mapLocation")}
-                                name="mapLocation"
-                                value={c.formData.mapLocation}
-                                onChange={c.handleChange}
-                                fullWidth
-                            />
                         </Stack>
 
                         <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
@@ -175,7 +134,7 @@ export const CreateClinicPage = () => {
                                 type="submit"
                                 variant="contained"
                                 size="large"
-                                disabled={!c.canSubmit || c.citiesQuery.isLoading || !c.isDoctor}
+                                disabled={!c.canSubmit || !c.isDoctor}
                                 sx={{ textTransform: "none", fontWeight: 700 }}
                             >
                                 {c.createClinicMutation.isPending
