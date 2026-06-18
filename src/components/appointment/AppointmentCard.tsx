@@ -15,7 +15,7 @@ export const AppointmentCard = ({ appointment, onPay, onRefetch }: AppointmentCa
     const { t } = useTranslation();
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 sm:p-6 border border-slate-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-300 group">
+        <div className="bg-white dark:bg-neutral-800 rounded-2xl p-5 sm:p-6 border border-slate-100 dark:border-neutral-700 shadow-sm hover:shadow-md transition-all duration-300 group">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
                 <div>
                     <h2 className="text-xl font-bold text-slate-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
@@ -42,7 +42,7 @@ export const AppointmentCard = ({ appointment, onPay, onRefetch }: AppointmentCa
                 />
             </div>
 
-            <div className="inline-flex items-center gap-1.5 bg-slate-50 dark:bg-gray-900 text-slate-700 dark:text-gray-300 px-3 py-1.5 rounded-lg border border-slate-100 dark:border-gray-700 mb-4 font-medium text-sm">
+            <div className="inline-flex items-center gap-1.5 bg-slate-50 dark:bg-neutral-900 text-slate-700 dark:text-neutral-300 px-3 py-1.5 rounded-lg border border-slate-100 dark:border-neutral-700 mb-4 font-medium text-sm">
                 <span>📅</span>
                 <span>{appointment.date}</span>
                 <span className="text-slate-300 dark:text-gray-600 mx-1">|</span>
@@ -63,7 +63,7 @@ export const AppointmentCard = ({ appointment, onPay, onRefetch }: AppointmentCa
                 </div>
             )}
 
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-100 dark:border-gray-700">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-100 dark:border-neutral-700">
                 <RouterLink
                     to={`/wizyty/potwierdzenie/${appointment.appointmentId}`}
                     className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-bold text-xs uppercase tracking-wide flex items-center gap-1 transition-colors"
@@ -90,7 +90,7 @@ export const AppointmentCard = ({ appointment, onPay, onRefetch }: AppointmentCa
 
                             {(appointment.status === "PendingConfirmation" ||
                                 appointment.status === "AwaitingPayment") && (
-                                <div className="bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-gray-400 px-3 py-1.5 rounded-lg font-bold border border-slate-200 dark:border-gray-600 flex items-center gap-1.5">
+                                <div className="bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400 px-3 py-1.5 rounded-lg font-bold border border-slate-200 dark:border-neutral-600 flex items-center gap-1.5">
                                     <span>👨‍⚕️</span> {t("appointments.awaitingConfirmation")}
                                 </div>
                             )}

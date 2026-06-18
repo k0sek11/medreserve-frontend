@@ -171,7 +171,7 @@
         "deleteAppointmentType": "Usuń typ wizyty",
         "deleteWarning": "Usunięcie typu wizyty nie skasuje historii wizyt. W istniejących wpisach nazwa typu będzie widoczna jako „Nieznane\".",
         "deleteConfirm": "Czy na pewno chcesz usunąć typ wizyty",
-        "priceLabel": "Cena",
+        "priceLabel": "Cena (zł)",
         "durationLabel": "Czas trwania w minutach",
         "currency": "zł",
         "unknownType": "Nieznane",

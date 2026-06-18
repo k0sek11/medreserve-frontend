@@ -171,7 +171,7 @@
         "deleteAppointmentType": "Delete appointment type",
         "deleteWarning": "Deleting an appointment type will not delete appointment history. In existing entries, the type name will appear as \"Unknown\".",
         "deleteConfirm": "Are you sure you want to delete appointment type",
-        "priceLabel": "Price",
+        "priceLabel": "Price (PLN)",
         "durationLabel": "Duration in minutes",
         "currency": "PLN",
         "unknownType": "Unknown",

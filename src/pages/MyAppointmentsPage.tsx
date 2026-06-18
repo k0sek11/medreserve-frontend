@@ -10,7 +10,7 @@ const MyAppointmentsPage = () => {
     const h = useMyAppointments();
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-gray-950 py-8 px-4 sm:px-8 lg:px-16">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#121212] py-8 px-4 sm:px-8 lg:px-16">
             <div className="mb-8 max-w-4xl mx-auto">
                 <h1 className="text-3xl font-extrabold text-slate-900 dark:text-gray-100 tracking-tight mb-2">
                     {t("appointments.myAppointments")}

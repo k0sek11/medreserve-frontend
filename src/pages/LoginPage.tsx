@@ -1,11 +1,8 @@
 import {
     Alert,
-    Box,
     Button,
-    Checkbox,
     CircularProgress,
     Divider,
-    FormControlLabel,
     Stack,
     TextField,
     Typography,
@@ -30,7 +27,6 @@ const LoginPage = () => {
         isLoading,
         isSuccess,
         handleInputChange,
-        handleRememberMeChange,
         handleSubmit,
     } = useLoginForm((session) => {
         navigate(
@@ -132,40 +128,6 @@ const LoginPage = () => {
                     fullWidth
                     required
                 />
-
-                <Box
-                    sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        flexWrap: "wrap",
-                        rowGap: 1,
-                    }}
-                >
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={values.rememberMe}
-                                onChange={handleRememberMeChange}
-                            />
-                        }
-                        label={t("auth.rememberMe")}
-                    />
-                    <Typography
-                        component={RouterLink}
-                        to="/reset-hasla"
-                        sx={{
-                            color: "primary.main",
-                            textDecoration: "none",
-                            fontWeight: 600,
-                            "&:hover": {
-                                textDecoration: "underline",
-                            },
-                        }}
-                    >
-                        {t("auth.forgotPassword")}
-                    </Typography>
-                </Box>
 
                 <Button
                     type="submit"
