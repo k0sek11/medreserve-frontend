@@ -23,8 +23,6 @@ const navLinks = [
     { to: "/lekarze", labelKey: "nav.doctors" },
     { to: "/wizyty", labelKey: "nav.myAppointments" },
     { to: "/poradnie", labelKey: "nav.clinics" },
-    { to: "/o-nas", labelKey: "nav.about" },
-    { to: "/kontakt", labelKey: "nav.contact" },
 ];
 
 const MainLayout = () => {

@@ -21,23 +21,18 @@ const LoginPage = () => {
     const { data: user, isLoading: isAuthLoading } = useAuthUser();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
-    const {
-        values,
-        error,
-        isLoading,
-        isSuccess,
-        handleInputChange,
-        handleSubmit,
-    } = useLoginForm((session) => {
-        navigate(
-            session.isActive
-                ? session.roles.includes("Doctor")
-                    ? "/powiadomienia"
-                    : "/"
-                : "/uzupelnij-profil",
-            { replace: true },
-        );
-    });
+    const { values, error, isLoading, isSuccess, handleInputChange, handleSubmit } = useLoginForm(
+        (session) => {
+            navigate(
+                session.isActive
+                    ? session.roles.includes("Doctor")
+                        ? "/powiadomienia"
+                        : "/"
+                    : "/uzupelnij-profil",
+                { replace: true },
+            );
+        },
+    );
 
     const loginMutation = useMutation({
         mutationFn: authApi.loginWithGoogleApi,

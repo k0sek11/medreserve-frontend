@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import dayjs from "dayjs";
 import {
+    Alert,
     Box,
     Chip,
+    Snackbar,
     Stack,
     Typography,
     Dialog,
@@ -40,6 +42,10 @@ export const DoctorCalendar = () => {
         null,
     );
     const [appointmentAction, setAppointmentAction] = useState<AppointmentAction>("Confirmed");
+    const [snackbar, setSnackbar] = useState<{
+        open: boolean;
+        message: string;
+    }>({ open: false, message: "" });
 
     const { data } = useQuery({
         queryKey: ["doctor-appointment-notifications"],
@@ -61,11 +67,13 @@ export const DoctorCalendar = () => {
             });
         },
         onError: (error) => {
-            alert(
-                error instanceof Error
-                    ? error.message
-                    : t("doctorProfile.scheduleErrors.updateStatusError"),
-            );
+            setSnackbar({
+                open: true,
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : t("doctorProfile.scheduleErrors.updateStatusError"),
+            });
         },
     });
 
@@ -156,7 +164,9 @@ export const DoctorCalendar = () => {
                             </Typography>
                             <Typography sx={{ color: "text.secondary" }}>
                                 {selectedAppointment.appointmentType} •{" "}
-                                {dayjs(selectedAppointment.start).format(t("doctorProfile.dateTimeFormat"))}
+                                {dayjs(selectedAppointment.start).format(
+                                    t("doctorProfile.dateTimeFormat"),
+                                )}
                             </Typography>
 
                             <Box sx={{ p: 2, bgcolor: "background.paper", borderRadius: 2 }}>
@@ -206,6 +216,21 @@ export const DoctorCalendar = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={5000}
+                onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+                <Alert
+                    severity="error"
+                    variant="filled"
+                    onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+                    sx={{ width: "100%" }}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Stack>
     );
 };

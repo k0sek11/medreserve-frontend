@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Box, Button, CircularProgress, Paper, TextField, Typography } from "@mui/material";
+import { Alert, Button, CircularProgress, Paper, TextField, Typography } from "@mui/material";
 import { confirmOfflinePayment } from "../../api/paymentApi";
 
 interface Props {
@@ -9,11 +9,13 @@ interface Props {
 
 export const OfflinePaymentAction = ({ paymentId }: Props) => {
     const [comment, setComment] = useState("");
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const queryClient = useQueryClient();
 
     const confirmMutation = useMutation({
         mutationFn: confirmOfflinePayment,
         onSuccess: () => {
+            setErrorMsg(null);
             queryClient.invalidateQueries({ queryKey: ["doctor-appointment-notifications"] });
             queryClient.invalidateQueries({ queryKey: ["appointmentDetails"] });
             queryClient.invalidateQueries({ queryKey: ["payments"] });
@@ -21,7 +23,7 @@ export const OfflinePaymentAction = ({ paymentId }: Props) => {
         },
         onError: (error) => {
             console.error("Błąd podczas zatwierdzania płatności offline:", error);
-            alert("Nie udało się zatwierdzić płatności.");
+            setErrorMsg("Nie udało się zatwierdzić płatności.");
         },
     });
 
@@ -46,6 +48,12 @@ export const OfflinePaymentAction = ({ paymentId }: Props) => {
                 disabled={confirmMutation.isPending}
                 sx={{ mb: 2 }}
             />
+
+            {errorMsg && (
+                <Alert severity="error" onClose={() => setErrorMsg(null)} sx={{ mb: 2 }}>
+                    {errorMsg}
+                </Alert>
+            )}
 
             <Button
                 fullWidth

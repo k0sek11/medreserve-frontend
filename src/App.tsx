@@ -15,7 +15,6 @@ import MyAppointmentsPage from "./pages/MyAppointmentsPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProfileCompletionPage from "./pages/ProfileCompletionPage";
-import PlaceholderPage from "./pages/PlaceholderPage";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { CreateClinicPage } from "./pages/CreateClinicPage";
 import PatientProfilePage from "./pages/PatientProfilePage";
@@ -59,8 +58,6 @@ function App() {
                         <Route path="poradnie/nowa" element={<CreateClinicPage />} />
                         <Route path="moje-przychodnie" element={<MyClinicsPage />} />
                         <Route path="powiadomienia" element={<NotificationsPage />} />
-                        <Route path="o-nas" element={<PlaceholderPage title="O nas" />} />
-                        <Route path="kontakt" element={<PlaceholderPage title="Kontakt" />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Route>
                 </Routes>

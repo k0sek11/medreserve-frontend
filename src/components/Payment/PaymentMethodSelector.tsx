@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
+    Alert,
     Box,
     Button,
     CircularProgress,
     Paper,
     Radio,
+    Snackbar,
     Typography,
     alpha,
     useTheme,
@@ -23,6 +25,11 @@ export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }:
     const { t } = useTranslation();
     const theme = useTheme();
     const [selectedMethod, setSelectedMethod] = useState<"PAYU" | "OFFLINE" | null>(null);
+    const [snackbar, setSnackbar] = useState<{
+        open: boolean;
+        message: string;
+        severity: "success" | "error";
+    }>({ open: false, message: "", severity: "success" });
     const queryClient = useQueryClient();
 
     const payuMutation = useMutation({
@@ -30,17 +37,23 @@ export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }:
         onSuccess: (data) => {
             window.location.href = data.redirectUri;
         },
-        onError: () => alert(t("payment.payuError")),
+        onError: () =>
+            setSnackbar({ open: true, message: t("payment.payuError"), severity: "error" }),
     });
 
     const offlineMutation = useMutation({
         mutationFn: createOfflinePaymentIntent,
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
-            alert(t("payment.offlineSuccess"));
+            setSnackbar({
+                open: true,
+                message: t("payment.offlineSuccess"),
+                severity: "success",
+            });
             if (onSuccessClose) onSuccessClose();
         },
-        onError: () => alert(t("payment.offlineError")),
+        onError: () =>
+            setSnackbar({ open: true, message: t("payment.offlineError"), severity: "error" }),
     });
 
     const handlePaymentSubmit = () => {
@@ -128,6 +141,21 @@ export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }:
                       ? t("payment.goPayu")
                       : t("payment.confirmReservation")}
             </Button>
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={5000}
+                onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+                <Alert
+                    severity={snackbar.severity}
+                    variant="filled"
+                    onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+                    sx={{ width: "100%" }}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Paper>
     );
 };
