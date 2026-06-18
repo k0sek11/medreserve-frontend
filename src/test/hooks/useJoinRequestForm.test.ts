@@ -34,8 +34,8 @@ describe("useJoinRequestForm", () => {
             await result.current.onSubmit();
         });
 
-        // With default confirmDoctor: true, validation should pass
-        // The form is valid by default
+
+
         expect(result.current.errors.confirmDoctor).toBeUndefined();
     });
 });

@@ -47,7 +47,7 @@ describe("useGoogleLogin", () => {
             result.current.handleGoogleSuccess({ credential: "google-credential-abc" });
         });
 
-        // mutation was triggered
+
         expect(result.current.loginMutation).toBeDefined();
     });
 

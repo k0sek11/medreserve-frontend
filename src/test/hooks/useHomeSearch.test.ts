@@ -32,7 +32,7 @@ describe("useHomeSearch", () => {
             result.current.setAppointmentDate(mockDayjs);
         });
 
-        // The value is set via react-hook-form internally
+
         expect(result.current.errors).toBeDefined();
     });
 

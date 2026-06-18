@@ -114,7 +114,6 @@ export type DoctorSearchParams = {
 };
 
 export const doctorsApi = {
-    
     getSpecializations: async (location?: string): Promise<SpecializationDto[]> => {
         const response = await api.get("/api/clinics", {
             params: { view: "specializations", location },
@@ -122,7 +121,6 @@ export const doctorsApi = {
         return response.data;
     },
 
-    
     search: async (params: DoctorSearchParams): Promise<PagedResultDto<DoctorSearchItemDto>> => {
         const response = await api.get("/api/doctors/search", { params });
         return response.data;

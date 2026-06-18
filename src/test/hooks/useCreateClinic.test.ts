@@ -30,7 +30,7 @@ vi.mock("react-i18next", () => ({
 describe("useCreateClinic", () => {
     it("returns isDoctor based on authUser", () => {
         const { result } = renderHook(() => useCreateClinic(), { wrapper: createWrapper() });
-        // isDoctor depends on auth query resolving; initial value may be false
+
         expect(typeof result.current.isDoctor).toBe("boolean");
     });
 
@@ -67,7 +67,7 @@ describe("useCreateClinic", () => {
             result.current.setLocation({ lat: 52.2297, lng: 21.0122, city: "Warszawa" });
         });
 
-        // The values are set via react-hook-form - errors should clear for those fields
+
         expect(result.current.errors.lat).toBeUndefined();
     });
 

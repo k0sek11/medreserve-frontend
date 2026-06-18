@@ -119,7 +119,7 @@ describe("useLoginForm", () => {
     });
 
     it("shows loading state during submission", async () => {
-        mockLogin.mockImplementation(() => new Promise(() => {})); // never resolves
+        mockLogin.mockImplementation(() => new Promise(() => {}));
 
         const { result } = renderHook(() => useLoginForm(), {
             wrapper: createWrapper(),

@@ -101,7 +101,7 @@ describe("useAppointmentTypes", () => {
             nameInput.onChange({ target: { value: "Nowa wizyta", name: "name" } });
         });
 
-        // Form is valid with just a name
+
         expect(result.current.errors.name).toBeUndefined();
     });
 });

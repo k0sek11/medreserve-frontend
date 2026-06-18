@@ -25,7 +25,7 @@ vi.mock("react-i18next", () => ({
 describe("useDoctorSearch", () => {
     it("returns specializations from API", () => {
         const { result } = renderHook(() => useDoctorSearch(), { wrapper: createWrapper() });
-        // specializations are fetched asynchronously; initially may be empty
+
         expect(Array.isArray(result.current.specializations)).toBe(true);
     });
 
@@ -36,7 +36,7 @@ describe("useDoctorSearch", () => {
 
     it("returns filtersSummary", () => {
         const { result } = renderHook(() => useDoctorSearch(), { wrapper: createWrapper() });
-        // The t mock returns the key when called
+
         expect(result.current.filtersSummary).toBeDefined();
     });
 
