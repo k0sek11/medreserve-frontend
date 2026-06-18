@@ -51,8 +51,7 @@ export const ClinicFiltersPanel = ({
         },
     });
 
-    // Sync external filter changes back to form
-    useEffect(() => {
+        useEffect(() => {
         reset({
             name: filters.name,
             location: filters.location,

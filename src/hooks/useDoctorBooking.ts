@@ -2,15 +2,17 @@ import { useMemo, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { doctorsApi } from "../api/doctors";
 import { appointmentsApi } from "../api/appointments";
-import { useAuth } from "../context/AuthContext";
+import { useAuthUser } from "./useAuthUser";
 
 export const useDoctorBooking = () => {
+    const { t } = useTranslation();
     const { doctorId } = useParams();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { data: user } = useAuthUser();
 
     const parsedDoctorId = Number(doctorId);
     const isValidDoctorId = Number.isFinite(parsedDoctorId) && parsedDoctorId > 0;
@@ -68,8 +70,8 @@ export const useDoctorBooking = () => {
         mutationFn: () => {
             const slot = availabilityQuery.data?.slots.find((s) => s.startAt === selectedSlotId);
             if (!slot || selectedAppointmentTypeId === null)
-                throw new Error("Wybierz wolny termin.");
-            if (selectedClinicId === null) throw new Error("Wybierz przychodnię.");
+                throw new Error(t("errors.selectSlot"));
+            if (selectedClinicId === null) throw new Error(t("errors.selectClinicBooking"));
             return appointmentsApi.book({
                 doctorId: parsedDoctorId,
                 clinicId: selectedClinicId,
@@ -93,9 +95,7 @@ export const useDoctorBooking = () => {
             } as any);
         },
         onError: (error) => {
-            setBookingMessage(
-                error instanceof Error ? error.message : "Nie udało się zarezerwować wizyty.",
-            );
+            setBookingMessage(error instanceof Error ? error.message : t("errors.bookFailed"));
         },
     });
 

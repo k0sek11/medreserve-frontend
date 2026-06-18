@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Alert, Button, CircularProgress, Paper, TextField, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { confirmOfflinePayment } from "../../api/paymentApi";
 
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export const OfflinePaymentAction = ({ paymentId }: Props) => {
+    const { t } = useTranslation();
     const [comment, setComment] = useState("");
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const queryClient = useQueryClient();
@@ -21,28 +23,31 @@ export const OfflinePaymentAction = ({ paymentId }: Props) => {
             queryClient.invalidateQueries({ queryKey: ["payments"] });
             setComment("");
         },
-        onError: (error) => {
-            console.error("Błąd podczas zatwierdzania płatności offline:", error);
-            setErrorMsg("Nie udało się zatwierdzić płatności.");
+        onError: () => {
+            setErrorMsg(t("errors.offlinePaymentFailed"));
         },
     });
 
     return (
         <Paper
             elevation={0}
-            sx={{ p: 2.5, border: (t) => `1px solid ${t.palette.divider}`, borderRadius: 2 }}
+            sx={{
+                p: 2.5,
+                border: (theme) => `1px solid ${theme.palette.divider}`,
+                borderRadius: 2,
+            }}
         >
             <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 0.5 }}>
-                Zatwierdź płatność w placówce
+                {t("payment.offlineConfirmTitle")}
             </Typography>
             <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
-                Użyj tego przycisku, gdy pacjent uregulował należność gotówką lub kartą na miejscu.
+                {t("payment.offlineConfirmDesc")}
             </Typography>
 
             <TextField
                 fullWidth
                 size="small"
-                placeholder="Np. zapłacono odliczoną gotówką..."
+                placeholder={t("payment.offlineCommentPlaceholder")}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 disabled={confirmMutation.isPending}
@@ -68,12 +73,12 @@ export const OfflinePaymentAction = ({ paymentId }: Props) => {
                     ) : undefined
                 }
             >
-                {confirmMutation.isPending ? "Zatwierdzanie..." : "Potwierdzam otrzymanie wpłaty"}
+                {confirmMutation.isPending ? t("payment.confirming") : t("payment.confirmReceipt")}
             </Button>
 
             {confirmMutation.isSuccess && (
                 <Typography sx={{ color: "success.main", mt: 1.5, fontWeight: 600 }}>
-                    ✅ Płatność została zaksięgowana w bazie.
+                    {t("payment.offlineConfirmed")}
                 </Typography>
             )}
         </Paper>

@@ -1,4 +1,5 @@
 import { api } from "../lib/axios";
+import i18n from "../i18n";
 import type {
     BookAppointmentRequest,
     BookAppointmentResultDto,
@@ -13,88 +14,78 @@ export type {
     AppointmentDetailDto,
 };
 
-function extractErrorMessage(error: unknown, fallback: string): string {
+function extractErrorMessage(error: unknown, fallbackKey: string): string {
     if (error && typeof error === "object" && "response" in error) {
         const axiosError = error as { response?: { data?: { message?: string; title?: string } } };
-        return axiosError.response?.data?.message || axiosError.response?.data?.title || fallback;
+        return (
+            axiosError.response?.data?.message ||
+            axiosError.response?.data?.title ||
+            i18n.t(fallbackKey)
+        );
     }
-    return fallback;
+    return i18n.t(fallbackKey);
 }
 
 export const appointmentsApi = {
-    // 1. Rezerwacja nowej wizyty
-    book: async (data: BookAppointmentRequest): Promise<BookAppointmentResultDto> => {
+        book: async (data: BookAppointmentRequest): Promise<BookAppointmentResultDto> => {
         try {
             const response = await api.post("/api/appointments", data);
             return response.data;
         } catch (error: unknown) {
-            throw new Error(extractErrorMessage(error, "Nie udało się zarezerwować wizyty."));
+            throw new Error(extractErrorMessage(error, "errors.bookFailed"));
         }
     },
 
-    // 2. Potwierdzenie wizyty przez lekarza (POST /api/appointments/{id}/confirm)
-    confirm: async (appointmentId: number, isOnline: boolean): Promise<{ message: string }> => {
+        confirm: async (appointmentId: number, isOnline: boolean): Promise<{ message: string }> => {
         try {
             const response = await api.post(`/api/appointments/${appointmentId}/confirm`, {
                 isOnline,
             });
             return response.data;
         } catch (error: unknown) {
-            throw new Error(extractErrorMessage(error, "Nie udało się potwierdzić wizyty."));
+            throw new Error(extractErrorMessage(error, "errors.confirmFailed"));
         }
     },
 
-    // 3. Anulowanie wizyty (POST /api/appointments/{id}/cancel)
-    cancel: async (appointmentId: number): Promise<{ message: string }> => {
+        cancel: async (appointmentId: number): Promise<{ message: string }> => {
         try {
             const response = await api.post(`/api/appointments/${appointmentId}/cancel`);
             return response.data;
         } catch (error: unknown) {
-            throw new Error(extractErrorMessage(error, "Nie udało się anulować wizyty."));
+            throw new Error(extractErrorMessage(error, "errors.cancelFailed"));
         }
     },
 
-    // 4. Oznaczanie wizyty jako Completed (POST /api/appointments/{id}/complete)
-    complete: async (appointmentId: number, comment?: string): Promise<{ message: string }> => {
+        complete: async (appointmentId: number, comment?: string): Promise<{ message: string }> => {
         try {
             const response = await api.post(`/api/appointments/${appointmentId}/complete`, {
                 comment,
             });
             return response.data;
         } catch (error: unknown) {
-            throw new Error(
-                extractErrorMessage(error, "Nie udało się oznaczyć wizyty jako zakończona."),
-            );
+            throw new Error(extractErrorMessage(error, "errors.completeFailed"));
         }
     },
 
-    // 5. Pobieranie wizyt zalogowanego użytkownika
-    mine: async (): Promise<AppointmentSummaryDto[]> => {
+        mine: async (): Promise<AppointmentSummaryDto[]> => {
         try {
             const response = await api.get("/api/appointments/mine");
             return response.data;
         } catch (error: unknown) {
-            throw new Error(extractErrorMessage(error, "Nie udało się pobrać listy Twoich wizyt."));
+            throw new Error(extractErrorMessage(error, "errors.fetchAppointmentsFailed"));
         }
     },
 
-    // 6. Sprawdzanie statusu płatności w bramce PayU Sandbox
-    checkPaymentStatus: async (appointmentId: number): Promise<{ isPaid: boolean }> => {
+        checkPaymentStatus: async (appointmentId: number): Promise<{ isPaid: boolean }> => {
         try {
             const response = await api.post(`/api/payments/check-status/${appointmentId}`);
             return response.data;
         } catch (error: unknown) {
-            throw new Error(
-                extractErrorMessage(
-                    error,
-                    "Nie udało się zweryfikować statusu płatności w systemie PayU.",
-                ),
-            );
+            throw new Error(extractErrorMessage(error, "errors.payuStatusFailed"));
         }
     },
 
-    // 7. Pobieranie szczegółów wizyty
-    getById: async (id: number): Promise<AppointmentDetailDto> => {
+        getById: async (id: number): Promise<AppointmentDetailDto> => {
         const response = await api.get(`/api/appointments/${id}`);
         return response.data;
     },

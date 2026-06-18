@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
     Alert,
     Box,
@@ -13,82 +12,12 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import {
-    doctorsApi,
-    type DoctorAppointmentTypeDto,
-    type CreateDoctorAppointmentTypeDto,
-} from "../../api/doctors";
-import { appointmentTypeSchema, type AppointmentTypeFormData } from "../../lib/validations";
+import { useAppointmentTypes } from "../../hooks/useAppointmentTypes";
 
 export const AppointmentTypesSection = () => {
     const { t } = useTranslation();
-    const queryClient = useQueryClient();
-    const [modalOpen, setModalOpen] = useState(false);
-    const [typeToDelete, setTypeToDelete] = useState<DoctorAppointmentTypeDto | null>(null);
-
-    const {
-        register,
-        handleSubmit,
-        reset,
-        setError,
-        formState: { errors, isSubmitting },
-    } = useForm<AppointmentTypeFormData>({
-        resolver: zodResolver(appointmentTypeSchema),
-        defaultValues: {
-            name: "",
-            basePrice: 0,
-            durationMinutes: 30,
-        },
-    });
-
-    const profileQuery = useQuery({
-        queryKey: ["doctor-my-profile"],
-        queryFn: () => doctorsApi.getMyProfile(),
-    });
-
-    const createMutation = useMutation({
-        mutationFn: (payload: CreateDoctorAppointmentTypeDto) =>
-            doctorsApi.createMyAppointmentType(payload),
-        onSuccess: async () => {
-            setModalOpen(false);
-            reset();
-            await queryClient.invalidateQueries({ queryKey: ["doctor-my-profile"] });
-        },
-        onError: (err) => {
-            setError("root", {
-                message:
-                    err instanceof Error
-                        ? err.message
-                        : t("doctorProfile.scheduleErrors.createTypeError"),
-            });
-        },
-    });
-
-    const deleteMutation = useMutation({
-        mutationFn: (id: number) => doctorsApi.deleteMyAppointmentType(id),
-        onSuccess: async () => {
-            setTypeToDelete(null);
-            await queryClient.invalidateQueries({ queryKey: ["doctor-my-profile"] });
-            await queryClient.invalidateQueries({
-                queryKey: ["doctor-appointment-notifications"],
-            });
-            await queryClient.invalidateQueries({ queryKey: ["appointment-notifications"] });
-        },
-    });
-
-    const onSubmit = (data: AppointmentTypeFormData) => {
-        createMutation.mutate({
-            name: data.name.trim(),
-            basePrice: data.basePrice,
-            durationMinutes: data.durationMinutes,
-        });
-    };
-
-    const types = profileQuery.data?.appointmentTypes ?? [];
+    const a = useAppointmentTypes();
 
     return (
         <Box>
@@ -102,21 +31,18 @@ export const AppointmentTypesSection = () => {
                 </Typography>
                 <Button
                     variant="outlined"
-                    onClick={() => {
-                        reset({ name: "", basePrice: 0, durationMinutes: 30 });
-                        setModalOpen(true);
-                    }}
+                    onClick={a.openCreateModal}
                     sx={{ textTransform: "none" }}
                 >
                     {t("doctorProfile.addAppointmentType")}
                 </Button>
             </Stack>
 
-            {types.length === 0 ? (
+            {a.types.length === 0 ? (
                 <Alert severity="info">{t("doctorProfile.noAppointmentTypesYet")}</Alert>
             ) : (
                 <Stack spacing={1}>
-                    {types.map((item) => (
+                    {a.types.map((item) => (
                         <Card
                             key={item.appointmentTypeId}
                             variant="outlined"
@@ -144,7 +70,7 @@ export const AppointmentTypesSection = () => {
                                     <Button
                                         color="error"
                                         variant="outlined"
-                                        onClick={() => setTypeToDelete(item)}
+                                        onClick={() => a.setTypeToDelete(item)}
                                         sx={{ textTransform: "none" }}
                                     >
                                         {t("common.delete")}
@@ -157,26 +83,26 @@ export const AppointmentTypesSection = () => {
             )}
 
             <Dialog
-                open={modalOpen}
-                onClose={() => {
-                    setModalOpen(false);
-                }}
+                open={a.modalOpen}
+                onClose={() => a.setModalOpen(false)}
                 fullWidth
                 maxWidth="sm"
             >
                 <DialogTitle sx={{ fontWeight: 800, color: "text.primary" }}>
                     {t("doctorProfile.createAppointmentType")}
                 </DialogTitle>
-                <form onSubmit={handleSubmit(onSubmit)}>
+                <form onSubmit={a.onSubmit}>
                     <DialogContent dividers>
                         <Stack spacing={2} sx={{ pt: 0.5 }}>
-                            {errors.root && <Alert severity="error">{errors.root.message}</Alert>}
+                            {a.errors.root && (
+                                <Alert severity="error">{a.errors.root.message}</Alert>
+                            )}
                             <TextField
                                 label={t("common.name")}
-                                {...register("name")}
-                                error={!!errors.name}
+                                {...a.register("name")}
+                                error={!!a.errors.name}
                                 helperText={
-                                    errors.name?.message ? t(errors.name.message) : undefined
+                                    a.errors.name?.message ? t(a.errors.name.message) : undefined
                                 }
                                 fullWidth
                             />
@@ -184,11 +110,11 @@ export const AppointmentTypesSection = () => {
                                 label={t("doctorProfile.priceLabel")}
                                 type="number"
                                 slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
-                                {...register("basePrice", { valueAsNumber: true })}
-                                error={!!errors.basePrice}
+                                {...a.register("basePrice", { valueAsNumber: true })}
+                                error={!!a.errors.basePrice}
                                 helperText={
-                                    errors.basePrice?.message
-                                        ? t(errors.basePrice.message)
+                                    a.errors.basePrice?.message
+                                        ? t(a.errors.basePrice.message)
                                         : undefined
                                 }
                                 fullWidth
@@ -197,11 +123,11 @@ export const AppointmentTypesSection = () => {
                                 label={t("doctorProfile.durationLabel")}
                                 type="number"
                                 slotProps={{ htmlInput: { min: 1, step: 1 } }}
-                                {...register("durationMinutes", { valueAsNumber: true })}
-                                error={!!errors.durationMinutes}
+                                {...a.register("durationMinutes", { valueAsNumber: true })}
+                                error={!!a.errors.durationMinutes}
                                 helperText={
-                                    errors.durationMinutes?.message
-                                        ? t(errors.durationMinutes.message)
+                                    a.errors.durationMinutes?.message
+                                        ? t(a.errors.durationMinutes.message)
                                         : undefined
                                 }
                                 fullWidth
@@ -211,7 +137,7 @@ export const AppointmentTypesSection = () => {
                     <DialogActions sx={{ px: 3, py: 2 }}>
                         <Button
                             onClick={() => {
-                                setModalOpen(false);
+                                a.setModalOpen(false);
                             }}
                             sx={{ textTransform: "none" }}
                         >
@@ -220,10 +146,10 @@ export const AppointmentTypesSection = () => {
                         <Button
                             type="submit"
                             variant="contained"
-                            disabled={createMutation.isPending || isSubmitting}
+                            disabled={a.createMutation.isPending || a.isSubmitting}
                             sx={{ textTransform: "none", fontWeight: 700 }}
                         >
-                            {createMutation.isPending || isSubmitting
+                            {a.createMutation.isPending || a.isSubmitting
                                 ? t("common.saving")
                                 : t("doctorProfile.create")}
                         </Button>
@@ -232,8 +158,8 @@ export const AppointmentTypesSection = () => {
             </Dialog>
 
             <Dialog
-                open={Boolean(typeToDelete)}
-                onClose={() => setTypeToDelete(null)}
+                open={Boolean(a.typeToDelete)}
+                onClose={() => a.setTypeToDelete(null)}
                 fullWidth
                 maxWidth="sm"
             >
@@ -244,24 +170,25 @@ export const AppointmentTypesSection = () => {
                     <Stack spacing={1.5} sx={{ pt: 0.5 }}>
                         <Alert severity="warning">{t("doctorProfile.deleteWarning")}</Alert>
                         <Typography sx={{ color: "text.secondary" }}>
-                            {t("doctorProfile.deleteConfirm")} {typeToDelete?.name ?? ""}?
+                            {t("doctorProfile.deleteConfirm")} {a.typeToDelete?.name ?? ""}?
                         </Typography>
                     </Stack>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, py: 2 }}>
-                    <Button onClick={() => setTypeToDelete(null)} sx={{ textTransform: "none" }}>
+                    <Button onClick={() => a.setTypeToDelete(null)} sx={{ textTransform: "none" }}>
                         {t("common.cancel")}
                     </Button>
                     <Button
                         color="error"
                         variant="contained"
                         onClick={() => {
-                            if (typeToDelete) deleteMutation.mutate(typeToDelete.appointmentTypeId);
+                            if (a.typeToDelete)
+                                a.deleteMutation.mutate(a.typeToDelete.appointmentTypeId);
                         }}
-                        disabled={deleteMutation.isPending}
+                        disabled={a.deleteMutation.isPending}
                         sx={{ textTransform: "none", fontWeight: 700 }}
                     >
-                        {deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
+                        {a.deleteMutation.isPending ? t("common.deleting") : t("common.delete")}
                     </Button>
                 </DialogActions>
             </Dialog>

@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { doctorsApi } from "../api/doctors";
 import useDoctorSearchFilters from "./useDoctorSearchFilters";
 
 export const useDoctorSearch = () => {
+    const { t } = useTranslation();
     const { filters, updateFilter, clearFilters } = useDoctorSearchFilters();
     const location = filters.location || undefined;
     const selectedSpecializationId = filters.specializationId
@@ -51,8 +53,8 @@ export const useDoctorSearch = () => {
         specializations.find((s) => s.specializationId === selectedSpecializationId) ?? null;
 
     const filtersSummary = useMemo(
-        () => `Znaleziono ${doctorsPage?.totalCount ?? 0} lekarzy.`,
-        [doctorsPage?.totalCount],
+        () => t("doctors.foundCount_many", { count: doctorsPage?.totalCount ?? 0 }),
+        [doctorsPage?.totalCount, t],
     );
 
     return {

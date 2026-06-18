@@ -1,10 +1,12 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { notificationsApi } from "../api/notifications";
 import { useAuthUser } from "./useAuthUser";
 
 export const useNotificationsPage = () => {
+    const { t } = useTranslation();
     const [searchParams] = useSearchParams();
     const queryClient = useQueryClient();
     const clinicIdParam = searchParams.get("clinicId");
@@ -45,8 +47,8 @@ export const useNotificationsPage = () => {
     });
 
     const title = useMemo(() => {
-        return effectiveClinicId ? "Powiadomienia dla przychodni" : "Powiadomienia";
-    }, [effectiveClinicId]);
+        return effectiveClinicId ? t("notifications.forClinic") : t("notifications.title");
+    }, [effectiveClinicId, t]);
 
     return {
         title,

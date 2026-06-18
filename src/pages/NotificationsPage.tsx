@@ -67,7 +67,7 @@ const NotificationsPage = () => {
                                             </Typography>
                                         </Box>
                                         <Chip
-                                            label={n2.status}
+                                            label={t(`notificationStatus.${n2.status}`, n2.status)}
                                             sx={(t) => ({
                                                 bgcolor:
                                                     n2.status === "Pending"

@@ -30,7 +30,12 @@
         "unknown": "Unknown",
         "noData": "No data",
         "back": "Back",
-        "dateFormat": "MM/DD/YYYY"
+        "dateFormat": "MM/DD/YYYY",
+        "dateFormatShort": "MM/DD",
+        "timeFormat": "hh:mm A",
+        "dateTimeFormat": "MM/DD/YYYY hh:mm A",
+        "currency": "PLN",
+        "loadingNotifications": "Loading notifications..."
     },
     "nav": {
         "home": "Home",
@@ -118,7 +123,9 @@
         "bookVisit": "Book appointment",
         "noResults": "No results for the given filters.",
         "pricePrefix": "PLN",
-        "loadingDoctors": "Loading data..."
+        "loadingDoctors": "Loading data...",
+        "foundCount_one": "Found {{count}} doctor.",
+        "foundCount_other": "Found {{count}} doctors."
     },
     "doctorDetails": {
         "invalidDoctor": "Invalid doctor",
@@ -235,6 +242,10 @@
         },
         "loadingClinics": "Loading clinics...",
         "noClinics": "No clinics for the given filters.",
+        "allClinics": "Clinics",
+        "allClinicsDesc": "Search clinics by name, location and specialization.",
+        "foundCount_one": "Found {{count}} clinic.",
+        "foundCount_other": "Found {{count}} clinics.",
         "viewDetails": "View details",
         "active": "active",
         "inactive": "inactive",
@@ -303,16 +314,7 @@
         "awaitingConfirmation": "Awaiting confirmation",
         "unpaidExpired": "Unpaid – appointment expired",
         "retryPayment": "Retry payment",
-        "payVisit": "Pay for visit",
-        "statusLabels": {
-            "PendingConfirmation": "Awaiting confirmation",
-            "AwaitingPayment": "Awaiting payment",
-            "Confirmed": "Confirmed",
-            "Completed": "Completed",
-            "Cancelled": "Cancelled",
-            "Unpaid": "Unpaid",
-            "Pending": "Pending"
-        }
+        "payVisit": "Pay for visit"
     },
     "confirmation": {
         "invalidId": "Invalid appointment number",
@@ -326,7 +328,9 @@
         "date": "Date",
         "time": "Time",
         "goToAppointments": "Go to my appointments",
-        "bookAnother": "Book another appointment"
+        "bookAnother": "Book another appointment",
+        "confirmedTitle": "Appointment confirmed!",
+        "reservedTitle": "Appointment has been booked!"
     },
     "notifications": {
         "title": "Notifications",
@@ -334,7 +338,8 @@
         "clinicRequests": "Clinic join requests",
         "appointments": "Appointments",
         "accept": "Accept",
-        "reject": "Reject"
+        "reject": "Reject",
+        "forClinic": "Notifications for clinic"
     },
     "patientProfile": {
         "title": "My profile",
@@ -361,7 +366,13 @@
         "paymentRejectedDesc": "The transaction failed, was cancelled, or there were insufficient funds.",
         "retryPaymentAgain": "💳 Try paying again",
         "networkError": "Network error",
-        "confirmOnSite": "Confirm on-site payment"
+        "confirmOnSite": "Confirm on-site payment",
+        "offlineConfirmTitle": "Confirm payment at the facility",
+        "offlineConfirmDesc": "Use this button when the patient has paid in cash or by card on-site.",
+        "offlineCommentPlaceholder": "E.g. paid in cash...",
+        "confirming": "Confirming...",
+        "confirmReceipt": "I confirm receipt of payment",
+        "offlineConfirmed": "✅ Payment has been recorded."
     },
     "layout": {
         "brandName": "MedReserve"
@@ -380,11 +391,48 @@
         "passwordMinLength": "Password must be at least 6 characters.",
         "passwordsMustMatch": "Passwords do not match.",
         "phoneInvalid": "Enter a valid phone number or leave the field empty.",
+        "invalidPhone": "Phone number must be exactly 9 digits.",
         "mustBeNumber": "Please enter a valid number.",
         "mustBeNonNegative": "Value cannot be negative.",
         "mustBeInteger": "Please enter an integer.",
         "mustBePositive": "Value must be greater than zero.",
         "mustConfirm": "You must confirm to continue.",
         "selectPaymentMethod": "Select a payment method."
+    },
+    "errors": {
+        "loginInvalid": "Invalid email or password.",
+        "registerFailed": "An error occurred during registration.",
+        "createClinicFailed": "Failed to create clinic.",
+        "openingHoursInvalid": "Opening hours must have a valid range.",
+        "phoneInvalid": "Enter a valid phone number or leave the field empty.",
+        "selectSlot": "Select a free time slot.",
+        "selectClinicBooking": "Select a clinic.",
+        "bookFailed": "Failed to book the appointment.",
+        "confirmFailed": "Failed to confirm the appointment.",
+        "cancelFailed": "Failed to cancel the appointment.",
+        "completeFailed": "Failed to mark appointment as completed.",
+        "fetchAppointmentsFailed": "Failed to fetch your appointments.",
+        "payuStatusFailed": "Failed to verify payment status in PayU.",
+        "offlinePaymentFailed": "Failed to confirm the payment."
+    },
+    "appointmentStatus": {
+        "PendingConfirmation": "Awaiting confirmation",
+        "AwaitingPayment": "Awaiting online payment",
+        "AwaitingOnSitePayment": "On-site payment",
+        "Confirmed": "Confirmed",
+        "Completed": "Completed",
+        "Cancelled": "Cancelled",
+        "Unpaid": "Unpaid (expired)"
+    },
+    "paymentStatus": {
+        "Paid": "Paid",
+        "Pending": "Pending",
+        "Failed": "Failed",
+        "Refunded": "Refunded"
+    },
+    "notificationStatus": {
+        "Sent": "Sent",
+        "Pending": "Pending",
+        "Failed": "Failed"
     }
 }

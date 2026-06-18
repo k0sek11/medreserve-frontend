@@ -32,7 +32,12 @@
         "unknown": "Nieznane",
         "noData": "Brak danych",
         "back": "Powrót",
-        "dateFormat": "DD.MM.YYYY"
+        "dateFormat": "DD.MM.YYYY",
+        "dateFormatShort": "DD.MM",
+        "timeFormat": "HH:mm",
+        "dateTimeFormat": "DD.MM.YYYY HH:mm",
+        "currency": "zł",
+        "loadingNotifications": "Ładowanie powiadomień..."
     },
     "nav": {
         "home": "Strona główna",
@@ -118,7 +123,10 @@
         "bookVisit": "Umów wizytę",
         "noResults": "Brak wyników dla podanych filtrów.",
         "pricePrefix": "zł",
-        "loadingDoctors": "Ładowanie danych..."
+        "loadingDoctors": "Ładowanie danych...",
+        "foundCount_one": "Znaleziono {{count}} lekarza.",
+        "foundCount_few": "Znaleziono {{count}} lekarzy.",
+        "foundCount_many": "Znaleziono {{count}} lekarzy."
     },
     "doctorDetails": {
         "invalidDoctor": "Nieprawidłowy lekarz",
@@ -235,6 +243,11 @@
         },
         "loadingClinics": "Ładowanie poradni...",
         "noClinics": "Brak poradni dla podanych filtrów.",
+        "allClinics": "Poradnie",
+        "allClinicsDesc": "Szukaj przychodni po nazwie, lokalizacji i specjalizacji.",
+        "foundCount_one": "Znaleziono {{count}} poradnię.",
+        "foundCount_few": "Znaleziono {{count}} poradnie.",
+        "foundCount_many": "Znaleziono {{count}} poradni.",
         "viewDetails": "Zobacz szczegóły",
         "active": "aktywna",
         "inactive": "nieaktywna",
@@ -301,16 +314,7 @@
         "awaitingConfirmation": "Oczekuje na potwierdzenie",
         "unpaidExpired": "Niezapłacona – wizyta przeterminowana",
         "retryPayment": "Ponów płatność",
-        "payVisit": "Opłać wizytę",
-        "statusLabels": {
-            "PendingConfirmation": "Oczekuje na potwierdzenie",
-            "AwaitingPayment": "Oczekuje na płatność",
-            "Confirmed": "Potwierdzona",
-            "Completed": "Zakończona",
-            "Cancelled": "Anulowana",
-            "Unpaid": "Niezapłacona",
-            "Pending": "Oczekująca"
-        }
+        "payVisit": "Opłać wizytę"
     },
     "confirmation": {
         "invalidId": "Nieprawidłowy numer wizyty",
@@ -324,7 +328,9 @@
         "date": "Data",
         "time": "Godzina",
         "goToAppointments": "Przejdź do moich wizyt",
-        "bookAnother": "Umów kolejną wizytę"
+        "bookAnother": "Umów kolejną wizytę",
+        "confirmedTitle": "Wizyta potwierdzona!",
+        "reservedTitle": "Wizyta została zarezerwowana!"
     },
     "notifications": {
         "title": "Powiadomienia",
@@ -332,7 +338,8 @@
         "clinicRequests": "Prośby o dołączenie do poradni",
         "appointments": "Wizyty",
         "accept": "Akceptuj",
-        "reject": "Odrzuć"
+        "reject": "Odrzuć",
+        "forClinic": "Powiadomienia dla przychodni"
     },
     "payment": {
         "finalizationTitle": "Finalizacja płatności",
@@ -354,7 +361,13 @@
         "paymentRejectedDesc": "Transakcja nie powiodła się, została anulowana lub zabrakło środków na koncie.",
         "retryPaymentAgain": "💳 Spróbuj zapłacić ponownie",
         "networkError": "Błąd sieci",
-        "confirmOnSite": "Zatwierdź płatność na miejscu"
+        "confirmOnSite": "Zatwierdź płatność na miejscu",
+        "offlineConfirmTitle": "Zatwierdź płatność w placówce",
+        "offlineConfirmDesc": "Użyj tego przycisku, gdy pacjent uregulował należność gotówką lub kartą na miejscu.",
+        "offlineCommentPlaceholder": "Np. zapłacono odliczoną gotówką...",
+        "confirming": "Zatwierdzanie...",
+        "confirmReceipt": "Potwierdzam otrzymanie wpłaty",
+        "offlineConfirmed": "✅ Płatność została zaksięgowana w bazie."
     },
     "layout": {
         "brandName": "MedReserve"
@@ -377,12 +390,49 @@
         "emailInvalid": "Podaj prawidłowy adres e-mail.",
         "passwordMinLength": "Hasło musi mieć co najmniej 6 znaków.",
         "passwordsMustMatch": "Hasła nie są identyczne.",
-        "invalidPhone": "Numer telefonu jest niepoprawny",
+        "phoneInvalid": "Podaj poprawny numer telefonu lub zostaw pole puste.",
+        "invalidPhone": "Numer telefonu musi mieć dokładnie 9 cyfr.",
         "mustBeNumber": "Podaj prawidłową liczbę.",
         "mustBeNonNegative": "Wartość nie może być ujemna.",
         "mustBeInteger": "Podaj liczbę całkowitą.",
         "mustBePositive": "Wartość musi być większa od zera.",
         "mustConfirm": "Musisz potwierdzić, aby kontynuować.",
         "selectPaymentMethod": "Wybierz metodę płatności."
+    },
+    "errors": {
+        "loginInvalid": "Nieprawidłowy email lub hasło.",
+        "registerFailed": "Wystąpił błąd podczas rejestracji.",
+        "createClinicFailed": "Nie udało się utworzyć przychodni.",
+        "openingHoursInvalid": "Godziny otwarcia muszą mieć poprawny zakres.",
+        "phoneInvalid": "Podaj poprawny numer telefonu albo zostaw pole puste.",
+        "selectSlot": "Wybierz wolny termin.",
+        "selectClinicBooking": "Wybierz przychodnię.",
+        "bookFailed": "Nie udało się zarezerwować wizyty.",
+        "confirmFailed": "Nie udało się potwierdzić wizyty.",
+        "cancelFailed": "Nie udało się anulować wizyty.",
+        "completeFailed": "Nie udało się oznaczyć wizyty jako zakończona.",
+        "fetchAppointmentsFailed": "Nie udało się pobrać listy Twoich wizyt.",
+        "payuStatusFailed": "Nie udało się zweryfikować statusu płatności w systemie PayU.",
+        "offlinePaymentFailed": "Nie udało się zatwierdzić płatności."
+    },
+    "appointmentStatus": {
+        "PendingConfirmation": "Oczekuje na potwierdzenie",
+        "AwaitingPayment": "Oczekuje na płatność online",
+        "AwaitingOnSitePayment": "Płatność na miejscu",
+        "Confirmed": "Potwierdzona",
+        "Completed": "Zrealizowana",
+        "Cancelled": "Anulowana",
+        "Unpaid": "Niezapłacona (przeterminowana)"
+    },
+    "paymentStatus": {
+        "Paid": "Opłacona",
+        "Pending": "Oczekująca",
+        "Failed": "Nieudana",
+        "Refunded": "Zwrócona"
+    },
+    "notificationStatus": {
+        "Sent": "Wysłane",
+        "Pending": "Oczekujące",
+        "Failed": "Nieudane"
     }
 }

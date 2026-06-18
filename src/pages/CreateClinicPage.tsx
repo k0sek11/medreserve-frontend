@@ -108,7 +108,6 @@ export const CreateClinicPage = () => {
                                                 c.setOpeningFrom(val);
                                                 field.onChange(val ? val.format("HH:mm") : "08:00");
                                             }}
-                                            ampm={false}
                                             slotProps={{
                                                 textField: {
                                                     fullWidth: true,
@@ -129,7 +128,6 @@ export const CreateClinicPage = () => {
                                                 c.setOpeningTo(val);
                                                 field.onChange(val ? val.format("HH:mm") : "16:00");
                                             }}
-                                            ampm={false}
                                             slotProps={{
                                                 textField: {
                                                     fullWidth: true,

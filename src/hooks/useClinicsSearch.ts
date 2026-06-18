@@ -1,10 +1,12 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import useClinicSearchFilters from "./useClinicSearchFilters";
 import { clinicsApi, type ClinicListItemDto } from "../api/clinics";
 import { doctorsApi } from "../api/doctors";
 
 export const useClinicsSearch = (mine: boolean) => {
+    const { t } = useTranslation();
     const { filters, updateFilter, clearFilters } = useClinicSearchFilters();
     const selectedSpecializationId = filters.specializationId
         ? Number(filters.specializationId)
@@ -46,16 +48,16 @@ export const useClinicsSearch = (mine: boolean) => {
 
     const clinics = (mine ? mineClinics : (clinicsPage?.items ?? [])) as ClinicListItemDto[];
     const isLoading = mine ? isMineLoading : isSearchLoading;
-    const title = mine ? "Moje przychodnie" : "Poradnie";
-    const subtitle = mine
-        ? "Lista przychodni przypisanych do Twojego profilu lekarza."
-        : "Szukaj przychodni po nazwie, lokalizacji i specjalizacji.";
+    const title = mine ? t("clinics.myClinics") : t("clinics.allClinics");
+    const subtitle = mine ? t("clinics.myClinicsDesc") : t("clinics.allClinicsDesc");
 
     const filtersSummary = useMemo(() => {
-        return mine
-            ? `Znaleziono ${clinics.length} poradni.`
-            : `Znaleziono ${clinicsPage?.totalCount ?? 0} poradni.`;
-    }, [clinics.length, clinicsPage?.totalCount, mine]);
+        const count = mine ? clinics.length : (clinicsPage?.totalCount ?? 0);
+        if (count === 1) return t("clinics.foundCount_one", { count });
+        if (count % 10 >= 2 && count % 10 <= 4 && !(count % 100 >= 12 && count % 100 <= 14))
+            return t("clinics.foundCount_few", { count });
+        return t("clinics.foundCount_many", { count });
+    }, [clinics.length, clinicsPage?.totalCount, mine, t]);
 
     return {
         specializations,

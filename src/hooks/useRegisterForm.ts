@@ -2,10 +2,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { authApi } from "../api/auth";
 import { registerSchema, type RegisterFormData } from "../lib/validations";
 
 const useRegisterForm = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const {
         register,
@@ -23,7 +25,7 @@ const useRegisterForm = () => {
         },
         onError: (err: any) => {
             setError("root", {
-                message: err.response?.data?.message || "Wystąpił błąd podczas rejestracji",
+                message: err.response?.data?.message || t("errors.registerFailed"),
             });
         },
         onSuccess: () => {

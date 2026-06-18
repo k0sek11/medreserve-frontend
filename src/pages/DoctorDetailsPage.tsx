@@ -18,8 +18,8 @@ import { useTranslation } from "react-i18next";
 import { useDoctorBooking } from "../hooks/useDoctorBooking";
 import { RoundIconInfo } from "../components/doctor/RoundIconInfo";
 import { DoctorBookingSection } from "../components/doctor/DoctorBookingSection";
-import doctorImage from "../assets/Cr7_doctor.png";
 import { Show } from "../components/shared/ShowHide";
+import { AccountCircle } from "@mui/icons-material";
 
 const DoctorDetailsPage = () => {
     const { t, i18n } = useTranslation();
@@ -90,12 +90,17 @@ const DoctorDetailsPage = () => {
                             }}
                         >
                             <Box sx={{ position: "relative" }}>
-                                <Box
-                                    component="img"
-                                    src={profile.profileImageUrl ?? doctorImage}
-                                    alt={profile.fullName}
-                                    sx={{ width: "100%", height: 320, objectFit: "contain" }}
-                                />
+                                {!!profile.profileImageUrl && (
+                                    <Box
+                                        component="img"
+                                        src={profile.profileImageUrl}
+                                        alt={profile.fullName}
+                                        sx={{ width: "100%", height: 320, objectFit: "contain" }}
+                                    />
+                                )}
+                                {!profile.profileImageUrl && (
+                                    <AccountCircle sx={{ fontSize: 190 }} />
+                                )}
                             </Box>
                             <CardContent>
                                 <Stack spacing={1.2}>

@@ -20,10 +20,6 @@ type LocationPickerProps = Omit<TextFieldProps, "onChange"> & {
     onChange: (value: string) => void;
 };
 
-/**
- * Location input with free text autocomplete using Nominatim (OpenStreetMap).
- * No API key required. Respects Nominatim usage policy (1 req/s).
- */
 export const LocationPicker = ({
     value,
     onChange,

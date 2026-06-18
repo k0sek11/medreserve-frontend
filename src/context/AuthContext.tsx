@@ -20,15 +20,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         return await authApi.me();
       } catch (error) {
-        // Jeśli backend zwróci 401 Unauthorized, to znaczy, że nie mamy ciasteczka
-        return null;
+                return null;
       }
     },
-    // Brak retries zapobiega wielokrotnym żądaniom gdy użytkownik po prostu nie jest zalogowany
-    retry: false,
-    // Ustalamy rozsądny czas cache'owania, chociaż domyślnie RQ i tak trzyma to w tle
-    staleTime: 1000 * 60 * 5, // 5 minut
-  });
+        retry: false,
+        staleTime: 1000 * 60 * 5,   });
 
   const isAuthenticated = !!user;
   const needsProfileCompletion = isAuthenticated && !user.isActive;

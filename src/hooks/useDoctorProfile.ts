@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { doctorsApi } from "../api/doctors";
-import { useAuth } from "../context/AuthContext";
+import { useAuthUser } from "./useAuthUser";
 
 export const useDoctorProfile = () => {
-    const { user } = useAuth();
+    const { data: user } = useAuthUser();
     const isDoctor = Boolean(user?.doctorProfileId);
 
     const profileQuery = useQuery({

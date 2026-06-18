@@ -20,7 +20,7 @@ import { CreateClinicPage } from "./pages/CreateClinicPage";
 import PatientProfilePage from "./pages/PatientProfilePage";
 function App() {
     return (
-        <GoogleOAuthProvider clientId="140484954108-teas0lbcuvqb9a83upfejs6qad1t51e3.apps.googleusercontent.com">
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
             <BrowserRouter>
                 <Routes>
                     <Route path="/login" element={<LoginPage />} />

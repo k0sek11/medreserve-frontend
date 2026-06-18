@@ -14,6 +14,7 @@ import {
     createTheme,
     type PaletteMode,
 } from "@mui/material";
+import i18n from "../i18n";
 
 type ThemeMode = PaletteMode;
 
@@ -37,7 +38,12 @@ function getInitialMode(): ThemeMode {
     return "light";
 }
 
+function isEnglish(): boolean {
+    return i18n.language?.startsWith("en") ?? false;
+}
+
 function createAppTheme(mode: PaletteMode) {
+    const use12Hour = isEnglish();
     return createTheme({
         palette: {
             mode,
@@ -62,17 +68,17 @@ function createAppTheme(mode: PaletteMode) {
         components: {
             MuiTimePicker: {
                 defaultProps: {
-                    ampm: false,
+                    ampm: use12Hour,
                 },
             },
             MuiDesktopTimePicker: {
                 defaultProps: {
-                    ampm: false,
+                    ampm: use12Hour,
                 },
             },
             MuiMobileTimePicker: {
                 defaultProps: {
-                    ampm: false,
+                    ampm: use12Hour,
                 },
             },
         },
@@ -91,11 +97,20 @@ const globalDarkStyles = (
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const [mode, setMode] = useState<ThemeMode>(getInitialMode);
+    const [, setLangKey] = useState(0);
 
     useEffect(() => {
         localStorage.setItem(STORAGE_KEY, mode);
         document.documentElement.classList.toggle("dark", mode === "dark");
     }, [mode]);
+
+        useEffect(() => {
+        const handleLangChange = () => setLangKey((k) => k + 1);
+        i18n.on("languageChanged", handleLangChange);
+        return () => {
+            i18n.off("languageChanged", handleLangChange);
+        };
+    }, []);
 
     const toggleTheme = useCallback(() => {
         setMode((prev) => (prev === "light" ? "dark" : "light"));

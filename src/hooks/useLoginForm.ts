@@ -1,11 +1,13 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { authApi, type UserSessionDto } from "../api/auth";
 import { authUserQueryKey } from "./useAuthUser";
 import { loginSchema, type LoginFormData } from "../lib/validations";
 
 const useLoginForm = (onLoggedIn?: (session: UserSessionDto) => void) => {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
     const {
         register,
@@ -31,7 +33,7 @@ const useLoginForm = (onLoggedIn?: (session: UserSessionDto) => void) => {
                 message:
                     err.response?.data?.message ||
                     err.response?.data?.title ||
-                    "Nieprawidłowy email lub hasło.",
+                    t("errors.loginInvalid"),
             });
         },
     });

@@ -12,15 +12,15 @@ import { useTranslation } from "react-i18next";
 import AuthPageShell from "../components/auth/AuthPageShell";
 import { useAuthUser } from "../hooks/useAuthUser";
 import useLoginForm from "../hooks/useLoginForm";
+import { useGoogleLogin } from "../hooks/useGoogleLogin";
 import { GoogleLogin } from "@react-oauth/google";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { authApi } from "../api/auth";
 
 const LoginPage = () => {
     const { t } = useTranslation();
     const { data: user, isLoading: isAuthLoading } = useAuthUser();
-    const queryClient = useQueryClient();
     const navigate = useNavigate();
+    const { handleGoogleSuccess } = useGoogleLogin();
+
     const { register, handleSubmit, errors, rootError, isLoading, isSuccess } = useLoginForm(
         (session) => {
             navigate(
@@ -33,37 +33,6 @@ const LoginPage = () => {
             );
         },
     );
-
-    const loginMutation = useMutation({
-        mutationFn: authApi.loginWithGoogleApi,
-        onSuccess: async (data) => {
-            if (data?.token) {
-                localStorage.setItem("token", data.token);
-            }
-
-            await queryClient.invalidateQueries({ queryKey: ["authUser"] });
-            const session = await authApi.me();
-            navigate(
-                session.isActive
-                    ? session.roles.includes("Doctor")
-                        ? "/powiadomienia"
-                        : "/"
-                    : "/uzupelnij-profil",
-                { replace: true },
-            );
-        },
-        onError: () => {
-            console.error(t("auth.googleTokenRejected"));
-        },
-    });
-
-    const handleGoogleSuccess = (credentialResponse: any) => {
-        const googleToken = credentialResponse.credential;
-
-        if (googleToken) {
-            loginMutation.mutate(googleToken);
-        }
-    };
 
     if (!isAuthLoading && user) {
         const nextRoute = user.isActive

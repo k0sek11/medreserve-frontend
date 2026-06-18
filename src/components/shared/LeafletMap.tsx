@@ -16,18 +16,15 @@ const DefaultIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon;
 
 type LeafletMapProps = {
-    /** Latitude */
+    
     lat?: number | null;
-    /** Longitude */
+    
     lng?: number | null;
-    /** Fallback address for geocoding if no coords */
+    
     address?: string;
     height?: number;
 };
 
-/**
- * Display-only Leaflet map centered on given coordinates or geocoded address.
- */
 export const LeafletMap = ({ lat, lng, address, height = 300 }: LeafletMapProps) => {
     const { t } = useTranslation();
     const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -62,8 +59,7 @@ export const LeafletMap = ({ lat, lng, address, height = 300 }: LeafletMapProps)
                         popupText = data[0].display_name || address;
                     }
                 } catch {
-                    // fallback to Poland center
-                }
+                                    }
             }
 
             if (cancelled || !mapContainerRef.current) return;

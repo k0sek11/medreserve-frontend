@@ -28,8 +28,7 @@ export const PaymentResultBanner = ({ appointmentId, onRetry, onRefetch }: Props
                     setStatus("FAILED");
                     onRefetch?.();
                 }
-                // else: still LOADING (payment might still be processing)
-            } catch (error) {
+                            } catch (error) {
                 console.error(t("payment.networkError"), error);
                 if (isMounted) setStatus("FAILED");
             }

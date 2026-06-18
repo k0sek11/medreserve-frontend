@@ -20,4 +20,21 @@ export default defineConfig({
         },
         strictPort: true,
     },
+    resolve: {
+        alias: {
+            "react-transition-group/TransitionGroupContext":
+                "react-transition-group/cjs/TransitionGroupContext",
+        },
+    },
+    test: {
+        globals: true,
+        environment: "jsdom",
+        setupFiles: ["./src/test/setup.ts"],
+        css: false,
+        coverage: {
+            provider: "v8",
+            reporter: ["text", "text-summary"],
+            include: ["src/hooks/**", "src/components/**"],
+        },
+    },
 });

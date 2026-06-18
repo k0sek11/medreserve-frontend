@@ -12,7 +12,7 @@ import { Link as RouterLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { PaymentResultBanner } from "../Payment/PaymentResultBanner";
 import type { AppointmentSummaryDto } from "../../types/appointment";
-import { statusTranslations, statusColors } from "../../lib/appointmentStatus";
+import { statusColors } from "../../lib/appointmentStatus";
 
 type AppointmentCardProps = {
     appointment: AppointmentSummaryDto;
@@ -38,7 +38,7 @@ export const AppointmentCard = ({ appointment, onPay, onRefetch }: AppointmentCa
                 </div>
 
                 <Chip
-                    label={statusTranslations[appointment.status] ?? appointment.status}
+                    label={t(`appointmentStatus.${appointment.status}`, appointment.status)}
                     color={statusColors[appointment.status] ?? "default"}
                     variant={
                         appointment.status === "Confirmed" || appointment.status === "Completed"

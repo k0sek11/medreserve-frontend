@@ -2,7 +2,7 @@ import { Alert, Button, Chip, Stack } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useConfirmation } from "../hooks/useConfirmation";
-import { statusTranslations, statusColors } from "../lib/appointmentStatus";
+import { statusColors } from "../lib/appointmentStatus";
 import { getAppointmentDoctorName, getAppointmentSpecialization } from "../lib/appointmentHelpers";
 import { SummaryCard } from "../components/shared/SummaryCard";
 
@@ -36,7 +36,7 @@ const AppointmentConfirmationPage = () => {
                     </div>
                     <div className="flex justify-center">
                         <Chip
-                            label={`${t("confirmation.statusPrefix")}: ${statusTranslations[a.status] ?? a.status}`}
+                            label={`${t("confirmation.statusPrefix")}: ${t(`appointmentStatus.${a.status}`, a.status)}`}
                             color={statusColors[a.status] ?? "default"}
                             sx={{
                                 fontWeight: 800,

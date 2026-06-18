@@ -1,10 +1,12 @@
 import { useMemo } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { appointmentsApi } from "../api/appointments";
 import type { BookAppointmentResultDto } from "../types/appointment";
 
 export const useConfirmation = () => {
+    const { t } = useTranslation();
     const { appointmentId } = useParams();
     const location = useLocation();
     const state = location.state as BookAppointmentResultDto | null;
@@ -20,9 +22,9 @@ export const useConfirmation = () => {
     const appointment = data ?? state;
 
     const title = useMemo(() => {
-        if (appointment?.status === "Confirmed") return "Wizyta potwierdzona!";
-        return "Wizyta została zarezerwowana!";
-    }, [appointment?.status]);
+        if (appointment?.status === "Confirmed") return t("confirmation.confirmedTitle");
+        return t("confirmation.reservedTitle");
+    }, [appointment?.status, t]);
 
     return { hasValidId, isLoading, appointment, title };
 };

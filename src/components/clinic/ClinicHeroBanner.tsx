@@ -29,11 +29,12 @@ export const ClinicHeroBanner = ({ clinic, isOwner }: ClinicHeroBannerProps) => 
                             color: "white",
                         }}
                     />
-                    <Typography variant="h3" fontWeight={800} gutterBottom>
+                    <Typography variant="h3" component="h3" fontWeight={800} gutterBottom>
                         {clinic.name}
                     </Typography>
                     <Typography
                         variant="h6"
+                        component="h6"
                         sx={{ maxWidth: 780, color: "rgba(255,255,255,0.88)" }}
                     >
                         {clinic.description || t("clinicDetails.noDescriptionHero")}

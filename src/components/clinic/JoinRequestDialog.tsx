@@ -10,12 +10,9 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { clinicsApi } from "../../api/clinics";
-import { joinRequestSchema, type JoinRequestFormData } from "../../lib/validations";
+import { useJoinRequestForm } from "../../hooks/useJoinRequestForm";
 
 type JoinRequestDialogProps = {
     clinicId: number;
@@ -31,42 +28,12 @@ export const JoinRequestDialog = ({
     onSuccess,
 }: JoinRequestDialogProps) => {
     const { t } = useTranslation();
-
-    const {
-        register,
-        handleSubmit,
-        control,
-        reset,
-        formState: { errors, isSubmitting },
-    } = useForm<JoinRequestFormData>({
-        resolver: zodResolver(joinRequestSchema),
-        defaultValues: {
-            confirmDoctor: true,
-            joinMessage: "",
-        },
-    });
-
-    const joinMutation = useMutation({
-        mutationFn: (data: JoinRequestFormData) =>
-            clinicsApi.requestJoin(clinicId, {
-                confirmDoctor: true,
-                message: data.joinMessage?.trim() || undefined,
-            }),
-        onSuccess: () => {
-            onSuccess();
-            onClose();
-            reset();
-        },
-    });
-
-    const onSubmit = (data: JoinRequestFormData) => {
-        joinMutation.mutate(data);
-    };
+    const f = useJoinRequestForm(clinicId, onSuccess, onClose);
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>{t("clinicDetails.joinDialog.title")}</DialogTitle>
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form onSubmit={f.onSubmit}>
                 <DialogContent>
                     <Stack spacing={2} sx={{ pt: 1 }}>
                         <Typography variant="body2" color="text.secondary">
@@ -74,7 +41,7 @@ export const JoinRequestDialog = ({
                         </Typography>
                         <Controller
                             name="confirmDoctor"
-                            control={control}
+                            control={f.control}
                             render={({ field }) => (
                                 <FormControlLabel
                                     control={
@@ -87,14 +54,14 @@ export const JoinRequestDialog = ({
                                 />
                             )}
                         />
-                        {errors.confirmDoctor && (
+                        {f.errors.confirmDoctor && (
                             <Typography variant="body2" color="error">
-                                {t(errors.confirmDoctor.message!)}
+                                {t(f.errors.confirmDoctor.message!)}
                             </Typography>
                         )}
                         <TextField
                             label={t("clinicDetails.joinDialog.optionalMessage")}
-                            {...register("joinMessage")}
+                            {...f.register("joinMessage")}
                             multiline
                             minRows={4}
                             fullWidth
@@ -106,9 +73,9 @@ export const JoinRequestDialog = ({
                     <Button
                         type="submit"
                         variant="contained"
-                        disabled={joinMutation.isPending || isSubmitting}
+                        disabled={f.joinMutation.isPending || f.isSubmitting}
                     >
-                        {joinMutation.isPending || isSubmitting
+                        {f.joinMutation.isPending || f.isSubmitting
                             ? t("clinicDetails.joinDialog.sending")
                             : t("clinicDetails.joinDialog.send")}
                     </Button>

@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// ──── Auth ────
 export const loginSchema = z.object({
     email: z.string().min(1, "validation.required").email("validation.emailInvalid"),
     password: z.string().min(1, "validation.required"),
@@ -17,7 +16,6 @@ export const registerSchema = z
         path: ["confirmPassword"],
     });
 
-// ──── Profile Completion ────
 export const profileTypeSchema = z.enum(["Doctor", "Patient"]);
 
 export const profileCompletionSchema = z
@@ -43,7 +41,6 @@ export const profileCompletionSchema = z
         },
     );
 
-// ──── Patient Profile Edit ────
 export const patientProfileSchema = z.object({
     firstName: z.string().min(1, "validation.required"),
     lastName: z.string().min(1, "validation.required"),
@@ -52,7 +49,6 @@ export const patientProfileSchema = z.object({
     gender: z.string().min(1, "validation.required"),
 });
 
-// ──── Clinic Create ────
 export const clinicSchema = z.object({
     name: z.string().min(1, "validation.required"),
     description: z.string().optional(),
@@ -68,7 +64,6 @@ export const clinicSchema = z.object({
     openingTo: z.string().min(1, "validation.required"),
 });
 
-// ──── Clinic Edit (Details Page) ────
 export const clinicEditSchema = z.object({
     name: z.string().min(1, "validation.required"),
     description: z.string().optional(),
@@ -83,7 +78,6 @@ export const clinicEditSchema = z.object({
     openingHours: z.string().optional(),
 });
 
-// ──── Doctor Bio ────
 export const doctorBioSchema = z.object({
     firstName: z.string().min(1, "validation.required"),
     lastName: z.string().min(1, "validation.required"),
@@ -91,7 +85,6 @@ export const doctorBioSchema = z.object({
     specializationIds: z.array(z.number()),
 });
 
-// ──── Appointment Type (Dialog) ────
 export const appointmentTypeSchema = z.object({
     name: z.string().min(1, "validation.required"),
     basePrice: z
@@ -103,7 +96,6 @@ export const appointmentTypeSchema = z.object({
         .positive("validation.mustBePositive"),
 });
 
-// ──── Doctor Schedule ────
 export const doctorScheduleSchema = z.object({
     clinicId: z.string().min(1, "validation.required"),
     dayOfWeek: z.number().min(1).max(7),
@@ -113,7 +105,6 @@ export const doctorScheduleSchema = z.object({
     validTo: z.string().nullable().optional(),
 });
 
-// ──── Join Request Dialog ────
 export const joinRequestSchema = z.object({
     confirmDoctor: z.boolean().refine((val) => val === true, {
         message: "validation.mustConfirm",
@@ -121,14 +112,12 @@ export const joinRequestSchema = z.object({
     joinMessage: z.string().optional(),
 });
 
-// ──── Home Search ────
 export const homeSearchSchema = z.object({
     specialization: z.string(),
     location: z.string(),
     appointmentDate: z.string(),
 });
 
-// ──── Doctor Search Filters ────
 export const doctorSearchSchema = z.object({
     location: z.string(),
     specializationId: z.string(),
@@ -136,7 +125,6 @@ export const doctorSearchSchema = z.object({
     priceMax: z.string(),
 });
 
-// ──── Clinic Filters ────
 export const clinicFiltersSchema = z.object({
     name: z.string(),
     location: z.string(),
@@ -145,12 +133,10 @@ export const clinicFiltersSchema = z.object({
     page: z.string(),
 });
 
-// ──── Payment ────
 export const paymentMethodSchema = z.object({
     selectedMethod: z.enum(["PAYU", "OFFLINE"]).optional(),
 });
 
-// ──── Derived Types ────
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
 export type ProfileCompletionFormData = z.infer<typeof profileCompletionSchema>;

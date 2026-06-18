@@ -43,11 +43,6 @@ type MapLocationPickerProps = {
     helperText?: string;
 };
 
-/**
- * Combined location picker: search-as-you-type input + clickable map.
- * - Type in the input to search via Nominatim, pick from dropdown
- * - Click on the map to place/move the pin (reverse geocodes to short name)
- */
 export const MapLocationPicker = ({
     label,
     lat,
@@ -71,13 +66,11 @@ export const MapLocationPicker = ({
     const [open, setOpen] = useState(false);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // Sync external city changes
-    useEffect(() => {
+        useEffect(() => {
         setQuery(city || "");
     }, [city]);
 
-    // Close dropdown on outside click
-    useEffect(() => {
+        useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
                 setOpen(false);
@@ -87,8 +80,7 @@ export const MapLocationPicker = ({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // ──── Nominatim search for text input ────
-    const fetchSuggestions = useCallback(async (q: string) => {
+        const fetchSuggestions = useCallback(async (q: string) => {
         if (q.trim().length < 2) {
             setSuggestions([]);
             setOpen(false);
@@ -114,8 +106,7 @@ export const MapLocationPicker = ({
         debounceRef.current = setTimeout(() => fetchSuggestions(newVal), 400);
     };
 
-    // ──── Reverse geocode (map click) ────
-    const reverseGeocode = useCallback(async (latVal: number, lngVal: number) => {
+        const reverseGeocode = useCallback(async (latVal: number, lngVal: number) => {
         try {
             const res = await fetch(
                 `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latVal}&lon=${lngVal}&accept-language=pl&zoom=14`,
@@ -147,8 +138,7 @@ export const MapLocationPicker = ({
         }
     }, []);
 
-    // ──── Place/update marker and call onChange ────
-    const placeMarker = useCallback(
+        const placeMarker = useCallback(
         async (newLat: number, newLng: number, placeName?: string) => {
             if (!mapRef.current) return;
             if (markerRef.current) {
@@ -165,8 +155,7 @@ export const MapLocationPicker = ({
         [onChange, reverseGeocode],
     );
 
-    // ──── Handle dropdown selection (forward geocode → place marker) ────
-    const handleSelect = useCallback(
+        const handleSelect = useCallback(
         (item: NominatimResult) => {
             setQuery(item.display_name);
             setOpen(false);
@@ -179,8 +168,7 @@ export const MapLocationPicker = ({
         [placeMarker],
     );
 
-    // ──── Initialize map ────
-    useEffect(() => {
+        useEffect(() => {
         if (!mapContainerRef.current || mapRef.current) return;
 
         const center: [number, number] = lat && lng ? [lat, lng] : initialCenter;
@@ -213,11 +201,9 @@ export const MapLocationPicker = ({
             mapRef.current = null;
             markerRef.current = null;
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+            }, []);
 
-    // Update marker when coords change externally
-    useEffect(() => {
+        useEffect(() => {
         if (!mapRef.current || lat == null || lng == null) return;
         if (markerRef.current) {
             markerRef.current.setLatLng([lat, lng]);

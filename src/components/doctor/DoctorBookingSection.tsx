@@ -15,6 +15,7 @@ import {
 import { DateCalendar } from "@mui/x-date-pickers";
 import { useTranslation } from "react-i18next";
 import { BookingCalendarDay, type BookingCalendarDayProps } from "./BookingCalendarDay";
+import { formatTime, formatDate, formatDateShort } from "../../lib/dateFormat";
 import { formatMoney } from "../../lib/formatMoney";
 import { Show } from "../shared/ShowHide";
 import type { useDoctorBooking } from "../../hooks/useDoctorBooking";
@@ -171,7 +172,7 @@ export const DoctorBookingSection = ({
                                                 fontSize: 20,
                                             }}
                                         >
-                                            {selectedDate.format(t("common.dateFormat"))}
+                                            {formatDate(selectedDate)}
                                         </Typography>
                                         <Show when={Boolean(selectedAppointmentType)}>
                                             <Chip
@@ -225,9 +226,7 @@ export const DoctorBookingSection = ({
                                                     {allSlots.map((slot) => (
                                                         <Chip
                                                             key={slot.startAt}
-                                                            label={dayjs(slot.startAt).format(
-                                                                "HH:mm",
-                                                            )}
+                                                            label={formatTime(slot.startAt)}
                                                             disabled={slot.isBooked}
                                                             variant={
                                                                 selectedSlotId === slot.startAt
@@ -289,7 +288,7 @@ export const DoctorBookingSection = ({
                                     >
                                         {bookMutation.isPending
                                             ? t("doctorDetails.reserving")
-                                            : `${t("doctorDetails.reserveButton")} ${selectedDate.format("DD.MM")} ${t("doctorProfile.from")} ${selectedSlotId ? dayjs(selectedSlotId).format("HH:mm") : ""}`}
+                                            : `${t("doctorDetails.reserveButton")} ${formatDateShort(selectedDate)} ${t("doctorProfile.from")} ${selectedSlotId ? formatTime(selectedSlotId) : ""}`}
                                     </Button>
                                 </Stack>
                             </Show>

@@ -114,8 +114,7 @@ export type DoctorSearchParams = {
 };
 
 export const doctorsApi = {
-    // ──────── specializations via consolidated clinics endpoint ────────
-
+    
     getSpecializations: async (location?: string): Promise<SpecializationDto[]> => {
         const response = await api.get("/api/clinics", {
             params: { view: "specializations", location },
@@ -123,8 +122,7 @@ export const doctorsApi = {
         return response.data;
     },
 
-    // ──────────────────────── Doctor endpoints ────────────────────────
-
+    
     search: async (params: DoctorSearchParams): Promise<PagedResultDto<DoctorSearchItemDto>> => {
         const response = await api.get("/api/doctors/search", { params });
         return response.data;
@@ -201,7 +199,7 @@ export const doctorsApi = {
     uploadProfilePhoto: async (file: File): Promise<{ profileImageUrl: string }> => {
         const formData = new FormData();
         formData.append("file", file);
-        const response = await api.post("/api/doctors/me/photo", formData, {
+        const response = await api.post("/api/images/profiles", formData, {
             headers: { "Content-Type": "multipart/form-data" },
         });
         return response.data;

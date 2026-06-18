@@ -4,11 +4,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { clinicsApi } from "../api/clinics";
 import { useAuthUser } from "./useAuthUser";
 import { clinicSchema, type ClinicFormData } from "../lib/validations";
 
 export const useCreateClinic = () => {
+    const { t } = useTranslation();
     const { data: authUser, isLoading: isAuthLoading } = useAuthUser();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
@@ -48,8 +50,7 @@ export const useCreateClinic = () => {
         },
         onError: (error) => {
             setError("root", {
-                message:
-                    error instanceof Error ? error.message : "Nie udało się utworzyć przychodni.",
+                message: error instanceof Error ? error.message : t("errors.createClinicFailed"),
             });
         },
     });
@@ -63,11 +64,11 @@ export const useCreateClinic = () => {
 
     const onSubmit = (data: ClinicFormData) => {
         if (!openingFrom || !openingTo || openingHoursInvalid) {
-            setError("root", { message: "Godziny otwarcia muszą mieć poprawny zakres." });
+            setError("root", { message: t("errors.openingHoursInvalid") });
             return;
         }
         if (phoneError) {
-            setError("root", { message: "Podaj poprawny numer telefonu albo zostaw pole puste." });
+            setError("root", { message: t("errors.phoneInvalid") });
             return;
         }
 
