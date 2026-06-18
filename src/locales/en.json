@@ -373,5 +373,18 @@
     "theme": {
         "lightMode": "Light mode",
         "darkMode": "Dark mode"
+    },
+    "validation": {
+        "required": "This field is required.",
+        "emailInvalid": "Please enter a valid email address.",
+        "passwordMinLength": "Password must be at least 6 characters.",
+        "passwordsMustMatch": "Passwords do not match.",
+        "phoneInvalid": "Enter a valid phone number or leave the field empty.",
+        "mustBeNumber": "Please enter a valid number.",
+        "mustBeNonNegative": "Value cannot be negative.",
+        "mustBeInteger": "Please enter an integer.",
+        "mustBePositive": "Value must be greater than zero.",
+        "mustConfirm": "You must confirm to continue.",
+        "selectPaymentMethod": "Select a payment method."
     }
 }

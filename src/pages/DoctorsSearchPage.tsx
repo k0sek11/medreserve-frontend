@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
     alpha,
     Autocomplete,
@@ -18,11 +19,14 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Link as RouterLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDoctorSearch } from "../hooks/useDoctorSearch";
 import { LocationPicker } from "../components/shared/LocationPicker";
 import { Show } from "../components/shared/ShowHide";
+import { doctorSearchSchema, type DoctorSearchFormData } from "../lib/validations";
 
 const sortOptions = [
     { value: "priceAsc", label: "doctors.sortOptions.priceAsc" },
@@ -34,6 +38,35 @@ const sortOptions = [
 const DoctorsSearchPage = () => {
     const { t } = useTranslation();
     const s = useDoctorSearch();
+
+    const { register, control, reset } = useForm<DoctorSearchFormData>({
+        resolver: zodResolver(doctorSearchSchema),
+        defaultValues: {
+            location: s.filters.location,
+            specializationId: s.filters.specializationId,
+            date: s.filters.date,
+            priceMax: s.filters.priceMax,
+        },
+    });
+
+    useEffect(() => {
+        reset({
+            location: s.filters.location,
+            specializationId: s.filters.specializationId,
+            date: s.filters.date,
+            priceMax: s.filters.priceMax,
+        });
+    }, [s.filters, reset]);
+
+    const handleClear = () => {
+        s.clearFilters();
+        reset({
+            location: "",
+            specializationId: "",
+            date: "",
+            priceMax: "",
+        });
+    };
 
     return (
         <Box sx={{ py: { xs: 2, md: 4 } }}>
@@ -56,11 +89,20 @@ const DoctorsSearchPage = () => {
                             <Typography sx={{ fontWeight: 700, color: "text.primary" }}>
                                 {t("common.filters")}
                             </Typography>
-                            <LocationPicker
-                                label={t("common.city")}
-                                placeholder={t("doctors.cityPlaceholder")}
-                                value={s.filters.location}
-                                onChange={(v) => s.updateFilter("location", v)}
+                            <Controller
+                                name="location"
+                                control={control}
+                                render={({ field }) => (
+                                    <LocationPicker
+                                        label={t("common.city")}
+                                        placeholder={t("doctors.cityPlaceholder")}
+                                        value={field.value}
+                                        onChange={(v) => {
+                                            field.onChange(v);
+                                            s.updateFilter("location", v);
+                                        }}
+                                    />
+                                )}
                             />
                             <Autocomplete
                                 options={s.specializations}
@@ -87,16 +129,22 @@ const DoctorsSearchPage = () => {
                             <TextField
                                 label={t("common.date")}
                                 type="date"
-                                value={s.filters.date}
-                                onChange={(e) => s.updateFilter("date", e.target.value)}
+                                {...register("date")}
+                                onChange={(e) => {
+                                    register("date").onChange(e);
+                                    s.updateFilter("date", e.target.value);
+                                }}
                                 slotProps={{ inputLabel: { shrink: true } }}
                                 fullWidth
                             />
                             <TextField
                                 label={t("doctors.maxPrice")}
                                 type="number"
-                                value={s.filters.priceMax}
-                                onChange={(e) => s.updateFilter("priceMax", e.target.value)}
+                                {...register("priceMax")}
+                                onChange={(e) => {
+                                    register("priceMax").onChange(e);
+                                    s.updateFilter("priceMax", e.target.value);
+                                }}
                                 fullWidth
                                 slotProps={{ htmlInput: { min: 0, step: 10 } }}
                             />
@@ -117,7 +165,7 @@ const DoctorsSearchPage = () => {
                             </FormControl>
                             <Button
                                 variant="outlined"
-                                onClick={s.clearFilters}
+                                onClick={handleClear}
                                 sx={{ textTransform: "none" }}
                             >
                                 {t("common.clearFilters")}

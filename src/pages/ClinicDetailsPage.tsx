@@ -65,7 +65,7 @@ export default function ClinicDetailsPage() {
                         title={t("clinicDetails.about")}
                         action={
                             d.isOwner && !d.isEditing ? (
-                                <Button variant="text" onClick={() => d.setIsEditing(true)}>
+                                <Button variant="text" onClick={() => d.setIsEditing()}>
                                     {t("clinicDetails.edit")}
                                 </Button>
                             ) : null
@@ -76,21 +76,18 @@ export default function ClinicDetailsPage() {
                             <Stack spacing={2}>
                                 <TextField
                                     label={t("common.name")}
-                                    value={d.draft.name}
-                                    onChange={(e) =>
-                                        d.setDraft((c) => ({ ...c, name: e.target.value }))
+                                    {...d.register("name")}
+                                    error={!!d.errors.name}
+                                    helperText={
+                                        d.errors.name?.message
+                                            ? t(d.errors.name.message)
+                                            : undefined
                                     }
                                     fullWidth
                                 />
                                 <TextField
                                     label={t("common.description")}
-                                    value={d.draft.description}
-                                    onChange={(e) =>
-                                        d.setDraft((c) => ({
-                                            ...c,
-                                            description: e.target.value,
-                                        }))
-                                    }
+                                    {...d.register("description")}
                                     fullWidth
                                     multiline
                                     minRows={4}
@@ -135,13 +132,7 @@ export default function ClinicDetailsPage() {
                                     <Show when={d.isEditing}>
                                         <TextField
                                             label={f.label}
-                                            value={d.draft[f.field]}
-                                            onChange={(e) =>
-                                                d.setDraft((c) => ({
-                                                    ...c,
-                                                    [f.field]: e.target.value,
-                                                }))
-                                            }
+                                            {...d.register(f.field)}
                                             fullWidth
                                             multiline={f.multiline}
                                             minRows={f.minRows}
@@ -161,18 +152,10 @@ export default function ClinicDetailsPage() {
                             <Box sx={{ mt: 2 }}>
                                 <MapLocationPicker
                                     label={t("createClinic.location")}
-                                    lat={d.draft.latitude}
-                                    lng={d.draft.longitude}
-                                    city={d.draft.city}
-                                    onChange={(data) =>
-                                        d.setDraft((c) => ({
-                                            ...c,
-                                            latitude: data.lat,
-                                            longitude: data.lng,
-                                            city: data.city,
-                                            streetAddress: data.city,
-                                        }))
-                                    }
+                                    lat={d.watch("lat")}
+                                    lng={d.watch("lng")}
+                                    city={d.watch("city")}
+                                    onChange={d.setLocation}
                                     height={250}
                                 />
                             </Box>
@@ -192,21 +175,15 @@ export default function ClinicDetailsPage() {
                                 spacing={1.5}
                                 sx={{ justifyContent: "flex-end", mt: 3 }}
                             >
-                                <Button
-                                    variant="text"
-                                    onClick={() => {
-                                        d.setDraft(d.toDraft());
-                                        d.setIsEditing(false);
-                                    }}
-                                >
+                                <Button variant="text" onClick={d.cancelEditing}>
                                     {t("clinicDetails.cancel")}
                                 </Button>
                                 <Button
                                     variant="contained"
                                     onClick={d.handleSave}
-                                    disabled={d.updateMutation.isPending}
+                                    disabled={d.updateMutation.isPending || d.isSubmitting}
                                 >
-                                    {d.updateMutation.isPending
+                                    {d.updateMutation.isPending || d.isSubmitting
                                         ? t("common.saving")
                                         : t("clinicDetails.saveChanges")}
                                 </Button>

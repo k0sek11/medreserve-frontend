@@ -12,6 +12,8 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -20,6 +22,7 @@ import { RoleCard } from "../components/auth/RoleCard";
 import { authApi, type CompleteProfileRequest } from "../api/auth";
 import { useAuthUser, authUserQueryKey } from "../hooks/useAuthUser";
 import type { ProfileType } from "../types/profile";
+import { profileCompletionSchema, type ProfileCompletionFormData } from "../lib/validations";
 
 const ProfileCompletionPage = () => {
     const { t } = useTranslation();
@@ -33,12 +36,26 @@ const ProfileCompletionPage = () => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const [profileType, setProfileType] = useState<ProfileType>(null);
-    const [firstName, setFirstName] = useState(user?.firstName ?? "");
-    const [lastName, setLastName] = useState(user?.lastName ?? "");
-    const [phoneNumber, setPhoneNumber] = useState(user?.email ? "" : "");
-    const [birthDate, setBirthDate] = useState("");
-    const [gender, setGender] = useState(genderOptions[0].value);
-    const [licenseNumber, setLicenseNumber] = useState("");
+
+    const {
+        register,
+        handleSubmit,
+        control,
+        setValue,
+        watch,
+        formState: { errors, isSubmitting },
+    } = useForm<ProfileCompletionFormData>({
+        resolver: zodResolver(profileCompletionSchema),
+        defaultValues: {
+            profileType: undefined,
+            firstName: user?.firstName ?? "",
+            lastName: user?.lastName ?? "",
+            phoneNumber: "",
+            birthDate: "",
+            gender: genderOptions[0].value,
+            licenseNumber: "",
+        },
+    });
 
     const completionMutation = useMutation({
         mutationFn: (payload: CompleteProfileRequest) => authApi.completeProfile(payload),
@@ -50,14 +67,18 @@ const ProfileCompletionPage = () => {
         },
     });
 
-    const canSubmit =
-        Boolean(profileType) &&
-        firstName.trim().length > 0 &&
-        lastName.trim().length > 0 &&
-        phoneNumber.trim().length > 0 &&
-        birthDate.trim().length > 0 &&
-        gender.trim().length > 0 &&
-        (profileType !== "Doctor" || licenseNumber.trim().length > 0);
+    const onSubmit = (data: ProfileCompletionFormData) => {
+        if (data.profileType !== "Doctor" && data.profileType !== "Patient") return;
+        completionMutation.mutate({
+            profileType: data.profileType,
+            firstName: data.firstName.trim(),
+            lastName: data.lastName.trim(),
+            phoneNumber: data.phoneNumber.trim(),
+            birthDate: data.birthDate,
+            gender: data.gender,
+            licenseNumber: data.profileType === "Doctor" ? (data.licenseNumber ?? "").trim() : null,
+        });
+    };
 
     if (isLoading) {
         return (
@@ -75,18 +96,7 @@ const ProfileCompletionPage = () => {
         return <Navigate to={user.roles.includes("Doctor") ? "/powiadomienia" : "/"} replace />;
     }
 
-    const submit = () => {
-        if (!profileType) return;
-        completionMutation.mutate({
-            profileType,
-            firstName: firstName.trim(),
-            lastName: lastName.trim(),
-            phoneNumber: phoneNumber.trim(),
-            birthDate,
-            gender,
-            licenseNumber: profileType === "Doctor" ? licenseNumber.trim() : null,
-        });
-    };
+    const watchedProfileType = watch("profileType");
 
     return (
         <AuthPageShell
@@ -108,80 +118,102 @@ const ProfileCompletionPage = () => {
                             active={profileType === "Doctor"}
                             title={t("profileCompletion.doctor")}
                             description={t("profileCompletion.doctorDesc")}
-                            onClick={() => setProfileType("Doctor")}
+                            onClick={() => {
+                                setProfileType("Doctor");
+                                setValue("profileType", "Doctor", { shouldValidate: true });
+                            }}
                         />
                         <RoleCard
                             active={profileType === "Patient"}
                             title={t("profileCompletion.patient")}
                             description={t("profileCompletion.patientDesc")}
-                            onClick={() => setProfileType("Patient")}
+                            onClick={() => {
+                                setProfileType("Patient");
+                                setValue("profileType", "Patient", { shouldValidate: true });
+                            }}
                         />
                     </Stack>
+                    {errors.profileType && (
+                        <Typography variant="body2" sx={{ color: "error.main", mt: 0.5 }}>
+                            {t(errors.profileType.message!)}
+                        </Typography>
+                    )}
                 </Box>
 
                 <Divider />
 
-                <Stack
-                    spacing={2}
-                    component="form"
-                    onSubmit={(event) => {
-                        event.preventDefault();
-                        submit();
-                    }}
-                >
+                <Stack spacing={2} component="form" onSubmit={handleSubmit(onSubmit)}>
                     <TextField
                         label={t("profileCompletion.firstNameLabel")}
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
+                        {...register("firstName")}
+                        error={!!errors.firstName}
+                        helperText={
+                            errors.firstName?.message ? t(errors.firstName.message) : undefined
+                        }
                         fullWidth
-                        required
                     />
                     <TextField
                         label={t("profileCompletion.lastNameLabel")}
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
+                        {...register("lastName")}
+                        error={!!errors.lastName}
+                        helperText={
+                            errors.lastName?.message ? t(errors.lastName.message) : undefined
+                        }
                         fullWidth
-                        required
                     />
                     <TextField
                         label={t("profileCompletion.phoneLabel")}
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        {...register("phoneNumber")}
+                        error={!!errors.phoneNumber}
+                        helperText={
+                            errors.phoneNumber?.message ? t(errors.phoneNumber.message) : undefined
+                        }
                         fullWidth
-                        required
                     />
                     <TextField
                         label={t("profileCompletion.birthDateLabel")}
                         type="date"
-                        value={birthDate}
-                        onChange={(e) => setBirthDate(e.target.value)}
+                        {...register("birthDate")}
+                        error={!!errors.birthDate}
+                        helperText={
+                            errors.birthDate?.message ? t(errors.birthDate.message) : undefined
+                        }
                         slotProps={{ inputLabel: { shrink: true } }}
                         fullWidth
-                        required
                     />
-                    <FormControl fullWidth required>
+                    <FormControl fullWidth error={!!errors.gender}>
                         <InputLabel id="gender-label">
                             {t("profileCompletion.genderLabel")}
                         </InputLabel>
-                        <Select
-                            labelId="gender-label"
-                            label={t("profileCompletion.genderLabel")}
-                            value={gender}
-                            onChange={(e) => setGender(e.target.value)}
-                        >
-                            {genderOptions.map((option) => (
-                                <MenuItem key={option.value} value={option.value}>
-                                    {option.label}
-                                </MenuItem>
-                            ))}
-                        </Select>
+                        <Controller
+                            name="gender"
+                            control={control}
+                            render={({ field }) => (
+                                <Select
+                                    labelId="gender-label"
+                                    label={t("profileCompletion.genderLabel")}
+                                    {...field}
+                                >
+                                    {genderOptions.map((option) => (
+                                        <MenuItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            )}
+                        />
                     </FormControl>
 
-                    {profileType === "Doctor" && (
+                    {watchedProfileType === "Doctor" && (
                         <TextField
                             label={t("profileCompletion.licenseNumberLabel")}
-                            value={licenseNumber}
-                            onChange={(e) => setLicenseNumber(e.target.value)}
+                            {...register("licenseNumber")}
+                            error={!!errors.licenseNumber}
+                            helperText={
+                                errors.licenseNumber?.message
+                                    ? t(errors.licenseNumber.message)
+                                    : undefined
+                            }
                             fullWidth
                             required
                         />
@@ -195,10 +227,10 @@ const ProfileCompletionPage = () => {
                         type="submit"
                         variant="contained"
                         size="large"
-                        disabled={!canSubmit || completionMutation.isPending}
+                        disabled={!profileType || completionMutation.isPending || isSubmitting}
                         sx={{ textTransform: "none", fontWeight: 700, py: 1.2 }}
                     >
-                        {completionMutation.isPending
+                        {completionMutation.isPending || isSubmitting
                             ? t("common.saving")
                             : t("profileCompletion.saveButton")}
                     </Button>

@@ -13,6 +13,8 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
@@ -20,15 +22,28 @@ import {
     type DoctorAppointmentTypeDto,
     type CreateDoctorAppointmentTypeDto,
 } from "../../api/doctors";
-import { createEmptyAppointmentTypeDraft } from "./DoctorProfilehelpers";
+import { appointmentTypeSchema, type AppointmentTypeFormData } from "../../lib/validations";
 
 export const AppointmentTypesSection = () => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [modalOpen, setModalOpen] = useState(false);
-    const [draft, setDraft] = useState(createEmptyAppointmentTypeDraft());
-    const [error, setError] = useState<string | null>(null);
     const [typeToDelete, setTypeToDelete] = useState<DoctorAppointmentTypeDto | null>(null);
+
+    const {
+        register,
+        handleSubmit,
+        reset,
+        setError,
+        formState: { errors, isSubmitting },
+    } = useForm<AppointmentTypeFormData>({
+        resolver: zodResolver(appointmentTypeSchema),
+        defaultValues: {
+            name: "",
+            basePrice: 0,
+            durationMinutes: 30,
+        },
+    });
 
     const profileQuery = useQuery({
         queryKey: ["doctor-my-profile"],
@@ -39,17 +54,17 @@ export const AppointmentTypesSection = () => {
         mutationFn: (payload: CreateDoctorAppointmentTypeDto) =>
             doctorsApi.createMyAppointmentType(payload),
         onSuccess: async () => {
-            setError(null);
             setModalOpen(false);
-            setDraft(createEmptyAppointmentTypeDraft());
+            reset();
             await queryClient.invalidateQueries({ queryKey: ["doctor-my-profile"] });
         },
         onError: (err) => {
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : t("doctorProfile.scheduleErrors.createTypeError"),
-            );
+            setError("root", {
+                message:
+                    err instanceof Error
+                        ? err.message
+                        : t("doctorProfile.scheduleErrors.createTypeError"),
+            });
         },
     });
 
@@ -65,18 +80,12 @@ export const AppointmentTypesSection = () => {
         },
     });
 
-    const submit = () => {
-        const name = draft.name.trim();
-        const basePrice = Number(draft.basePrice);
-        const durationMinutes = Number(draft.durationMinutes);
-
-        if (!name) return setError(t("doctorProfile.scheduleErrors.enterName"));
-        if (!Number.isFinite(basePrice) || basePrice < 0)
-            return setError(t("doctorProfile.scheduleErrors.enterPrice"));
-        if (!Number.isFinite(durationMinutes) || durationMinutes <= 0)
-            return setError(t("doctorProfile.scheduleErrors.enterDuration"));
-
-        createMutation.mutate({ name, basePrice, durationMinutes });
+    const onSubmit = (data: AppointmentTypeFormData) => {
+        createMutation.mutate({
+            name: data.name.trim(),
+            basePrice: data.basePrice,
+            durationMinutes: data.durationMinutes,
+        });
     };
 
     const types = profileQuery.data?.appointmentTypes ?? [];
@@ -93,7 +102,10 @@ export const AppointmentTypesSection = () => {
                 </Typography>
                 <Button
                     variant="outlined"
-                    onClick={() => setModalOpen(true)}
+                    onClick={() => {
+                        reset({ name: "", basePrice: 0, durationMinutes: 30 });
+                        setModalOpen(true);
+                    }}
                     sx={{ textTransform: "none" }}
                 >
                     {t("doctorProfile.addAppointmentType")}
@@ -124,7 +136,8 @@ export const AppointmentTypesSection = () => {
                                             {item.name}
                                         </Typography>
                                         <Typography sx={{ color: "text.secondary", fontSize: 14 }}>
-                                            {item.basePrice.toFixed(0)} {t("doctorProfile.currency")} • {item.durationMinutes}{" "}
+                                            {item.basePrice.toFixed(0)}{" "}
+                                            {t("doctorProfile.currency")} • {item.durationMinutes}{" "}
                                             min
                                         </Typography>
                                     </Stack>
@@ -147,7 +160,6 @@ export const AppointmentTypesSection = () => {
                 open={modalOpen}
                 onClose={() => {
                     setModalOpen(false);
-                    setError(null);
                 }}
                 fullWidth
                 maxWidth="sm"
@@ -155,54 +167,68 @@ export const AppointmentTypesSection = () => {
                 <DialogTitle sx={{ fontWeight: 800, color: "text.primary" }}>
                     {t("doctorProfile.createAppointmentType")}
                 </DialogTitle>
-                <DialogContent dividers>
-                    <Stack spacing={2} sx={{ pt: 0.5 }}>
-                        {error && <Alert severity="error">{error}</Alert>}
-                        <TextField
-                            label={t("common.name")}
-                            value={draft.name}
-                            onChange={(e) => setDraft((c) => ({ ...c, name: e.target.value }))}
-                            fullWidth
-                        />
-                        <TextField
-                            label={t("doctorProfile.priceLabel")}
-                            type="number"
-                            slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
-                            value={draft.basePrice}
-                            onChange={(e) => setDraft((c) => ({ ...c, basePrice: e.target.value }))}
-                            fullWidth
-                        />
-                        <TextField
-                            label={t("doctorProfile.durationLabel")}
-                            type="number"
-                            slotProps={{ htmlInput: { min: 1, step: 1 } }}
-                            value={draft.durationMinutes}
-                            onChange={(e) =>
-                                setDraft((c) => ({ ...c, durationMinutes: e.target.value }))
-                            }
-                            fullWidth
-                        />
-                    </Stack>
-                </DialogContent>
-                <DialogActions sx={{ px: 3, py: 2 }}>
-                    <Button
-                        onClick={() => {
-                            setModalOpen(false);
-                            setError(null);
-                        }}
-                        sx={{ textTransform: "none" }}
-                    >
-                        {t("common.cancel")}
-                    </Button>
-                    <Button
-                        variant="contained"
-                        onClick={submit}
-                        disabled={createMutation.isPending}
-                        sx={{ textTransform: "none", fontWeight: 700 }}
-                    >
-                        {createMutation.isPending ? t("common.saving") : t("doctorProfile.create")}
-                    </Button>
-                </DialogActions>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <DialogContent dividers>
+                        <Stack spacing={2} sx={{ pt: 0.5 }}>
+                            {errors.root && <Alert severity="error">{errors.root.message}</Alert>}
+                            <TextField
+                                label={t("common.name")}
+                                {...register("name")}
+                                error={!!errors.name}
+                                helperText={
+                                    errors.name?.message ? t(errors.name.message) : undefined
+                                }
+                                fullWidth
+                            />
+                            <TextField
+                                label={t("doctorProfile.priceLabel")}
+                                type="number"
+                                slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
+                                {...register("basePrice", { valueAsNumber: true })}
+                                error={!!errors.basePrice}
+                                helperText={
+                                    errors.basePrice?.message
+                                        ? t(errors.basePrice.message)
+                                        : undefined
+                                }
+                                fullWidth
+                            />
+                            <TextField
+                                label={t("doctorProfile.durationLabel")}
+                                type="number"
+                                slotProps={{ htmlInput: { min: 1, step: 1 } }}
+                                {...register("durationMinutes", { valueAsNumber: true })}
+                                error={!!errors.durationMinutes}
+                                helperText={
+                                    errors.durationMinutes?.message
+                                        ? t(errors.durationMinutes.message)
+                                        : undefined
+                                }
+                                fullWidth
+                            />
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions sx={{ px: 3, py: 2 }}>
+                        <Button
+                            onClick={() => {
+                                setModalOpen(false);
+                            }}
+                            sx={{ textTransform: "none" }}
+                        >
+                            {t("common.cancel")}
+                        </Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={createMutation.isPending || isSubmitting}
+                            sx={{ textTransform: "none", fontWeight: 700 }}
+                        >
+                            {createMutation.isPending || isSubmitting
+                                ? t("common.saving")
+                                : t("doctorProfile.create")}
+                        </Button>
+                    </DialogActions>
+                </form>
             </Dialog>
 
             <Dialog

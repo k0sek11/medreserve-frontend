@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
     Box,
     Button,
@@ -14,24 +14,61 @@ import {
     Alert,
 } from "@mui/material";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import { doctorsApi, type UpsertDoctorScheduleDto } from "../../api/doctors";
 import { clinicsApi } from "../../api/clinics";
-import {
-    createEmptyScheduleDraft,
-    parseTime,
-    toDateString,
-    toTimeString,
-    weekdayOptions,
-} from "./DoctorProfilehelpers";
+import { doctorScheduleSchema, type DoctorScheduleFormData } from "../../lib/validations";
+import { parseTime, toDateString, toTimeString, weekdayOptions } from "./DoctorProfilehelpers";
+
+type ScheduleDraft = {
+    scheduleId: number | null;
+    clinicId: string;
+    dayOfWeek: number;
+    startTime: dayjs.Dayjs;
+    endTime: dayjs.Dayjs;
+    validFrom: dayjs.Dayjs;
+    validTo: dayjs.Dayjs | null;
+};
+
+const createEmptyScheduleDraft = (): ScheduleDraft => ({
+    scheduleId: null,
+    clinicId: "",
+    dayOfWeek: 1,
+    startTime: parseTime("08:00"),
+    endTime: parseTime("16:00"),
+    validFrom: dayjs().startOf("day"),
+    validTo: null,
+});
 
 export const DoctorSchedules = () => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
-    const [scheduleDraft, setScheduleDraft] = useState(createEmptyScheduleDraft());
-    const [scheduleError, setScheduleError] = useState<string | null>(null);
+    const [editingSchedule, setEditingSchedule] = useState<ScheduleDraft>(
+        createEmptyScheduleDraft(),
+    );
+
+    const {
+        handleSubmit,
+        control,
+        reset,
+        setValue,
+        setError,
+        formState: { errors, isSubmitting },
+    } = useForm<DoctorScheduleFormData>({
+        resolver: zodResolver(doctorScheduleSchema),
+        defaultValues: {
+            clinicId: "",
+            dayOfWeek: 1,
+            startTime: "08:00",
+            endTime: "16:00",
+            validFrom: dayjs().format("YYYY-MM-DD"),
+            validTo: null,
+        },
+    });
 
     const schedulesQuery = useQuery({
         queryKey: ["doctor-my-schedules"],
@@ -44,18 +81,28 @@ export const DoctorSchedules = () => {
 
     const saveScheduleMutation = useMutation({
         mutationFn: (payload: UpsertDoctorScheduleDto) =>
-            scheduleDraft.scheduleId
-                ? doctorsApi.updateMySchedule(scheduleDraft.scheduleId, payload)
+            editingSchedule.scheduleId
+                ? doctorsApi.updateMySchedule(editingSchedule.scheduleId, payload)
                 : doctorsApi.upsertMySchedule(payload),
         onSuccess: async () => {
-            setScheduleError(null);
-            setScheduleDraft(createEmptyScheduleDraft());
+            setEditingSchedule(createEmptyScheduleDraft());
+            reset({
+                clinicId: "",
+                dayOfWeek: 1,
+                startTime: "08:00",
+                endTime: "16:00",
+                validFrom: dayjs().format("YYYY-MM-DD"),
+                validTo: null,
+            });
             await queryClient.invalidateQueries({ queryKey: ["doctor-my-schedules"] });
         },
         onError: (err) =>
-            setScheduleError(
-                err instanceof Error ? err.message : t("doctorProfile.scheduleErrors.saveError"),
-            ),
+            setError("root", {
+                message:
+                    err instanceof Error
+                        ? err.message
+                        : t("doctorProfile.scheduleErrors.saveError"),
+            }),
     });
 
     const deleteScheduleMutation = useMutation({
@@ -63,23 +110,33 @@ export const DoctorSchedules = () => {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["doctor-my-schedules"] }),
     });
 
-    const submitSchedule = () => {
-        if (!scheduleDraft.clinicId)
-            return setScheduleError(t("doctorProfile.scheduleErrors.selectClinic"));
-        if (scheduleDraft.endTime.valueOf() <= scheduleDraft.startTime.valueOf())
-            return setScheduleError(t("doctorProfile.scheduleErrors.badHours"));
+    const onSubmit = (data: DoctorScheduleFormData) => {
+        if (editingSchedule.endTime.valueOf() <= editingSchedule.startTime.valueOf()) {
+            setError("root", { message: t("doctorProfile.scheduleErrors.badHours") });
+            return;
+        }
 
         saveScheduleMutation.mutate({
-            scheduleId: scheduleDraft.scheduleId,
-            clinicId: Number(scheduleDraft.clinicId),
-            dayOfWeek: scheduleDraft.dayOfWeek,
-            startTime: toTimeString(scheduleDraft.startTime),
-            endTime: toTimeString(scheduleDraft.endTime),
-            validFrom: toDateString(scheduleDraft.validFrom),
-            validTo: scheduleDraft.validTo ? toDateString(scheduleDraft.validTo) : null,
+            scheduleId: editingSchedule.scheduleId ?? undefined,
+            clinicId: Number(data.clinicId),
+            dayOfWeek: data.dayOfWeek,
+            startTime: toTimeString(editingSchedule.startTime),
+            endTime: toTimeString(editingSchedule.endTime),
+            validFrom: data.validFrom,
+            validTo: data.validTo || null,
             isActive: true,
         });
     };
+
+    // Sync editingSchedule changes to form values
+    useEffect(() => {
+        setValue("clinicId", editingSchedule.clinicId);
+        setValue("dayOfWeek", editingSchedule.dayOfWeek);
+        setValue("startTime", toTimeString(editingSchedule.startTime));
+        setValue("endTime", toTimeString(editingSchedule.endTime));
+        setValue("validFrom", toDateString(editingSchedule.validFrom));
+        setValue("validTo", editingSchedule.validTo ? toDateString(editingSchedule.validTo) : null);
+    }, [editingSchedule, setValue]);
 
     const orderedSchedules = useMemo(() => {
         return [...(schedulesQuery.data ?? [])].sort((a, b) => a.dayOfWeek - b.dayOfWeek);
@@ -87,110 +144,138 @@ export const DoctorSchedules = () => {
 
     return (
         <Stack spacing={4}>
-            <Box>
+            <Box component="form" onSubmit={handleSubmit(onSubmit)}>
                 <Typography sx={{ fontWeight: 800, fontSize: 20, mb: 2 }}>
-                    {scheduleDraft.scheduleId
+                    {editingSchedule.scheduleId
                         ? t("doctorProfile.editSchedule")
                         : t("doctorProfile.addSchedule")}
                 </Typography>
-                {scheduleError && (
+                {errors.root && (
                     <Alert severity="error" sx={{ mb: 2 }}>
-                        {scheduleError}
+                        {errors.root.message}
                     </Alert>
                 )}
 
                 <Grid container spacing={2}>
                     <Grid size={{ xs: 12, md: 6 }}>
-                        <FormControl fullWidth>
+                        <FormControl fullWidth error={!!errors.clinicId}>
                             <InputLabel>{t("doctorProfile.clinic")}</InputLabel>
-                            <Select
-                                value={scheduleDraft.clinicId}
-                                onChange={(e) =>
-                                    setScheduleDraft({
-                                        ...scheduleDraft,
-                                        clinicId: String(e.target.value),
-                                    })
-                                }
-                            >
-                                {clinicsQuery.data?.map((c) => (
-                                    <MenuItem key={c.clinicId} value={String(c.clinicId)}>
-                                        {c.name}
-                                    </MenuItem>
-                                ))}
-                            </Select>
+                            <Controller
+                                name="clinicId"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select
+                                        {...field}
+                                        label={t("doctorProfile.clinic")}
+                                        onChange={(e) => {
+                                            field.onChange(e);
+                                            setEditingSchedule((prev) => ({
+                                                ...prev,
+                                                clinicId: String(e.target.value),
+                                            }));
+                                        }}
+                                    >
+                                        {clinicsQuery.data?.map((c) => (
+                                            <MenuItem key={c.clinicId} value={String(c.clinicId)}>
+                                                {c.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                )}
+                            />
                         </FormControl>
                     </Grid>
                     <Grid size={{ xs: 12, md: 6 }}>
-                        <FormControl fullWidth>
+                        <FormControl fullWidth error={!!errors.dayOfWeek}>
                             <InputLabel>{t("doctorProfile.dayOfWeek")}</InputLabel>
-                            <Select
-                                value={scheduleDraft.dayOfWeek}
-                                onChange={(e) =>
-                                    setScheduleDraft({
-                                        ...scheduleDraft,
-                                        dayOfWeek: Number(e.target.value),
-                                    })
-                                }
-                            >
-                                {weekdayOptions.map((opt) => (
-                                    <MenuItem key={opt.value} value={opt.value}>
-                                        {t(`doctorProfile.weekdays.${opt.labelKey}`)}
-                                    </MenuItem>
-                                ))}
-                            </Select>
+                            <Controller
+                                name="dayOfWeek"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select
+                                        {...field}
+                                        label={t("doctorProfile.dayOfWeek")}
+                                        onChange={(e) => {
+                                            field.onChange(Number(e.target.value));
+                                            setEditingSchedule((prev) => ({
+                                                ...prev,
+                                                dayOfWeek: Number(e.target.value),
+                                            }));
+                                        }}
+                                    >
+                                        {weekdayOptions.map((opt) => (
+                                            <MenuItem key={opt.value} value={opt.value}>
+                                                {t(`doctorProfile.weekdays.${opt.labelKey}`)}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                )}
+                            />
                         </FormControl>
                     </Grid>
                     <Grid size={{ xs: 12, md: 6 }}>
                         <TimePicker
                             label={t("doctorProfile.from")}
-                            value={scheduleDraft.startTime}
+                            value={editingSchedule.startTime}
                             onChange={(v) =>
-                                setScheduleDraft({
-                                    ...scheduleDraft,
+                                setEditingSchedule((prev) => ({
+                                    ...prev,
                                     startTime: v ?? parseTime("08:00"),
-                                })
+                                }))
                             }
-                            slotProps={{ textField: { fullWidth: true } }}
+                            slotProps={{
+                                textField: { fullWidth: true, error: !!errors.startTime },
+                            }}
                         />
                     </Grid>
                     <Grid size={{ xs: 12, md: 6 }}>
                         <TimePicker
                             label={t("doctorProfile.to")}
-                            value={scheduleDraft.endTime}
+                            value={editingSchedule.endTime}
                             onChange={(v) =>
-                                setScheduleDraft({
-                                    ...scheduleDraft,
+                                setEditingSchedule((prev) => ({
+                                    ...prev,
                                     endTime: v ?? parseTime("16:00"),
-                                })
+                                }))
                             }
-                            slotProps={{ textField: { fullWidth: true } }}
+                            slotProps={{ textField: { fullWidth: true, error: !!errors.endTime } }}
                         />
                     </Grid>
                     <Grid size={{ xs: 12, md: 6 }}>
                         <DatePicker
                             label={t("doctorProfile.validFrom")}
-                            value={scheduleDraft.validFrom}
+                            value={editingSchedule.validFrom}
                             onChange={(v) =>
-                                setScheduleDraft({ ...scheduleDraft, validFrom: v ?? dayjs() })
+                                setEditingSchedule((prev) => ({
+                                    ...prev,
+                                    validFrom: v ?? dayjs(),
+                                }))
                             }
-                            slotProps={{ textField: { fullWidth: true } }}
+                            slotProps={{
+                                textField: { fullWidth: true, error: !!errors.validFrom },
+                            }}
                         />
                     </Grid>
                     <Grid size={{ xs: 12, md: 6 }}>
                         <DatePicker
                             label={t("doctorProfile.validTo")}
-                            value={scheduleDraft.validTo}
-                            onChange={(v) => setScheduleDraft({ ...scheduleDraft, validTo: v })}
+                            value={editingSchedule.validTo}
+                            onChange={(v) =>
+                                setEditingSchedule((prev) => ({ ...prev, validTo: v }))
+                            }
                             slotProps={{ textField: { fullWidth: true } }}
                         />
                     </Grid>
                 </Grid>
                 <Button
+                    type="submit"
                     variant="contained"
-                    onClick={submitSchedule}
+                    disabled={saveScheduleMutation.isPending || isSubmitting}
                     sx={{ mt: 2, fontWeight: 700 }}
                 >
-                    {t("doctorProfile.saveSchedule")}
+                    {saveScheduleMutation.isPending || isSubmitting
+                        ? t("common.saving")
+                        : t("doctorProfile.saveSchedule")}
                 </Button>
             </Box>
 
@@ -228,7 +313,7 @@ export const DoctorSchedules = () => {
                                     <Button
                                         variant="outlined"
                                         onClick={() =>
-                                            setScheduleDraft({
+                                            setEditingSchedule({
                                                 scheduleId: schedule.scheduleId,
                                                 clinicId: String(schedule.clinicId),
                                                 dayOfWeek: schedule.dayOfWeek,

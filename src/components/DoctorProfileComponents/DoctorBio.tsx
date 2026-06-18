@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
     Avatar,
     Badge,
@@ -15,10 +15,14 @@ import {
     Checkbox,
     ListItemText,
 } from "@mui/material";
+import { CameraAlt } from "@mui/icons-material";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { doctorsApi } from "../../api/doctors";
 import { api } from "../../lib/axios";
+import { doctorBioSchema, type DoctorBioFormData } from "../../lib/validations";
 
 type UserProfileDto = {
     id: string;
@@ -46,10 +50,22 @@ export const DoctorBio = () => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [bioDraft, setBioDraft] = useState<string | null>(null);
-    const [specializationDraft, setSpecializationDraft] = useState<number[] | null>(null);
-    const [firstNameDraft, setFirstNameDraft] = useState<string>("");
-    const [lastNameDraft, setLastNameDraft] = useState<string>("");
+
+    const {
+        register,
+        handleSubmit,
+        control,
+        setValue,
+        formState: { errors, isSubmitting },
+    } = useForm<DoctorBioFormData>({
+        resolver: zodResolver(doctorBioSchema),
+        defaultValues: {
+            firstName: "",
+            lastName: "",
+            bio: "",
+            specializationIds: [],
+        },
+    });
 
     const profileQuery = useQuery({
         queryKey: ["doctor-my-profile"],
@@ -66,28 +82,41 @@ export const DoctorBio = () => {
 
     useEffect(() => {
         if (userProfileQuery.data) {
-            setFirstNameDraft(userProfileQuery.data.firstName ?? "");
-            setLastNameDraft(userProfileQuery.data.lastName ?? "");
+            setValue("firstName", userProfileQuery.data.firstName ?? "");
+            setValue("lastName", userProfileQuery.data.lastName ?? "");
         }
-    }, [userProfileQuery.data]);
+    }, [userProfileQuery.data, setValue]);
+
+    const selectedSpecializationIds = useMemo(() => {
+        if (!profileQuery.data || !specializationsQuery.data) return [] as number[];
+        return specializationsQuery.data
+            .filter((item) => profileQuery.data.specializations.includes(item.name))
+            .map((item) => item.specializationId);
+    }, [profileQuery.data, specializationsQuery.data]);
+
+    useEffect(() => {
+        if (profileQuery.data && specializationsQuery.data) {
+            setValue("specializationIds", selectedSpecializationIds);
+            setValue("bio", profileQuery.data.bio ?? "");
+        }
+    }, [profileQuery.data, specializationsQuery.data, selectedSpecializationIds, setValue]);
 
     const saveProfileMutation = useMutation({
-        mutationFn: async () => {
+        mutationFn: async (data: DoctorBioFormData) => {
             await Promise.all([
                 usersApi.updateMyProfile({
-                    firstName: firstNameDraft.trim(),
-                    lastName: lastNameDraft.trim(),
+                    firstName: data.firstName.trim(),
+                    lastName: data.lastName.trim(),
                 }),
                 doctorsApi.updateMyProfile({
-                    bio: (bioDraft ?? profileQuery.data?.bio ?? "").trim() || null,
-                    specializationIds: specializationDraft ?? undefined,
+                    bio: (data.bio ?? "").trim() || null,
+                    specializationIds: data.specializationIds,
                 }),
             ]);
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["doctor-my-profile"] });
             await queryClient.invalidateQueries({ queryKey: ["user-my-profile"] });
-            setBioDraft(null);
         },
     });
 
@@ -99,28 +128,14 @@ export const DoctorBio = () => {
         },
     });
 
-    const selectedSpecializationIds = useMemo(() => {
-        if (!profileQuery.data || !specializationsQuery.data) return [] as number[];
-        return specializationsQuery.data
-            .filter((item) => profileQuery.data.specializations.includes(item.name))
-            .map((item) => item.specializationId);
-    }, [profileQuery.data, specializationsQuery.data]);
-
-    useEffect(() => {
-        if (specializationDraft === null && profileQuery.data && specializationsQuery.data) {
-            setSpecializationDraft(selectedSpecializationIds);
-        }
-    }, [
-        profileQuery.data,
-        specializationsQuery.data,
-        selectedSpecializationIds,
-        specializationDraft,
-    ]);
-
     const profileImageSrc = profileQuery.data?.profileImageUrl ?? undefined;
 
+    const onSubmit = (data: DoctorBioFormData) => {
+        saveProfileMutation.mutate(data);
+    };
+
     return (
-        <Stack spacing={1.5}>
+        <Stack spacing={1.5} component="form" onSubmit={handleSubmit(onSubmit)}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
                 <Badge
                     overlap="circular"
@@ -137,13 +152,18 @@ export const DoctorBio = () => {
                             }}
                             onClick={() => fileInputRef.current?.click()}
                         >
-                            <div></div>
+                            <CameraAlt sx={{ fontSize: 16 }} />
                         </IconButton>
                     }
                 >
                     <Avatar
                         src={profileImageSrc}
-                        sx={{ width: 72, height: 72, fontSize: 30, bgcolor: (t) => t.palette.divider }}
+                        sx={{
+                            width: 72,
+                            height: 72,
+                            fontSize: 30,
+                            bgcolor: (t) => t.palette.divider,
+                        }}
                     >
                         {profileQuery.data?.fullName?.charAt(0) ?? "?"}
                     </Avatar>
@@ -183,21 +203,22 @@ export const DoctorBio = () => {
 
             <TextField
                 label={t("doctorProfile.firstName")}
-                value={firstNameDraft}
-                onChange={(e) => setFirstNameDraft(e.target.value)}
+                {...register("firstName")}
+                error={!!errors.firstName}
+                helperText={errors.firstName?.message ? t(errors.firstName.message) : undefined}
                 fullWidth
             />
             <TextField
                 label={t("doctorProfile.lastName")}
-                value={lastNameDraft}
-                onChange={(e) => setLastNameDraft(e.target.value)}
+                {...register("lastName")}
+                error={!!errors.lastName}
+                helperText={errors.lastName?.message ? t(errors.lastName.message) : undefined}
                 fullWidth
             />
 
             <TextField
                 label={t("doctorProfile.bio")}
-                value={bioDraft ?? profileQuery.data?.bio ?? ""}
-                onChange={(e) => setBioDraft(e.target.value)}
+                {...register("bio")}
                 minRows={5}
                 multiline
                 fullWidth
@@ -205,39 +226,46 @@ export const DoctorBio = () => {
 
             <FormControl fullWidth disabled={specializationsQuery.isLoading}>
                 <InputLabel>{t("doctorProfile.specializations")}</InputLabel>
-                <Select
-                    multiple
-                    label={t("doctorProfile.specializations")}
-                    value={specializationDraft ?? []}
-                    onChange={(e) =>
-                        setSpecializationDraft(
-                            typeof e.target.value === "string"
-                                ? e.target.value.split(",").map(Number)
-                                : (e.target.value as number[]),
-                        )
-                    }
-                    renderValue={(selected) =>
-                        (selected as number[])
-                            .map(
-                                (id) =>
-                                    specializationsQuery.data?.find(
-                                        (s) => s.specializationId === id,
-                                    )?.name,
-                            )
-                            .join(", ")
-                    }
-                >
-                    {specializationsQuery.data?.map((item) => (
-                        <MenuItem key={item.specializationId} value={item.specializationId}>
-                            <Checkbox
-                                checked={(specializationDraft ?? []).includes(
-                                    item.specializationId,
-                                )}
-                            />
-                            <ListItemText primary={item.name} />
-                        </MenuItem>
-                    ))}
-                </Select>
+                <Controller
+                    name="specializationIds"
+                    control={control}
+                    render={({ field }) => (
+                        <Select
+                            multiple
+                            label={t("doctorProfile.specializations")}
+                            value={field.value}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                field.onChange(
+                                    typeof val === "string"
+                                        ? val.split(",").map(Number)
+                                        : (val as number[]),
+                                );
+                            }}
+                            renderValue={(selected) =>
+                                (selected as number[])
+                                    .map(
+                                        (id) =>
+                                            specializationsQuery.data?.find(
+                                                (s) => s.specializationId === id,
+                                            )?.name,
+                                    )
+                                    .join(", ")
+                            }
+                        >
+                            {specializationsQuery.data?.map((item) => (
+                                <MenuItem key={item.specializationId} value={item.specializationId}>
+                                    <Checkbox
+                                        checked={(field.value ?? []).includes(
+                                            item.specializationId,
+                                        )}
+                                    />
+                                    <ListItemText primary={item.name} />
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    )}
+                />
             </FormControl>
 
             {saveProfileMutation.isError && (
@@ -247,12 +275,14 @@ export const DoctorBio = () => {
             )}
 
             <Button
+                type="submit"
                 variant="contained"
-                onClick={() => saveProfileMutation.mutate()}
-                disabled={saveProfileMutation.isPending}
+                disabled={saveProfileMutation.isPending || isSubmitting}
                 sx={{ fontWeight: 700 }}
             >
-                {saveProfileMutation.isPending ? t("common.saving") : t("doctorProfile.saveBio")}
+                {saveProfileMutation.isPending || isSubmitting
+                    ? t("common.saving")
+                    : t("doctorProfile.saveBio")}
             </Button>
         </Stack>
     );

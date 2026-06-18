@@ -21,7 +21,7 @@ const LoginPage = () => {
     const { data: user, isLoading: isAuthLoading } = useAuthUser();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
-    const { values, error, isLoading, isSuccess, handleInputChange, handleSubmit } = useLoginForm(
+    const { register, handleSubmit, errors, rootError, isLoading, isSuccess } = useLoginForm(
         (session) => {
             navigate(
                 session.isActive
@@ -100,28 +100,26 @@ const LoginPage = () => {
             }
         >
             <Stack component="form" spacing={2.2} onSubmit={handleSubmit}>
-                {error && <Alert severity="error">{error}</Alert>}
+                {rootError && <Alert severity="error">{rootError}</Alert>}
                 {isSuccess && <Alert severity="success">{t("auth.loginSuccess")}</Alert>}
 
                 <TextField
-                    name="email"
                     label={t("auth.emailLabel")}
                     type="email"
                     autoComplete="email"
-                    value={values.email}
-                    onChange={handleInputChange}
+                    {...register("email")}
+                    error={!!errors.email}
+                    helperText={errors.email?.message ? t(errors.email.message) : undefined}
                     fullWidth
-                    required
                 />
                 <TextField
-                    name="password"
                     label={t("auth.passwordLabel")}
                     type="password"
                     autoComplete="current-password"
-                    value={values.password}
-                    onChange={handleInputChange}
+                    {...register("password")}
+                    error={!!errors.password}
+                    helperText={errors.password?.message ? t(errors.password.message) : undefined}
                     fullWidth
-                    required
                 />
 
                 <Button

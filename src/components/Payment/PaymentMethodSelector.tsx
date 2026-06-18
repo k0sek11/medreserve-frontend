@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
@@ -14,6 +16,7 @@ import {
     useTheme,
 } from "@mui/material";
 import { initPayuPayment, createOfflinePaymentIntent } from "../../api/paymentApi";
+import { paymentMethodSchema, type PaymentMethodFormData } from "../../lib/validations";
 
 interface Props {
     appointmentId: number;
@@ -24,13 +27,26 @@ interface Props {
 export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }: Props) => {
     const { t } = useTranslation();
     const theme = useTheme();
-    const [selectedMethod, setSelectedMethod] = useState<"PAYU" | "OFFLINE" | null>(null);
     const [snackbar, setSnackbar] = useState<{
         open: boolean;
         message: string;
         severity: "success" | "error";
     }>({ open: false, message: "", severity: "success" });
     const queryClient = useQueryClient();
+
+    const {
+        handleSubmit,
+        setValue,
+        watch,
+        formState: { errors, isSubmitting },
+    } = useForm<PaymentMethodFormData>({
+        resolver: zodResolver(paymentMethodSchema),
+        defaultValues: {
+            selectedMethod: undefined,
+        },
+    });
+
+    const selectedMethod = watch("selectedMethod");
 
     const payuMutation = useMutation({
         mutationFn: initPayuPayment,
@@ -56,15 +72,15 @@ export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }:
             setSnackbar({ open: true, message: t("payment.offlineError"), severity: "error" }),
     });
 
-    const handlePaymentSubmit = () => {
-        if (selectedMethod === "PAYU") {
+    const onSubmit = (data: PaymentMethodFormData) => {
+        if (data.selectedMethod === "PAYU") {
             payuMutation.mutate(appointmentId);
-        } else if (selectedMethod === "OFFLINE") {
+        } else if (data.selectedMethod === "OFFLINE") {
             offlineMutation.mutate(appointmentId);
         }
     };
 
-    const isLoading = payuMutation.isPending || offlineMutation.isPending;
+    const isLoading = payuMutation.isPending || offlineMutation.isPending || isSubmitting;
 
     const optionStyles = (isSelected: boolean) => ({
         border: isSelected
@@ -85,7 +101,11 @@ export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }:
                 </strong>
             </Typography>
 
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            <Box
+                component="form"
+                onSubmit={handleSubmit(onSubmit)}
+                sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}
+            >
                 <Paper
                     component="label"
                     elevation={0}
@@ -100,9 +120,11 @@ export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }:
                 >
                     <Radio
                         checked={selectedMethod === "PAYU"}
-                        onChange={() => setSelectedMethod("PAYU")}
+                        onChange={() =>
+                            setValue("selectedMethod", "PAYU", { shouldValidate: true })
+                        }
                     />
-                    <Typography fontWeight={700}>{t("payment.payuLabel")}</Typography>
+                    <Typography sx={{ fontWeight: 700 }}>{t("payment.payuLabel")}</Typography>
                 </Paper>
 
                 <Paper
@@ -119,28 +141,37 @@ export const PaymentMethodSelector = ({ appointmentId, amount, onSuccessClose }:
                 >
                     <Radio
                         checked={selectedMethod === "OFFLINE"}
-                        onChange={() => setSelectedMethod("OFFLINE")}
+                        onChange={() =>
+                            setValue("selectedMethod", "OFFLINE", { shouldValidate: true })
+                        }
                     />
-                    <Typography fontWeight={700}>{t("payment.offlineLabel")}</Typography>
+                    <Typography sx={{ fontWeight: 700 }}>{t("payment.offlineLabel")}</Typography>
                 </Paper>
-            </Box>
+                {errors.selectedMethod && (
+                    <Typography variant="body2" color="error">
+                        {t(errors.selectedMethod.message!)}
+                    </Typography>
+                )}
 
-            <Button
-                fullWidth
-                variant="contained"
-                color={selectedMethod ? "success" : "inherit"}
-                disabled={!selectedMethod || isLoading}
-                onClick={handlePaymentSubmit}
-                size="large"
-                sx={{ mt: 3, fontWeight: 700, textTransform: "none" }}
-                startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : undefined}
-            >
-                {isLoading
-                    ? t("payment.processing")
-                    : selectedMethod === "PAYU"
-                      ? t("payment.goPayu")
-                      : t("payment.confirmReservation")}
-            </Button>
+                <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    color={selectedMethod ? "success" : "inherit"}
+                    disabled={!selectedMethod || isLoading}
+                    size="large"
+                    sx={{ mt: 3, fontWeight: 700, textTransform: "none" }}
+                    startIcon={
+                        isLoading ? <CircularProgress size={20} color="inherit" /> : undefined
+                    }
+                >
+                    {isLoading
+                        ? t("payment.processing")
+                        : selectedMethod === "PAYU"
+                          ? t("payment.goPayu")
+                          : t("payment.confirmReservation")}
+                </Button>
+            </Box>
             <Snackbar
                 open={snackbar.open}
                 autoHideDuration={5000}

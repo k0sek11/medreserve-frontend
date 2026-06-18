@@ -11,6 +11,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
+import { Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useHomeSearch } from "../hooks/useHomeSearch";
 import { LocationPicker } from "../components/shared/LocationPicker";
@@ -48,63 +49,74 @@ const HomePage = () => {
                         {t("home.subtitle")}
                     </Typography>
                 </Stack>
-                <Grid container spacing={2} sx={{ mb: 2.5 }}>
-                    <Grid size={{ xs: 12, md: 4 }}>
-                        <FormControl fullWidth>
-                            <InputLabel id="specialization-label">
-                                {t("home.specializationLabel")}
-                            </InputLabel>
-                            <Select
-                                labelId="specialization-label"
-                                label={t("home.specializationLabel")}
-                                value={h.specialization}
-                                onChange={(e) => h.setSpecialization(e.target.value)}
-                            >
-                                {h.specializations.map((item) => (
-                                    <MenuItem
-                                        key={item.specializationId}
-                                        value={String(item.specializationId)}
-                                    >
-                                        {item.name}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                <Box component="form" onSubmit={h.handleSubmit}>
+                    <Grid container spacing={2} sx={{ mb: 2.5 }}>
+                        <Grid size={{ xs: 12, md: 4 }}>
+                            <FormControl fullWidth>
+                                <InputLabel id="specialization-label">
+                                    {t("home.specializationLabel")}
+                                </InputLabel>
+                                <Controller
+                                    name="specialization"
+                                    control={h.control}
+                                    render={({ field }) => (
+                                        <Select
+                                            labelId="specialization-label"
+                                            label={t("home.specializationLabel")}
+                                            {...field}
+                                        >
+                                            {h.specializations.map((item) => (
+                                                <MenuItem
+                                                    key={item.specializationId}
+                                                    value={String(item.specializationId)}
+                                                >
+                                                    {item.name}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    )}
+                                />
+                            </FormControl>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 4 }}>
+                            <Controller
+                                name="location"
+                                control={h.control}
+                                render={({ field }) => (
+                                    <LocationPicker
+                                        label={t("home.cityLabel")}
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                    />
+                                )}
+                            />
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 4 }}>
+                            <TextField
+                                fullWidth
+                                label={t("home.dateLabel")}
+                                type="date"
+                                {...h.register("appointmentDate")}
+                                slotProps={{ inputLabel: { shrink: true } }}
+                            />
+                        </Grid>
                     </Grid>
-                    <Grid size={{ xs: 12, md: 4 }}>
-                        <LocationPicker
-                            label={t("home.cityLabel")}
-                            value={h.location}
-                            onChange={h.setLocation}
-                        />
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 4 }}>
-                        <TextField
-                            fullWidth
-                            label={t("home.dateLabel")}
-                            type="date"
-                            value={h.appointmentDate}
-                            onChange={(e) => h.setAppointmentDate(e.target.value)}
-                            slotProps={{ inputLabel: { shrink: true } }}
-                        />
-                    </Grid>
-                </Grid>
-                <Button
-                    type="button"
-                    variant="contained"
-                    onClick={h.handleSearch}
-                    fullWidth
-                    size="large"
-                    sx={{
-                        py: 1.35,
-                        fontWeight: 700,
-                        textTransform: "none",
-                        bgcolor: "primary.main",
-                        "&:hover": { bgcolor: "primary.dark" },
-                    }}
-                >
-                    {t("home.searchButton")}
-                </Button>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        fullWidth
+                        size="large"
+                        sx={{
+                            py: 1.35,
+                            fontWeight: 700,
+                            textTransform: "none",
+                            bgcolor: "primary.main",
+                            "&:hover": { bgcolor: "primary.dark" },
+                        }}
+                    >
+                        {t("home.searchButton")}
+                    </Button>
+                </Box>
             </Paper>
         </Box>
     );

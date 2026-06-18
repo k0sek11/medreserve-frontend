@@ -1,93 +1,54 @@
-import { useState } from "react";
-import type { ChangeEvent, FormEvent } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authApi, type UserSessionDto } from "../api/auth";
 import { authUserQueryKey } from "./useAuthUser";
-
-export type LoginFormValues = {
-    email: string;
-    password: string;
-    rememberMe: boolean;
-};
-
-const initialValues: LoginFormValues = {
-    email: "",
-    password: "",
-    rememberMe: false,
-};
+import { loginSchema, type LoginFormData } from "../lib/validations";
 
 const useLoginForm = (onLoggedIn?: (session: UserSessionDto) => void) => {
     const queryClient = useQueryClient();
-    const [values, setValues] = useState<LoginFormValues>(initialValues);
-    const [error, setError] = useState<string | null>(null);
+    const {
+        register,
+        handleSubmit,
+        setError,
+        formState: { errors, isSubmitting, isSubmitSuccessful },
+    } = useForm<LoginFormData>({
+        resolver: zodResolver(loginSchema),
+        defaultValues: { email: "", password: "" },
+    });
 
     const loginMutation = useMutation({
-        mutationFn: async (data: Omit<LoginFormValues, "rememberMe">) => {
+        mutationFn: async (data: LoginFormData) => {
             return await authApi.login(data);
         },
-            onSuccess: async (data) => {
-                await queryClient.invalidateQueries({ queryKey: authUserQueryKey });
-                const session = await authApi.me();
-                onLoggedIn?.(session);
-                console.log("Pomyślnie zalogowano!", data);
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: authUserQueryKey });
+            const session = await authApi.me();
+            onLoggedIn?.(session);
         },
         onError: (err: any) => {
-            console.error("Błąd logowania:", err);
-            setError(
-                err.response?.data?.message ||
+            setError("root", {
+                message:
+                    err.response?.data?.message ||
                     err.response?.data?.title ||
                     "Nieprawidłowy email lub hasło.",
-            );
+            });
         },
     });
 
-    const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = event.target;
-
-        setValues((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
-    const handleRememberMeChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setValues((prev) => ({
-            ...prev,
-            rememberMe: event.target.checked,
-        }));
-    };
-
-    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        setError(null);
-
-        loginMutation.mutate({
-            email: values.email,
-            password: values.password,
-        });
-    };
-
-    const loginWithGoogle = () => {
-        // Placeholder for future OAuth Google flow.
-        console.log("Login with Google");
-    };
-
-    const loginWithFacebook = () => {
-        // Placeholder for future OAuth Facebook flow.
-        console.log("Login with Facebook");
+    const onSubmit = (data: LoginFormData) => {
+        loginMutation.mutate(data);
     };
 
     return {
-        values,
-        error,
-        isLoading: loginMutation.isPending,
-        isSuccess: loginMutation.isSuccess,
-        handleInputChange,
-        handleRememberMeChange,
-        handleSubmit,
-        loginWithGoogle,
-        loginWithFacebook,
+        register,
+        handleSubmit: handleSubmit(onSubmit),
+        errors,
+        rootError: errors.root?.message || null,
+        isLoading: loginMutation.isPending || isSubmitting,
+        isSuccess: isSubmitSuccessful && loginMutation.isSuccess,
     };
 };
 
 export default useLoginForm;
+export type { LoginFormData };

@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Box, Typography } from "@mui/material";
+import { Alert, Typography } from "@mui/material";
 import { checkPaymentStatus } from "../../api/paymentApi";
 
 interface Props {
     appointmentId: number;
     onRetry: () => void;
+    onRefetch?: () => void;
 }
 
-export const PaymentResultBanner = ({ appointmentId, onRetry }: Props) => {
+export const PaymentResultBanner = ({ appointmentId, onRetry, onRefetch }: Props) => {
     const { t } = useTranslation();
     const [status, setStatus] = useState<"LOADING" | "SUCCESS" | "FAILED">("LOADING");
 
@@ -22,15 +23,12 @@ export const PaymentResultBanner = ({ appointmentId, onRetry }: Props) => {
 
                 if (data.isPaid) {
                     setStatus("SUCCESS");
-                } else if (
-                    data.status === "CANCELED" ||
-                    data.status === "REJECTED" ||
-                    data.status === "FAILED"
-                ) {
+                    onRefetch?.();
+                } else if (data.payuStatus === "CANCELED" || data.payuStatus === "REJECTED") {
                     setStatus("FAILED");
-                } else {
-                    setStatus("LOADING");
+                    onRefetch?.();
                 }
+                // else: still LOADING (payment might still be processing)
             } catch (error) {
                 console.error(t("payment.networkError"), error);
                 if (isMounted) setStatus("FAILED");
@@ -41,7 +39,7 @@ export const PaymentResultBanner = ({ appointmentId, onRetry }: Props) => {
         return () => {
             isMounted = false;
         };
-    }, [appointmentId, t]);
+    }, [appointmentId, t, onRefetch]);
 
     if (status === "LOADING") {
         return (

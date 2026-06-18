@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import {
     Box,
     Button,
@@ -11,9 +11,12 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { api } from "../lib/axios";
+import { patientProfileSchema, type PatientProfileFormData } from "../lib/validations";
 
 type PatientProfileDto = {
     id: string;
@@ -49,11 +52,22 @@ const PatientProfilePage = () => {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState("");
-    const [birthDate, setBirthDate] = useState("");
-    const [gender, setGender] = useState("");
+    const {
+        register,
+        handleSubmit,
+        control,
+        reset,
+        formState: { errors, isSubmitting, isSubmitSuccessful },
+    } = useForm<PatientProfileFormData>({
+        resolver: zodResolver(patientProfileSchema),
+        defaultValues: {
+            firstName: "",
+            lastName: "",
+            phoneNumber: "",
+            birthDate: "",
+            gender: "",
+        },
+    });
 
     const profileQuery = useQuery({
         queryKey: ["patient-profile"],
@@ -62,31 +76,40 @@ const PatientProfilePage = () => {
 
     useEffect(() => {
         if (profileQuery.data) {
-            setFirstName(profileQuery.data.firstName ?? "");
-            setLastName(profileQuery.data.lastName ?? "");
-            setPhoneNumber(profileQuery.data.phoneNumber ?? "");
-            setBirthDate(profileQuery.data.birthDate ?? "");
-            setGender(profileQuery.data.gender ?? "");
+            reset({
+                firstName: profileQuery.data.firstName ?? "",
+                lastName: profileQuery.data.lastName ?? "",
+                phoneNumber: profileQuery.data.phoneNumber ?? "",
+                birthDate: profileQuery.data.birthDate ?? "",
+                gender: profileQuery.data.gender ?? "",
+            });
         }
-    }, [profileQuery.data]);
+    }, [profileQuery.data, reset]);
 
     const saveMutation = useMutation({
-        mutationFn: () =>
+        mutationFn: (data: PatientProfileFormData) =>
             usersApi.updateMyProfile({
-                firstName: firstName.trim(),
-                lastName: lastName.trim(),
-                phoneNumber: phoneNumber.trim(),
-                birthDate,
-                gender,
+                firstName: data.firstName.trim(),
+                lastName: data.lastName.trim(),
+                phoneNumber: data.phoneNumber.trim(),
+                birthDate: data.birthDate,
+                gender: data.gender,
             }),
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["patient-profile"] });
         },
     });
 
+    const onSubmit = (data: PatientProfileFormData) => {
+        saveMutation.mutate(data);
+    };
+
     if (profileQuery.isLoading) {
         return (
-            <Paper elevation={0} sx={{ p: 4, borderRadius: 3, border: (t) => `1px solid ${t.palette.divider}` }}>
+            <Paper
+                elevation={0}
+                sx={{ p: 4, borderRadius: 3, border: (t) => `1px solid ${t.palette.divider}` }}
+            >
                 <Typography sx={{ color: "text.secondary" }}>{t("common.loadingData")}</Typography>
             </Paper>
         );
@@ -97,62 +120,83 @@ const PatientProfilePage = () => {
             <Typography variant="h4" sx={{ fontWeight: 800, color: "text.primary", mb: 0.8 }}>
                 {t("patientProfile.title")}
             </Typography>
-            <Typography sx={{ color: "text.secondary", mb: 3 }}>{t("patientProfile.subtitle")}</Typography>
-            <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: (t) => `1px solid ${t.palette.divider}` }}>
-                <Stack spacing={2.5}>
+            <Typography sx={{ color: "text.secondary", mb: 3 }}>
+                {t("patientProfile.subtitle")}
+            </Typography>
+            <Paper
+                elevation={0}
+                sx={{ p: 3, borderRadius: 3, border: (t) => `1px solid ${t.palette.divider}` }}
+            >
+                <Stack spacing={2.5} component="form" onSubmit={handleSubmit(onSubmit)}>
                     <TextField
                         label={t("profileCompletion.firstNameLabel")}
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
+                        {...register("firstName")}
+                        error={!!errors.firstName}
+                        helperText={
+                            errors.firstName?.message ? t(errors.firstName.message) : undefined
+                        }
                         fullWidth
                     />
                     <TextField
                         label={t("profileCompletion.lastNameLabel")}
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
+                        {...register("lastName")}
+                        error={!!errors.lastName}
+                        helperText={
+                            errors.lastName?.message ? t(errors.lastName.message) : undefined
+                        }
                         fullWidth
                     />
                     <TextField
                         label={t("profileCompletion.phoneLabel")}
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        {...register("phoneNumber")}
+                        error={!!errors.phoneNumber}
+                        helperText={
+                            errors.phoneNumber?.message ? t(errors.phoneNumber.message) : undefined
+                        }
                         fullWidth
                     />
                     <TextField
                         label={t("profileCompletion.birthDateLabel")}
                         type="date"
-                        value={birthDate}
-                        onChange={(e) => setBirthDate(e.target.value)}
+                        {...register("birthDate")}
+                        error={!!errors.birthDate}
+                        helperText={
+                            errors.birthDate?.message ? t(errors.birthDate.message) : undefined
+                        }
                         slotProps={{ inputLabel: { shrink: true } }}
                         fullWidth
                     />
-                    <FormControl fullWidth>
+                    <FormControl fullWidth error={!!errors.gender}>
                         <InputLabel>{t("profileCompletion.genderLabel")}</InputLabel>
-                        <Select
-                            label={t("profileCompletion.genderLabel")}
-                            value={gender}
-                            onChange={(e) => setGender(e.target.value)}
-                        >
-                            <MenuItem value="Female">
-                                {t("profileCompletion.genderOptions.female")}
-                            </MenuItem>
-                            <MenuItem value="Male">
-                                {t("profileCompletion.genderOptions.male")}
-                            </MenuItem>
-                            <MenuItem value="Other">
-                                {t("profileCompletion.genderOptions.other")}
-                            </MenuItem>
-                        </Select>
+                        <Controller
+                            name="gender"
+                            control={control}
+                            render={({ field }) => (
+                                <Select label={t("profileCompletion.genderLabel")} {...field}>
+                                    <MenuItem value="Kobieta">
+                                        {t("profileCompletion.genderOptions.female")}
+                                    </MenuItem>
+                                    <MenuItem value="Mezczyzna">
+                                        {t("profileCompletion.genderOptions.male")}
+                                    </MenuItem>
+                                    <MenuItem value="Inne">
+                                        {t("profileCompletion.genderOptions.other")}
+                                    </MenuItem>
+                                </Select>
+                            )}
+                        />
                     </FormControl>
                     <Button
+                        type="submit"
                         variant="contained"
-                        onClick={() => saveMutation.mutate()}
-                        disabled={saveMutation.isPending}
+                        disabled={saveMutation.isPending || isSubmitting}
                         sx={{ fontWeight: 700 }}
                     >
-                        {saveMutation.isPending ? t("common.saving") : t("common.save")}
+                        {saveMutation.isPending || isSubmitting
+                            ? t("common.saving")
+                            : t("common.save")}
                     </Button>
-                    {saveMutation.isSuccess && (
+                    {saveMutation.isSuccess && isSubmitSuccessful && (
                         <Typography sx={{ color: "success.main", fontWeight: 600 }}>
                             {t("patientProfile.saved")}
                         </Typography>

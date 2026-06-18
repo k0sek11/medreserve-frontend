@@ -40,6 +40,7 @@ export const LocationPicker = ({
     const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
     const [open, setOpen] = useState(false);
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
@@ -80,11 +81,22 @@ export const LocationPicker = ({
         setQuery(newVal);
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => fetchSuggestions(newVal), 400);
+
+        if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+        searchDebounceRef.current = setTimeout(() => onChange(newVal), 600);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+            onChange(query);
+            setOpen(false);
+        }
     };
 
     const handleSelect = (item: NominatimResult) => {
+        onChange(query);
         setQuery(item.display_name);
-        onChange(item.display_name);
         setOpen(false);
     };
 
@@ -98,6 +110,7 @@ export const LocationPicker = ({
                 placeholder={placeholder ?? t("common.locationPlaceholder")}
                 value={query}
                 onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
                 required={required}
                 fullWidth={fullWidth}
                 error={error}

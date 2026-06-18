@@ -371,5 +371,18 @@
         "title": "Mój profil",
         "subtitle": "Zarządzaj swoimi danymi osobowymi.",
         "saved": "Profil został zapisany."
+    },
+    "validation": {
+        "required": "To pole jest wymagane.",
+        "emailInvalid": "Podaj prawidłowy adres e-mail.",
+        "passwordMinLength": "Hasło musi mieć co najmniej 6 znaków.",
+        "passwordsMustMatch": "Hasła nie są identyczne.",
+        "invalidPhone": "Numer telefonu jest niepoprawny",
+        "mustBeNumber": "Podaj prawidłową liczbę.",
+        "mustBeNonNegative": "Wartość nie może być ujemna.",
+        "mustBeInteger": "Podaj liczbę całkowitą.",
+        "mustBePositive": "Wartość musi być większa od zera.",
+        "mustConfirm": "Musisz potwierdzić, aby kontynuować.",
+        "selectPaymentMethod": "Wybierz metodę płatności."
     }
 }

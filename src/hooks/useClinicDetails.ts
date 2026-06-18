@@ -1,44 +1,24 @@
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { clinicsApi, type ClinicDetailDto, type ClinicUpdateRequest } from "../api/clinics";
 import { useAuthUser } from "./useAuthUser";
+import { clinicEditSchema, type ClinicEditFormData } from "../lib/validations";
 
-type ClinicEditDraft = {
-    name: string;
-    description: string;
-    streetAddress: string;
-    openingHours: string;
-    latitude: number | null;
-    longitude: number | null;
-    city: string;
-    phoneNumber: string;
-    email: string;
-};
-
-const emptyDraft: ClinicEditDraft = {
-    name: "",
-    description: "",
-    streetAddress: "",
-    openingHours: "",
-    latitude: null,
-    longitude: null,
-    city: "",
-    phoneNumber: "",
-    email: "",
-};
+type ClinicEditDraft = ClinicEditFormData;
 
 function toDraft(clinic: ClinicDetailDto): ClinicEditDraft {
     return {
         name: clinic.name,
         description: clinic.description ?? "",
-        streetAddress: clinic.streetAddress,
-        openingHours: clinic.openingHours ?? "",
-        latitude: clinic.latitude,
-        longitude: clinic.longitude,
         city: clinic.city,
+        lat: clinic.latitude ?? 0,
+        lng: clinic.longitude ?? 0,
         phoneNumber: clinic.phoneNumber ?? "",
         email: clinic.email ?? "",
+        openingHours: clinic.openingHours ?? "",
     };
 }
 
@@ -50,7 +30,28 @@ export const useClinicDetails = () => {
     const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false);
     const [requestSent, setRequestSent] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [draft, setDraft] = useState<ClinicEditDraft>(emptyDraft);
+
+    const {
+        register,
+        handleSubmit,
+        control,
+        reset,
+        setValue,
+        watch,
+        formState: { errors, isSubmitting },
+    } = useForm<ClinicEditFormData>({
+        resolver: zodResolver(clinicEditSchema),
+        defaultValues: {
+            name: "",
+            description: "",
+            city: "",
+            lat: 0,
+            lng: 0,
+            phoneNumber: "",
+            email: "",
+            openingHours: "",
+        },
+    });
 
     const clinicQuery = useQuery({
         queryKey: ["clinic-details", parsedClinicId],
@@ -60,24 +61,24 @@ export const useClinicDetails = () => {
 
     useEffect(() => {
         if (clinicQuery.data) {
-            setDraft(toDraft(clinicQuery.data));
+            reset(toDraft(clinicQuery.data));
             setRequestSent(false);
             setIsEditing(false);
         }
-    }, [clinicQuery.data]);
+    }, [clinicQuery.data, reset]);
 
     const updateMutation = useMutation({
-        mutationFn: async () => {
+        mutationFn: async (data: ClinicEditFormData) => {
             const payload: ClinicUpdateRequest = {
-                name: draft.name.trim(),
-                description: draft.description.trim() || null,
-                streetAddress: draft.streetAddress.trim(),
-                openingHours: draft.openingHours.trim() || null,
-                latitude: draft.latitude,
-                longitude: draft.longitude,
-                city: draft.city.trim(),
-                phoneNumber: draft.phoneNumber.trim() || null,
-                email: draft.email.trim() || null,
+                name: data.name.trim(),
+                description: data.description?.trim() || null,
+                streetAddress: data.city.trim(),
+                openingHours: data.openingHours?.trim() || null,
+                latitude: data.lat,
+                longitude: data.lng,
+                city: data.city.trim(),
+                phoneNumber: data.phoneNumber?.trim() || null,
+                email: data.email?.trim() || null,
                 isActive: clinicQuery.data?.isActive ?? true,
             };
             return clinicsApi.update(parsedClinicId, payload);
@@ -94,6 +95,24 @@ export const useClinicDetails = () => {
     const canRequestJoin =
         Boolean(authUser?.doctorProfileId) && !clinic?.isCurrentUserMember && !isOwner;
 
+    const handleSave = handleSubmit((data) => {
+        updateMutation.mutate(data);
+    });
+
+    const startEditing = () => {
+        if (clinic) {
+            reset(toDraft(clinic));
+        }
+        setIsEditing(true);
+    };
+
+    const cancelEditing = () => {
+        if (clinic) {
+            reset(toDraft(clinic));
+        }
+        setIsEditing(false);
+    };
+
     return {
         parsedClinicId,
         isValid,
@@ -101,16 +120,24 @@ export const useClinicDetails = () => {
         clinic,
         isOwner,
         canRequestJoin,
-        draft,
-        setDraft,
+        register,
+        control,
+        errors,
+        isSubmitting,
         isEditing,
-        setIsEditing,
+        setIsEditing: startEditing,
+        cancelEditing,
+        setLocation: (loc: { lat: number; lng: number; city: string }) => {
+            setValue("lat", loc.lat, { shouldValidate: true });
+            setValue("lng", loc.lng, { shouldValidate: true });
+            setValue("city", loc.city, { shouldValidate: true });
+        },
+        watch,
         updateMutation,
         isJoinDialogOpen,
         setIsJoinDialogOpen,
         requestSent,
         setRequestSent,
-        toDraft: () => clinic && toDraft(clinic),
-        handleSave: () => updateMutation.mutate(),
+        handleSave,
     };
 };

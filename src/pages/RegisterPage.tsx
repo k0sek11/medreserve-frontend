@@ -7,8 +7,7 @@ import { Show } from "../components/shared/ShowHide";
 
 const RegisterPage = () => {
     const { t } = useTranslation();
-    const { values, error, isLoading, isSuccess, handleInputChange, handleSubmit } =
-        useRegisterForm();
+    const { register, handleSubmit, errors, rootError, isLoading, isSuccess } = useRegisterForm();
 
     return (
         <AuthPageShell
@@ -34,42 +33,43 @@ const RegisterPage = () => {
             }
         >
             <Stack component="form" spacing={2.2} onSubmit={handleSubmit}>
-                <Show when={Boolean(error)}>
-                    <Alert severity="error">{error}</Alert>
+                <Show when={Boolean(rootError)}>
+                    <Alert severity="error">{rootError}</Alert>
                 </Show>
                 <Show when={isSuccess}>
                     <Alert severity="success">{t("auth.registerSuccess")}</Alert>
                 </Show>
 
                 <TextField
-                    name="email"
                     label={t("auth.emailLabel")}
                     type="email"
                     autoComplete="email"
-                    value={values.email}
-                    onChange={handleInputChange}
+                    {...register("email")}
+                    error={!!errors.email}
+                    helperText={errors.email?.message ? t(errors.email.message) : undefined}
                     fullWidth
-                    required
                 />
                 <TextField
-                    name="password"
                     label={t("auth.passwordLabel")}
                     type="password"
                     autoComplete="new-password"
-                    value={values.password}
-                    onChange={handleInputChange}
+                    {...register("password")}
+                    error={!!errors.password}
+                    helperText={errors.password?.message ? t(errors.password.message) : undefined}
                     fullWidth
-                    required
                 />
                 <TextField
-                    name="confirmPassword"
                     label={t("auth.confirmPasswordLabel")}
                     type="password"
                     autoComplete="new-password"
-                    value={values.confirmPassword}
-                    onChange={handleInputChange}
+                    {...register("confirmPassword")}
+                    error={!!errors.confirmPassword}
+                    helperText={
+                        errors.confirmPassword?.message
+                            ? t(errors.confirmPassword.message)
+                            : undefined
+                    }
                     fullWidth
-                    required
                 />
 
                 <Button

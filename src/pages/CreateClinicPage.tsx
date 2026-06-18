@@ -4,7 +4,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { plPL } from "@mui/x-date-pickers/locales";
 import { enUS } from "@mui/x-date-pickers/locales";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
-import { Navigate } from "react-router-dom";
+import { Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Show } from "../components/shared/ShowHide";
 import { MapLocationPicker } from "../components/shared/MapLocationPicker";
@@ -20,8 +20,6 @@ export const CreateClinicPage = () => {
             ? enUS.components.MuiLocalizationProvider.defaultProps.localeText
             : plPL.components.MuiLocalizationProvider.defaultProps.localeText;
 
-    if (c.shouldRedirect) return <Navigate to="/" replace />;
-
     return (
         <LocalizationProvider
             dateAdapter={AdapterDayjs}
@@ -35,7 +33,11 @@ export const CreateClinicPage = () => {
             >
                 <Paper
                     elevation={0}
-                    sx={{ p: { xs: 3, md: 4 }, border: (t) => `1px solid ${t.palette.divider}`, borderRadius: 3 }}
+                    sx={{
+                        p: { xs: 3, md: 4 },
+                        border: (t) => `1px solid ${t.palette.divider}`,
+                        borderRadius: 3,
+                    }}
                 >
                     <Stack spacing={3}>
                         <Box>
@@ -51,53 +53,91 @@ export const CreateClinicPage = () => {
                             </Typography>
                         </Box>
 
-                        <Show when={Boolean(c.submitError)}>
-                            <Alert severity="error">{c.submitError}</Alert>
+                        <Show when={Boolean(c.rootError)}>
+                            <Alert severity="error">{c.rootError}</Alert>
                         </Show>
 
                         <Stack spacing={2}>
                             <TextField
                                 label={t("createClinic.clinicName")}
-                                name="name"
-                                value={c.formData.name}
-                                onChange={c.handleChange}
-                                required
+                                {...c.register("name")}
+                                error={!!c.errors.name}
+                                helperText={
+                                    c.errors.name?.message ? t(c.errors.name.message) : undefined
+                                }
                                 fullWidth
                             />
                             <TextField
                                 label={t("createClinic.description")}
-                                name="description"
-                                value={c.formData.description}
-                                onChange={c.handleChange}
+                                {...c.register("description")}
+                                error={!!c.errors.description}
+                                helperText={
+                                    c.errors.description?.message
+                                        ? t(c.errors.description.message)
+                                        : undefined
+                                }
                                 multiline
                                 rows={3}
                                 fullWidth
                             />
 
-                            <MapLocationPicker
-                                label={t("createClinic.location")}
-                                lat={c.formData.lat}
-                                lng={c.formData.lng}
-                                city={c.formData.city}
-                                onChange={c.setLocation}
-                                height={300}
-                                required
+                            <Controller
+                                name="lat"
+                                control={c.control}
+                                render={({ field }) => (
+                                    <MapLocationPicker
+                                        label={t("createClinic.location")}
+                                        lat={field.value || null}
+                                        lng={c.watch("lng") || null}
+                                        city={c.watch("city")}
+                                        onChange={c.setLocation}
+                                        height={300}
+                                    />
+                                )}
                             />
 
                             <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                                <TimePicker
-                                    label={t("createClinic.openingTime")}
-                                    value={c.openingFrom}
-                                    onChange={c.setOpeningFrom}
-                                    ampm={false}
-                                    slotProps={{ textField: { fullWidth: true, required: true } }}
+                                <Controller
+                                    name="openingFrom"
+                                    control={c.control}
+                                    render={({ field }) => (
+                                        <TimePicker
+                                            label={t("createClinic.openingTime")}
+                                            value={c.openingFrom}
+                                            onChange={(val) => {
+                                                c.setOpeningFrom(val);
+                                                field.onChange(val ? val.format("HH:mm") : "08:00");
+                                            }}
+                                            ampm={false}
+                                            slotProps={{
+                                                textField: {
+                                                    fullWidth: true,
+                                                    error: !!c.errors.openingFrom,
+                                                },
+                                            }}
+                                        />
+                                    )}
                                 />
-                                <TimePicker
-                                    label={t("createClinic.closingTime")}
-                                    value={c.openingTo}
-                                    onChange={c.setOpeningTo}
-                                    ampm={false}
-                                    slotProps={{ textField: { fullWidth: true, required: true } }}
+                                <Controller
+                                    name="openingTo"
+                                    control={c.control}
+                                    render={({ field }) => (
+                                        <TimePicker
+                                            label={t("createClinic.closingTime")}
+                                            value={c.openingTo}
+                                            onChange={(val) => {
+                                                c.setOpeningTo(val);
+                                                field.onChange(val ? val.format("HH:mm") : "16:00");
+                                            }}
+                                            ampm={false}
+                                            slotProps={{
+                                                textField: {
+                                                    fullWidth: true,
+                                                    error: !!c.errors.openingTo,
+                                                },
+                                            }}
+                                        />
+                                    )}
                                 />
                             </Stack>
 
@@ -109,22 +149,28 @@ export const CreateClinicPage = () => {
 
                             <TextField
                                 label={t("common.phone")}
-                                name="phoneNumber"
-                                value={c.formData.phoneNumber}
-                                onChange={c.handleChange}
+                                {...c.register("phoneNumber")}
                                 type="tel"
                                 inputMode="tel"
                                 placeholder={t("createClinic.phonePlaceholder")}
-                                error={c.phoneError}
-                                helperText={c.phoneError ? t("createClinic.phoneError") : ""}
+                                error={c.phoneError || !!c.errors.phoneNumber}
+                                helperText={
+                                    c.phoneError
+                                        ? t("createClinic.phoneError")
+                                        : c.errors.phoneNumber?.message
+                                          ? t(c.errors.phoneNumber.message)
+                                          : ""
+                                }
                                 fullWidth
                             />
                             <TextField
                                 label={t("common.email")}
-                                name="email"
                                 type="email"
-                                value={c.formData.email}
-                                onChange={c.handleChange}
+                                {...c.register("email")}
+                                error={!!c.errors.email}
+                                helperText={
+                                    c.errors.email?.message ? t(c.errors.email.message) : undefined
+                                }
                                 fullWidth
                             />
                         </Stack>

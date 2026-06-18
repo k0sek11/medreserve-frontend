@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
     Button,
     FormControl,
@@ -10,10 +11,13 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import type { SpecializationDto } from "../../types/common";
 import { sortOptions } from "./ClinicSortOptions";
 import { LocationPicker } from "../shared/LocationPicker";
+import { clinicFiltersSchema, type ClinicFiltersFormData } from "../../lib/validations";
 
 type ClinicFiltersPanelProps = {
     filters: {
@@ -36,8 +40,44 @@ export const ClinicFiltersPanel = ({
 }: ClinicFiltersPanelProps) => {
     const { t } = useTranslation();
 
+    const { register, reset } = useForm<ClinicFiltersFormData>({
+        resolver: zodResolver(clinicFiltersSchema),
+        defaultValues: {
+            name: filters.name,
+            location: filters.location,
+            specializationId: filters.specializationId,
+            sort: filters.sort,
+            page: filters.page,
+        },
+    });
+
+    // Sync external filter changes back to form
+    useEffect(() => {
+        reset({
+            name: filters.name,
+            location: filters.location,
+            specializationId: filters.specializationId,
+            sort: filters.sort,
+            page: filters.page,
+        });
+    }, [filters, reset]);
+
+    const handleClear = () => {
+        clearFilters();
+        reset({
+            name: "",
+            location: "",
+            specializationId: "",
+            sort: "nameAsc",
+            page: "1",
+        });
+    };
+
     return (
-        <Paper elevation={0} sx={{ p: 2, mb: 3, borderRadius: 2, border: (t) => `1px solid ${t.palette.divider}` }}>
+        <Paper
+            elevation={0}
+            sx={{ p: 2, mb: 3, borderRadius: 2, border: (t) => `1px solid ${t.palette.divider}` }}
+        >
             <Stack spacing={2}>
                 <Typography sx={{ fontWeight: 700, color: "text.primary" }}>
                     {t("common.filters")}
@@ -48,8 +88,11 @@ export const ClinicFiltersPanel = ({
                             fullWidth
                             label={t("clinics.searchByName")}
                             placeholder={t("clinics.searchByNamePlaceholder")}
-                            value={filters.name}
-                            onChange={(e) => updateFilter("name", e.target.value)}
+                            {...register("name")}
+                            onChange={(e) => {
+                                register("name").onChange(e);
+                                updateFilter("name", e.target.value);
+                            }}
                         />
                     </Grid>
                     <Grid size={{ xs: 12, md: 4 }}>
@@ -67,8 +110,11 @@ export const ClinicFiltersPanel = ({
                             <Select
                                 labelId="clinic-specialization-label"
                                 label={t("clinics.selectSpecialization")}
-                                value={filters.specializationId}
-                                onChange={(e) => updateFilter("specializationId", e.target.value)}
+                                {...register("specializationId")}
+                                onChange={(e) => {
+                                    register("specializationId").onChange(e);
+                                    updateFilter("specializationId", e.target.value as string);
+                                }}
                             >
                                 <MenuItem value="">{t("common.all")}</MenuItem>
                                 {specializations.map((item) => (
@@ -88,8 +134,11 @@ export const ClinicFiltersPanel = ({
                             <Select
                                 labelId="clinic-sort-label"
                                 label={t("common.sorting")}
-                                value={filters.sort}
-                                onChange={(e) => updateFilter("sort", e.target.value)}
+                                {...register("sort")}
+                                onChange={(e) => {
+                                    register("sort").onChange(e);
+                                    updateFilter("sort", e.target.value as string);
+                                }}
                             >
                                 {sortOptions.map((option) => (
                                     <MenuItem key={option.value} value={option.value}>
@@ -103,7 +152,7 @@ export const ClinicFiltersPanel = ({
 
                 <Button
                     variant="outlined"
-                    onClick={clearFilters}
+                    onClick={handleClear}
                     sx={{ alignSelf: "flex-start", textTransform: "none" }}
                 >
                     {t("common.clearFilters")}

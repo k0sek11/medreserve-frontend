@@ -1,4 +1,13 @@
 import { Button, Chip } from "@mui/material";
+import {
+    CalendarToday,
+    AccessTime,
+    CheckCircle,
+    HourglassEmpty,
+    Block,
+    Error,
+    CreditCard,
+} from "@mui/icons-material";
 import { Link as RouterLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { PaymentResultBanner } from "../Payment/PaymentResultBanner";
@@ -43,11 +52,12 @@ export const AppointmentCard = ({ appointment, onPay, onRefetch }: AppointmentCa
             </div>
 
             <div className="inline-flex items-center gap-1.5 bg-slate-50 dark:bg-neutral-900 text-slate-700 dark:text-neutral-300 px-3 py-1.5 rounded-lg border border-slate-100 dark:border-neutral-700 mb-4 font-medium text-sm">
-                <span>📅</span>
+                <CalendarToday sx={{ fontSize: 14 }} />
                 <span>{appointment.date}</span>
                 <span className="text-slate-300 dark:text-gray-600 mx-1">|</span>
+                <AccessTime sx={{ fontSize: 14 }} />
                 <span>
-                    🕒 {appointment.startTime} - {appointment.endTime}
+                    {appointment.startTime} - {appointment.endTime}
                 </span>
             </div>
 
@@ -55,6 +65,7 @@ export const AppointmentCard = ({ appointment, onPay, onRefetch }: AppointmentCa
                 <div className="mb-4 rounded-xl overflow-hidden shadow-inner text-sm">
                     <PaymentResultBanner
                         appointmentId={appointment.appointmentId}
+                        onRefetch={onRefetch}
                         onRetry={() => {
                             onRefetch();
                             onPay(appointment.appointmentId);
@@ -77,27 +88,22 @@ export const AppointmentCard = ({ appointment, onPay, onRefetch }: AppointmentCa
                         <>
                             {appointment.paymentStatus === "Paid" && (
                                 <div className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-3 py-1.5 rounded-lg font-bold border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
-                                    <span>✅</span> {t("appointments.paid")}
+                                    <CheckCircle sx={{ fontSize: 16 }} /> {t("appointments.paid")}
                                 </div>
                             )}
 
                             {appointment.paymentStatus === "Pending" &&
                                 appointment.paymentMethod === "Offline" && (
                                     <div className="bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-3 py-1.5 rounded-lg font-bold border border-amber-200 dark:border-amber-800 flex items-center gap-1.5">
-                                        <span>⏳</span> {t("appointments.payAtClinic")}
+                                        <HourglassEmpty sx={{ fontSize: 16 }} />{" "}
+                                        {t("appointments.payAtClinic")}
                                     </div>
                                 )}
 
-                            {(appointment.status === "PendingConfirmation" ||
-                                appointment.status === "AwaitingPayment") && (
-                                <div className="bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400 px-3 py-1.5 rounded-lg font-bold border border-slate-200 dark:border-neutral-600 flex items-center gap-1.5">
-                                    <span>👨‍⚕️</span> {t("appointments.awaitingConfirmation")}
-                                </div>
-                            )}
-
                             {appointment.status === "Unpaid" && (
                                 <div className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-3 py-1.5 rounded-lg font-bold border border-red-200 dark:border-red-800 flex items-center gap-1.5">
-                                    <span>🚫</span> {t("appointments.unpaidExpired")}
+                                    <Block sx={{ fontSize: 16 }} />{" "}
+                                    {t("appointments.unpaidExpired")}
                                 </div>
                             )}
 
@@ -123,10 +129,17 @@ export const AppointmentCard = ({ appointment, onPay, onRefetch }: AppointmentCa
                                             px: 2,
                                             py: 0.5,
                                         }}
+                                        startIcon={
+                                            appointment.paymentStatus === "Failed" ? (
+                                                <Error />
+                                            ) : (
+                                                <CreditCard />
+                                            )
+                                        }
                                     >
                                         {appointment.paymentStatus === "Failed"
-                                            ? `❌ ${t("appointments.retryPayment")}`
-                                            : `💳 ${t("appointments.payVisit")}`}
+                                            ? t("appointments.retryPayment")
+                                            : t("appointments.payVisit")}
                                     </Button>
                                 )}
                         </>
