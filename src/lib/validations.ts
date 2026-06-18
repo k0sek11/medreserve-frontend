@@ -23,7 +23,9 @@ export const profileCompletionSchema = z
         profileType: profileTypeSchema.optional(),
         firstName: z.string().min(1, "validation.required"),
         lastName: z.string().min(1, "validation.required"),
-        phoneNumber: z.string().length(9, "validation.invalidPhone"),
+        phoneNumber: z
+            .string()
+            .regex(/^\d{9}$/, "validation.invalidPhone"),
         birthDate: z.string().min(1, "validation.required"),
         gender: z.string().min(1, "validation.required"),
         licenseNumber: z.string().optional(),
@@ -44,7 +46,9 @@ export const profileCompletionSchema = z
 export const patientProfileSchema = z.object({
     firstName: z.string().min(1, "validation.required"),
     lastName: z.string().min(1, "validation.required"),
-    phoneNumber: z.string().min(1, "validation.required"),
+    phoneNumber: z
+        .string()
+        .regex(/^\d{9}$/, "validation.invalidPhone"),
     birthDate: z.string().min(1, "validation.required"),
     gender: z.string().min(1, "validation.required"),
 });
@@ -58,7 +62,7 @@ export const clinicSchema = z.object({
     phoneNumber: z
         .string()
         .optional()
-        .refine((val) => !val || /^\+?[0-9\s()-]{7,20}$/.test(val), "validation.phoneInvalid"),
+        .refine((val) => !val || /^\d{7,15}$/.test(val), "validation.phoneInvalid"),
     email: z.string().email("validation.emailInvalid").optional().or(z.literal("")),
     openingFrom: z.string().min(1, "validation.required"),
     openingTo: z.string().min(1, "validation.required"),
@@ -73,7 +77,7 @@ export const clinicEditSchema = z.object({
     phoneNumber: z
         .string()
         .optional()
-        .refine((val) => !val || /^\+?[0-9\s()-]{7,20}$/.test(val), "validation.phoneInvalid"),
+        .refine((val) => !val || /^\d{7,15}$/.test(val), "validation.phoneInvalid"),
     email: z.string().email("validation.emailInvalid").optional().or(z.literal("")),
     openingHours: z.string().optional(),
 });

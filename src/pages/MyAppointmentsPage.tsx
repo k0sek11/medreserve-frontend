@@ -1,4 +1,4 @@
-import { Dialog, Pagination } from "@mui/material";
+import { Box, Dialog, Pagination, Stack, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useMyAppointments } from "../hooks/useMyAppointments";
 import { Show } from "../components/shared/ShowHide";
@@ -10,16 +10,16 @@ const MyAppointmentsPage = () => {
     const h = useMyAppointments();
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#121212] py-8 px-4 sm:px-8 lg:px-16">
-            <div className="mb-8 max-w-4xl mx-auto">
-                <h1 className="text-3xl font-extrabold text-slate-900 dark:text-gray-100 tracking-tight mb-2">
+        <Box sx={{ py: { xs: 2, md: 4 } }}>
+            <Stack spacing={0.8} sx={{ mb: 3 }}>
+                <Typography variant="h4" sx={{ fontWeight: 800, color: "text.primary" }}>
                     {t("appointments.myAppointments")}
-                </h1>
-                <p className="text-base text-slate-500 dark:text-gray-400 font-medium">
+                </Typography>
+                <Typography sx={{ color: "text.secondary" }}>
                     {t("appointments.myAppointmentsDesc")}
-                </p>
-            </div>
-            <div className="max-w-4xl mx-auto space-y-4">
+                </Typography>
+            </Stack>
+            <Stack spacing={2}>
                 {h.paginatedAppointments.map((a) => (
                     <AppointmentCard
                         key={a.appointmentId}
@@ -29,7 +29,7 @@ const MyAppointmentsPage = () => {
                     />
                 ))}
                 <Show when={h.totalPages > 1}>
-                    <div className="flex justify-center mt-8 pt-4">
+                    <Stack direction="row" sx={{ pt: 2, justifyContent: "center" }}>
                         <Pagination
                             count={h.totalPages}
                             page={h.page}
@@ -41,9 +41,9 @@ const MyAppointmentsPage = () => {
                             shape="rounded"
                             size="large"
                         />
-                    </div>
+                    </Stack>
                 </Show>
-            </div>
+            </Stack>
             <Dialog
                 open={h.isPaymentModalOpen}
                 onClose={h.handleClosePayment}
@@ -59,7 +59,7 @@ const MyAppointmentsPage = () => {
                     />
                 </Show>
             </Dialog>
-        </div>
+        </Box>
     );
 };
 

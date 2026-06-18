@@ -1,4 +1,4 @@
-import { Alert, Button, Chip, Stack } from "@mui/material";
+import { Alert, Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useConfirmation } from "../hooks/useConfirmation";
@@ -17,24 +17,62 @@ const AppointmentConfirmationPage = () => {
     const a = c.appointment;
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#121212] py-12 px-4 sm:px-8 flex justify-center items-start">
-            <div className="max-w-2xl w-full bg-white dark:bg-neutral-800 rounded-[2rem] p-6 sm:p-10 border border-slate-100 dark:border-neutral-700 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-2 bg-blue-500" />
+        <Box sx={{ py: { xs: 2, md: 4 }, display: "flex", justifyContent: "center" }}>
+            <Paper
+                elevation={0}
+                sx={{
+                    maxWidth: 672,
+                    width: "100%",
+                    borderRadius: 4,
+                    border: (t) => `1px solid ${t.palette.divider}`,
+                    p: { xs: 3, md: 5 },
+                    position: "relative",
+                    overflow: "hidden",
+                }}
+            >
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 4,
+                        bgcolor: "primary.main",
+                    }}
+                />
                 <Stack spacing={4}>
-                    <div className="text-center mt-2">
-                        <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-50 dark:bg-emerald-900/30 rounded-full mb-4">
-                            <span className="text-4xl">
+                    <Box sx={{ textAlign: "center", mt: 2 }}>
+                        <Box
+                            sx={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: 80,
+                                height: 80,
+                                bgcolor: (t) =>
+                                    t.palette.mode === "dark"
+                                        ? "rgba(52,211,153,0.15)"
+                                        : "#ecfdf5",
+                                borderRadius: "50%",
+                                mb: 2,
+                            }}
+                        >
+                            <Typography sx={{ fontSize: 40 }}>
                                 {a.status === "Confirmed" ? "✅" : "⏳"}
-                            </span>
-                        </div>
-                        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-gray-100 tracking-tight mb-2">
+                            </Typography>
+                        </Box>
+                        <Typography
+                            variant="h4"
+                            sx={{ fontWeight: 800, color: "text.primary", mb: 1 }}
+                        >
                             {c.title}
-                        </h1>
-                        <p className="text-slate-500 dark:text-gray-400 font-medium">
+                        </Typography>
+                        <Typography sx={{ color: "text.secondary" }}>
                             {t("confirmation.subtitle")}
-                        </p>
-                    </div>
-                    <div className="flex justify-center">
+                        </Typography>
+                    </Box>
+
+                    <Stack direction="row" sx={{ justifyContent: "center" }}>
                         <Chip
                             label={`${t("confirmation.statusPrefix")}: ${t(`appointmentStatus.${a.status}`, a.status)}`}
                             color={statusColors[a.status] ?? "default"}
@@ -46,8 +84,22 @@ const AppointmentConfirmationPage = () => {
                                 borderRadius: "16px",
                             }}
                         />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 bg-slate-50 dark:bg-neutral-900 p-4 sm:p-6 rounded-3xl border border-slate-100 dark:border-neutral-700">
+                    </Stack>
+
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                            gap: { xs: 2, sm: 3 },
+                            bgcolor: (t) =>
+                                t.palette.mode === "dark"
+                                    ? "rgba(255,255,255,0.03)"
+                                    : "grey.50",
+                            p: { xs: 2, sm: 3 },
+                            borderRadius: 3,
+                            border: (t) => `1px solid ${t.palette.divider}`,
+                        }}
+                    >
                         <SummaryCard
                             label={t("confirmation.appointmentNumber")}
                             value={`#${a.appointmentId}`}
@@ -65,8 +117,13 @@ const AppointmentConfirmationPage = () => {
                             label={t("confirmation.time")}
                             value={`${a.startTime} - ${a.endTime}`}
                         />
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-3 pt-4 justify-center">
+                    </Box>
+
+                    <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        spacing={2}
+                        sx={{ pt: 2, justifyContent: "center" }}
+                    >
                         <Button
                             component={RouterLink}
                             to="/moje-wizyty"
@@ -96,30 +153,51 @@ const AppointmentConfirmationPage = () => {
                         >
                             {t("confirmation.bookAnother")}
                         </Button>
-                    </div>
+                    </Stack>
                 </Stack>
-            </div>
-        </div>
+            </Paper>
+        </Box>
     );
 };
 
 const ErrorScreen = ({ icon, title }: { icon: string; title: string }) => (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#121212] py-12 px-4 flex justify-center">
-        <div className="max-w-md w-full bg-white dark:bg-neutral-800 p-8 rounded-3xl border border-slate-100 dark:border-neutral-700 shadow-sm text-center">
-            <span className="text-5xl block mb-4">{icon}</span>
-            <h2 className="text-xl font-bold text-slate-800 dark:text-gray-200">{title}</h2>
-        </div>
-    </div>
+    <Box sx={{ py: { xs: 2, md: 4 }, display: "flex", justifyContent: "center" }}>
+        <Paper
+            elevation={0}
+            sx={{
+                maxWidth: 448,
+                width: "100%",
+                p: 4,
+                borderRadius: 3,
+                border: (t) => `1px solid ${t.palette.divider}`,
+                textAlign: "center",
+            }}
+        >
+            <Typography sx={{ fontSize: 48, mb: 2 }}>{icon}</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: "text.primary" }}>
+                {title}
+            </Typography>
+        </Paper>
+    </Box>
 );
 
 const LoadingScreen = ({ t }: { t: (key: string) => string }) => (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#121212] py-12 px-4 flex justify-center">
-        <div className="max-w-xl w-full bg-white dark:bg-neutral-800 p-8 rounded-3xl border border-slate-100 dark:border-neutral-700 shadow-sm">
-            <Alert severity="info" className="rounded-xl">
+    <Box sx={{ py: { xs: 2, md: 4 }, display: "flex", justifyContent: "center" }}>
+        <Paper
+            elevation={0}
+            sx={{
+                maxWidth: 576,
+                width: "100%",
+                p: 4,
+                borderRadius: 3,
+                border: (t) => `1px solid ${t.palette.divider}`,
+            }}
+        >
+            <Alert severity="info" sx={{ borderRadius: "12px" }}>
                 {t("confirmation.loadingInfo")}
             </Alert>
-        </div>
-    </div>
+        </Paper>
+    </Box>
 );
 
 export default AppointmentConfirmationPage;

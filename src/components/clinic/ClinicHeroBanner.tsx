@@ -29,12 +29,11 @@ export const ClinicHeroBanner = ({ clinic, isOwner }: ClinicHeroBannerProps) => 
                             color: "white",
                         }}
                     />
-                    <Typography variant="h3" component="h3" fontWeight={800} gutterBottom>
+                    <Typography variant="h3" sx={{ fontWeight: 800 }} gutterBottom>
                         {clinic.name}
                     </Typography>
                     <Typography
                         variant="h6"
-                        component="h6"
                         sx={{ maxWidth: 780, color: "rgba(255,255,255,0.88)" }}
                     >
                         {clinic.description || t("clinicDetails.noDescriptionHero")}
@@ -43,7 +42,7 @@ export const ClinicHeroBanner = ({ clinic, isOwner }: ClinicHeroBannerProps) => 
                 <Stack
                     direction={{ xs: "column", sm: "row" }}
                     spacing={1.5}
-                    alignItems={{ xs: "stretch", sm: "center" }}
+                    sx={{ alignItems: { xs: "stretch", sm: "center" } }}
                 >
                     <Button
                         variant="contained"
