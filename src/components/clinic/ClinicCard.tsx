@@ -67,16 +67,11 @@ export const ClinicCard = ({ clinic }: ClinicCardProps) => {
                         direction="row"
                         spacing={1}
                         sx={{
-                            justifyContent: "space-between",
+                            justifyContent: "flex-end",
                             alignItems: "center",
                             flexWrap: "wrap",
                         }}
                     >
-                        <Typography sx={{ color: "text.secondary" }}>
-                            {t("clinics.statusPrefix")}:{" "}
-                            {clinic.isActive ? t("clinics.active") : t("clinics.inactive")}
-                        </Typography>
-
                         <Button
                             component={RouterLink}
                             to={`/poradnie/${clinic.clinicId}`}

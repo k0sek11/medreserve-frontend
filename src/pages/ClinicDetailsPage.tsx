@@ -59,253 +59,237 @@ export default function ClinicDetailsPage() {
     return (
         <Box sx={{ maxWidth: 1200, mx: "auto", py: { xs: 2, md: 4 }, px: { xs: 2, md: 0 } }}>
             <ClinicHeroBanner clinic={clinic} isOwner={d.isOwner} />
-            <Grid container spacing={3}>
-                <Grid sx={{ width: { xs: "100%", lg: "58.33%" } }}>
-                    <Stack spacing={3}>
-                        <Card sx={{ borderRadius: 4 }}>
-                            <CardHeader
-                                title={t("clinicDetails.about")}
-                                action={
-                                    d.isOwner && !d.isEditing ? (
-                                        <Button variant="text" onClick={() => d.setIsEditing(true)}>
-                                            {t("clinicDetails.edit")}
-                                        </Button>
-                                    ) : null
-                                }
-                            />
-                            <CardContent>
-                                <Show when={d.isEditing}>
-                                    <Stack spacing={2}>
-                                        <TextField
-                                            label={t("common.name")}
-                                            value={d.draft.name}
-                                            onChange={(e) =>
-                                                d.setDraft((c) => ({ ...c, name: e.target.value }))
-                                            }
-                                            fullWidth
-                                        />
-                                        <TextField
-                                            label={t("common.description")}
-                                            value={d.draft.description}
-                                            onChange={(e) =>
-                                                d.setDraft((c) => ({
-                                                    ...c,
-                                                    description: e.target.value,
-                                                }))
-                                            }
-                                            fullWidth
-                                            multiline
-                                            minRows={4}
-                                        />
-                                    </Stack>
-                                </Show>
-                                <Show when={!d.isEditing}>
-                                    <Typography
-                                        variant="body1"
-                                        color="text.secondary"
-                                        sx={{ whiteSpace: "pre-wrap" }}
-                                    >
-                                        {clinic.description || t("clinicDetails.noDescription")}
-                                    </Typography>
-                                </Show>
-                            </CardContent>
-                        </Card>
-                        <Card sx={{ borderRadius: 4 }} id="clinic-contact">
-                            <CardHeader title={t("clinicDetails.contactAndHours")} />
-                            <CardContent>
-                                <Grid container spacing={2}>
-                                    {[
-                                        {
-                                            label: t("common.phone"),
-                                            field: "phoneNumber" as const,
-                                            value: clinic.phoneNumber,
-                                        },
-                                        {
-                                            label: t("common.email"),
-                                            field: "email" as const,
-                                            value: clinic.email,
-                                        },
-                                        {
-                                            label: t("clinicDetails.openingHours"),
-                                            field: "openingHours" as const,
-                                            value: clinic.openingHours,
-                                            multiline: true,
-                                            minRows: 3,
-                                        },
-                                    ].map((f) => (
-                                        <Grid
-                                            sx={{ width: { xs: "100%", md: "50%" } }}
-                                            key={f.label}
-                                        >
-                                            <Show when={d.isEditing}>
-                                                <TextField
-                                                    label={f.label}
-                                                    value={d.draft[f.field]}
-                                                    onChange={(e) =>
-                                                        d.setDraft((c) => ({
-                                                            ...c,
-                                                            [f.field]: e.target.value,
-                                                        }))
-                                                    }
-                                                    fullWidth
-                                                    multiline={f.multiline}
-                                                    minRows={f.minRows}
-                                                />
-                                            </Show>
-                                            <Show when={!d.isEditing}>
-                                                <InfoBlock
-                                                    label={f.label}
-                                                    value={f.value || t("common.noData")}
-                                                />
-                                            </Show>
-                                        </Grid>
-                                    ))}
-                                </Grid>
-
-                                <Show when={d.isEditing}>
-                                    <Box sx={{ mt: 2 }}>
-                                        <MapLocationPicker
-                                            label={t("createClinic.location")}
-                                            lat={d.draft.latitude}
-                                            lng={d.draft.longitude}
-                                            city={d.draft.city}
-                                            onChange={(data) =>
-                                                d.setDraft((c) => ({
-                                                    ...c,
-                                                    latitude: data.lat,
-                                                    longitude: data.lng,
-                                                    city: data.city,
-                                                    streetAddress: data.city,
-                                                }))
-                                            }
-                                            height={250}
-                                        />
-                                    </Box>
-                                </Show>
-                                <Show when={!d.isEditing}>
-                                    <Grid sx={{ width: { xs: "100%", md: "50%" } }}>
-                                        <InfoBlock
-                                            label={t("common.address")}
-                                            value={fullAddress || t("common.noData")}
-                                        />
-                                    </Grid>
-                                </Show>
-
-                                <Show when={d.isEditing}>
-                                    <Stack
-                                        direction={{ xs: "column", sm: "row" }}
-                                        spacing={1.5}
-                                        sx={{ justifyContent: "flex-end", mt: 3 }}
-                                    >
-                                        <Button
-                                            variant="text"
-                                            onClick={() => {
-                                                d.setDraft(d.toDraft());
-                                                d.setIsEditing(false);
-                                            }}
-                                        >
-                                            {t("clinicDetails.cancel")}
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            onClick={d.handleSave}
-                                            disabled={d.updateMutation.isPending}
-                                        >
-                                            {d.updateMutation.isPending
-                                                ? t("common.saving")
-                                                : t("clinicDetails.saveChanges")}
-                                        </Button>
-                                    </Stack>
-                                </Show>
-                            </CardContent>
-                        </Card>
-                        <Card sx={{ borderRadius: 4 }}>
-                            <CardHeader
-                                title={t("clinicDetails.map")}
-                                action={
-                                    <Button
-                                        variant="outlined"
-                                        size="small"
-                                        href={googleMapsUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        sx={{ textTransform: "none" }}
-                                    >
-                                        {t("clinicDetails.openInGoogleMaps")}
-                                    </Button>
-                                }
-                            />
-                            <CardContent>
-                                <LeafletMap
-                                    lat={clinic.latitude}
-                                    lng={clinic.longitude}
-                                    address={fullAddress}
-                                    height={300}
+            <Stack spacing={3}>
+                <Card sx={{ borderRadius: 4 }}>
+                    <CardHeader
+                        title={t("clinicDetails.about")}
+                        action={
+                            d.isOwner && !d.isEditing ? (
+                                <Button variant="text" onClick={() => d.setIsEditing(true)}>
+                                    {t("clinicDetails.edit")}
+                                </Button>
+                            ) : null
+                        }
+                    />
+                    <CardContent>
+                        <Show when={d.isEditing}>
+                            <Stack spacing={2}>
+                                <TextField
+                                    label={t("common.name")}
+                                    value={d.draft.name}
+                                    onChange={(e) =>
+                                        d.setDraft((c) => ({ ...c, name: e.target.value }))
+                                    }
+                                    fullWidth
                                 />
-                            </CardContent>
-                        </Card>
-                    </Stack>
-                </Grid>
-                <Grid sx={{ width: { xs: "100%", lg: "41.67%" } }}>
-                    <Stack spacing={3} id="doctor-list">
-                        <Card sx={{ borderRadius: 4 }}>
-                            <CardHeader
-                                title={`${t("clinicDetails.doctors")} (${clinic.doctors.length})`}
-                            />
-                            <CardContent>
-                                <Stack spacing={2}>
-                                    {clinic.doctors.map((doc) => (
-                                        <Paper
-                                            key={doc.doctorId}
-                                            variant="outlined"
-                                            sx={{
-                                                p: 2,
-                                                borderRadius: 3,
-                                                backgroundColor: doc.isOwner
-                                                    ? "rgba(59,130,246,0.05)"
-                                                    : undefined,
-                                            }}
-                                        >
-                                            <Stack
-                                                direction="row"
-                                                spacing={2}
-                                                component={RouterLink}
-                                                to={`/lekarze/${doc.doctorId}`}
-                                                sx={{
-                                                    alignItems: "center",
-                                                    justifyContent: "space-between",
-                                                    textDecoration: "none",
-                                                    color: "inherit",
-                                                    "&:hover": { opacity: 0.85 },
-                                                }}
-                                            >
-                                                <Box>
-                                                    <Typography fontWeight={700}>
-                                                        {doc.fullName}
-                                                    </Typography>
-                                                    <Typography
-                                                        variant="body2"
-                                                        color="text.secondary"
-                                                    >
-                                                        {doc.primarySpecialization}
-                                                    </Typography>
-                                                </Box>
-                                                <Show when={doc.isOwner}>
-                                                    <Chip
-                                                        size="small"
-                                                        label={t("clinicDetails.owner")}
-                                                        color="primary"
-                                                    />
-                                                </Show>
-                                            </Stack>
-                                        </Paper>
-                                    ))}
-                                </Stack>
-                            </CardContent>
-                        </Card>
-                    </Stack>
-                </Grid>
-            </Grid>
+                                <TextField
+                                    label={t("common.description")}
+                                    value={d.draft.description}
+                                    onChange={(e) =>
+                                        d.setDraft((c) => ({
+                                            ...c,
+                                            description: e.target.value,
+                                        }))
+                                    }
+                                    fullWidth
+                                    multiline
+                                    minRows={4}
+                                />
+                            </Stack>
+                        </Show>
+                        <Show when={!d.isEditing}>
+                            <Typography
+                                variant="body1"
+                                color="text.secondary"
+                                sx={{ whiteSpace: "pre-wrap" }}
+                            >
+                                {clinic.description || t("clinicDetails.noDescription")}
+                            </Typography>
+                        </Show>
+                    </CardContent>
+                </Card>
+                <Card sx={{ borderRadius: 4 }} id="clinic-contact">
+                    <CardHeader title={t("clinicDetails.contactAndHours")} />
+                    <CardContent>
+                        <Grid container spacing={2}>
+                            {[
+                                {
+                                    label: t("common.phone"),
+                                    field: "phoneNumber" as const,
+                                    value: clinic.phoneNumber,
+                                },
+                                {
+                                    label: t("common.email"),
+                                    field: "email" as const,
+                                    value: clinic.email,
+                                },
+                                {
+                                    label: t("clinicDetails.openingHours"),
+                                    field: "openingHours" as const,
+                                    value: clinic.openingHours,
+                                    multiline: true,
+                                    minRows: 3,
+                                },
+                            ].map((f) => (
+                                <Grid sx={{ width: { xs: "100%", md: "50%" } }} key={f.label}>
+                                    <Show when={d.isEditing}>
+                                        <TextField
+                                            label={f.label}
+                                            value={d.draft[f.field]}
+                                            onChange={(e) =>
+                                                d.setDraft((c) => ({
+                                                    ...c,
+                                                    [f.field]: e.target.value,
+                                                }))
+                                            }
+                                            fullWidth
+                                            multiline={f.multiline}
+                                            minRows={f.minRows}
+                                        />
+                                    </Show>
+                                    <Show when={!d.isEditing}>
+                                        <InfoBlock
+                                            label={f.label}
+                                            value={f.value || t("common.noData")}
+                                        />
+                                    </Show>
+                                </Grid>
+                            ))}
+                        </Grid>
+
+                        <Show when={d.isEditing}>
+                            <Box sx={{ mt: 2 }}>
+                                <MapLocationPicker
+                                    label={t("createClinic.location")}
+                                    lat={d.draft.latitude}
+                                    lng={d.draft.longitude}
+                                    city={d.draft.city}
+                                    onChange={(data) =>
+                                        d.setDraft((c) => ({
+                                            ...c,
+                                            latitude: data.lat,
+                                            longitude: data.lng,
+                                            city: data.city,
+                                            streetAddress: data.city,
+                                        }))
+                                    }
+                                    height={250}
+                                />
+                            </Box>
+                        </Show>
+                        <Show when={!d.isEditing}>
+                            <Grid sx={{ width: { xs: "100%", md: "50%" } }}>
+                                <InfoBlock
+                                    label={t("common.address")}
+                                    value={fullAddress || t("common.noData")}
+                                />
+                            </Grid>
+                        </Show>
+
+                        <Show when={d.isEditing}>
+                            <Stack
+                                direction={{ xs: "column", sm: "row" }}
+                                spacing={1.5}
+                                sx={{ justifyContent: "flex-end", mt: 3 }}
+                            >
+                                <Button
+                                    variant="text"
+                                    onClick={() => {
+                                        d.setDraft(d.toDraft());
+                                        d.setIsEditing(false);
+                                    }}
+                                >
+                                    {t("clinicDetails.cancel")}
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    onClick={d.handleSave}
+                                    disabled={d.updateMutation.isPending}
+                                >
+                                    {d.updateMutation.isPending
+                                        ? t("common.saving")
+                                        : t("clinicDetails.saveChanges")}
+                                </Button>
+                            </Stack>
+                        </Show>
+                    </CardContent>
+                </Card>
+                <Card sx={{ borderRadius: 4 }}>
+                    <CardHeader
+                        title={t("clinicDetails.map")}
+                        action={
+                            <Button
+                                variant="outlined"
+                                size="small"
+                                href={googleMapsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                sx={{ textTransform: "none" }}
+                            >
+                                {t("clinicDetails.openInGoogleMaps")}
+                            </Button>
+                        }
+                    />
+                    <CardContent>
+                        <LeafletMap
+                            lat={clinic.latitude}
+                            lng={clinic.longitude}
+                            address={fullAddress}
+                            height={300}
+                        />
+                    </CardContent>
+                </Card>
+                <Card sx={{ borderRadius: 4 }}>
+                    <CardHeader
+                        title={`${t("clinicDetails.doctors")} (${clinic.doctors.length})`}
+                    />
+                    <CardContent>
+                        <Stack spacing={2}>
+                            {clinic.doctors.map((doc) => (
+                                <Paper
+                                    key={doc.doctorId}
+                                    variant="outlined"
+                                    sx={{
+                                        p: 2,
+                                        borderRadius: 3,
+                                        backgroundColor: doc.isOwner
+                                            ? "rgba(59,130,246,0.05)"
+                                            : undefined,
+                                    }}
+                                >
+                                    <Stack
+                                        direction="row"
+                                        spacing={2}
+                                        component={RouterLink}
+                                        to={`/lekarze/${doc.doctorId}`}
+                                        sx={{
+                                            alignItems: "center",
+                                            justifyContent: "space-between",
+                                            textDecoration: "none",
+                                            color: "inherit",
+                                            "&:hover": { opacity: 0.85 },
+                                        }}
+                                    >
+                                        <Box>
+                                            <Typography fontWeight={700}>{doc.fullName}</Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {doc.primarySpecialization}
+                                            </Typography>
+                                        </Box>
+                                        <Show when={doc.isOwner}>
+                                            <Chip
+                                                size="small"
+                                                label={t("clinicDetails.owner")}
+                                                color="primary"
+                                            />
+                                        </Show>
+                                    </Stack>
+                                </Paper>
+                            ))}
+                        </Stack>
+                    </CardContent>
+                </Card>
+            </Stack>
             <Show when={d.canRequestJoin}>
                 <Box sx={{ mt: 4, textAlign: "center" }}>
                     <Typography
