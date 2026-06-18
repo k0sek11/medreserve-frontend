@@ -80,9 +80,7 @@ const MainLayout = () => {
                 {!m.isLoading && m.user && (
                     <ListItemButton
                         onClick={() =>
-                            handleNavClick(
-                                m.user!.doctorProfileId ? "/moj-profil" : "/moje-konto",
-                            )
+                            handleNavClick(m.user!.doctorProfileId ? "/moj-profil" : "/moje-konto")
                         }
                         sx={{ py: 1.5, px: 2 }}
                     >
@@ -160,9 +158,7 @@ const MainLayout = () => {
                             disabled={m.logoutMutation.isPending}
                             sx={{ textTransform: "none", fontWeight: 700 }}
                         >
-                            {m.logoutMutation.isPending
-                                ? m.t("common.saving")
-                                : m.t("nav.logout")}
+                            {m.logoutMutation.isPending ? m.t("common.saving") : m.t("nav.logout")}
                         </Button>
                     </Box>
                 </>
@@ -279,7 +275,11 @@ const MainLayout = () => {
                                     {m.mode === "dark" ? <LightMode /> : <DarkMode />}
                                 </IconButton>
 
-                                <Stack direction="row" spacing={0.5} sx={{ alignItems: "center", ml: 1 }}>
+                                <Stack
+                                    direction="row"
+                                    spacing={0.5}
+                                    sx={{ alignItems: "center", ml: 1 }}
+                                >
                                     <IconButton
                                         onClick={() => m.i18n.changeLanguage("pl")}
                                         size="small"
@@ -300,7 +300,9 @@ const MainLayout = () => {
                                     >
                                         PL
                                     </IconButton>
-                                    <Typography sx={{ color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
+                                    <Typography
+                                        sx={{ color: "rgba(255,255,255,0.3)", fontSize: 13 }}
+                                    >
                                         |
                                     </Typography>
                                     <IconButton

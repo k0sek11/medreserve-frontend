@@ -50,9 +50,7 @@ const AppointmentConfirmationPage = () => {
                                 width: 80,
                                 height: 80,
                                 bgcolor: (t) =>
-                                    t.palette.mode === "dark"
-                                        ? "rgba(52,211,153,0.15)"
-                                        : "#ecfdf5",
+                                    t.palette.mode === "dark" ? "rgba(52,211,153,0.15)" : "#ecfdf5",
                                 borderRadius: "50%",
                                 mb: 2,
                             }}
@@ -92,9 +90,7 @@ const AppointmentConfirmationPage = () => {
                             gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
                             gap: { xs: 2, sm: 3 },
                             bgcolor: (t) =>
-                                t.palette.mode === "dark"
-                                    ? "rgba(255,255,255,0.03)"
-                                    : "grey.50",
+                                t.palette.mode === "dark" ? "rgba(255,255,255,0.03)" : "grey.50",
                             p: { xs: 2, sm: 3 },
                             borderRadius: 3,
                             border: (t) => `1px solid ${t.palette.divider}`,

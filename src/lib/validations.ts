@@ -23,9 +23,7 @@ export const profileCompletionSchema = z
         profileType: profileTypeSchema.optional(),
         firstName: z.string().min(1, "validation.required"),
         lastName: z.string().min(1, "validation.required"),
-        phoneNumber: z
-            .string()
-            .regex(/^\d{9}$/, "validation.invalidPhone"),
+        phoneNumber: z.string().regex(/^\d{9}$/, "validation.invalidPhone"),
         birthDate: z.string().min(1, "validation.required"),
         gender: z.string().min(1, "validation.required"),
         licenseNumber: z.string().optional(),
@@ -46,9 +44,7 @@ export const profileCompletionSchema = z
 export const patientProfileSchema = z.object({
     firstName: z.string().min(1, "validation.required"),
     lastName: z.string().min(1, "validation.required"),
-    phoneNumber: z
-        .string()
-        .regex(/^\d{9}$/, "validation.invalidPhone"),
+    phoneNumber: z.string().regex(/^\d{9}$/, "validation.invalidPhone"),
     birthDate: z.string().min(1, "validation.required"),
     gender: z.string().min(1, "validation.required"),
 });
